@@ -1,0 +1,3 @@
+#!/bin/tcsh
+starver SL11d
+cons EXTRA_CXXFLAGS='-I/opt/star/sl64_gcc447/include/'
