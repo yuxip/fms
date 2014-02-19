@@ -7,7 +7,7 @@
 class StMuDstMaker;
 StMuDstMaker* maker;
 
-void testFms_stfms( Int_t ibegin = 1, Int_t iend = 5, const char* file = "fms7.list", const char* outfile = "stfmsAnal_run12098008.root" ){
+void testFms_stfms( Int_t ibegin = 1, Int_t iend = 100, const char* file = "fms7.list", const char* outfile = "stfmsAnal_run12098008.root", const char* qafile = "stfmsQAhisto_run12098008.root", Bool_t qa = true ){
 
 	gROOT->Macro("loadMuDst.C");
 	gROOT->LoadMacro("$STAR/StRoot/StMuDSTMaker/COMMON/macros/loadSharedLibraries.C");
@@ -41,6 +41,7 @@ void testFms_stfms( Int_t ibegin = 1, Int_t iend = 5, const char* file = "fms7.l
 	using namespace PSUGlobals;
 	gSystem->Load("StFmsHitMaker");
 	gSystem->Load("StFmsPointMaker");
+	gSystem->Load("StFmsQAHistoMaker");
 	//gSystem->Load("StFmsAnalysisMaker");
 
 	StChain* chain = new StChain("StChain");
@@ -68,17 +69,22 @@ void testFms_stfms( Int_t ibegin = 1, Int_t iend = 5, const char* file = "fms7.l
 
 	// Endcap database
 	StEEmcDbMaker* eemcDb = new StEEmcDbMaker;
+	// Barrel ADC to energy maker
+        StEmcADCtoEMaker* adc = new StEmcADCtoEMaker;
+        adc->saveAllStEvent(true);
+	
+	
 	StFmsHitMaker* fmshitMk = new StFmsHitMaker();
 	//fmshitMk->SetDEBUG();
 	
 	
 	StFmsPointMaker* fmsptMk = new StFmsPointMaker("StFmsPointMaker",fmshitMk);
-	/*if(qa){
+	if(qa){
 		StFmsQAHistoMaker* fmsQa = new StFmsQAHistoMaker();
 		fmsQa->SetOutputFile(qafile);
 	}
 	
-	StFmsAnalysisMaker* fms = new StFmsAnalysisMaker("StFmsAnalysisMaker",jetmaker);
+	/*StFmsAnalysisMaker* fms = new StFmsAnalysisMaker("StFmsAnalysisMaker",jetmaker);
 	fms->EnableEdepCor = true;
 	fms->SetOutputFile(outfile);
 	*/
