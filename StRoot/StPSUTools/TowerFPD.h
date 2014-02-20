@@ -7,7 +7,6 @@
 #ifndef FPD_TOWER_H
 #define FPD_TOWER_H
 
-#include "CalibStr.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <iostream>
@@ -68,7 +67,7 @@ class TowerFPD : public TObject {
 	Bool_t TowerFilter();
 	Bool_t NeighborsAlive(Float_t dcell );
   
-	Bool_t SetContext(TObjArray* towers,CalibStr* gain,CalibStr* gaincorr,Int_t IEW,Int_t NSTB);
+	Bool_t SetContext(TObjArray* towers,Int_t IEW,Int_t NSTB);
 
 	void Print(void);
 
@@ -86,15 +85,11 @@ class TowerFPD : public TObject {
 			CalibSet = rhs.CalibSet;
 			Live = rhs.Live;
 			if(rhs.TowerSet)TowerSet=new TObjArray(*(rhs.TowerSet));
-			Gain=rhs.Gain;
-			GainCorr=rhs.GainCorr;
 		}
 		return *this;
 	};
 	Int_t ClaimedID;
 	TObjArray* Lnk_LRUD;
-	CalibStr* Gain;
-	CalibStr* GainCorr;
 	Int_t IEW;
 	Int_t NSTB;
 	TObjArray* TowerSet;

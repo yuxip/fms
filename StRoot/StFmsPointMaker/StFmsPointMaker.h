@@ -10,7 +10,6 @@
 #include "StMaker.h"
 #endif
 #include "StPSUTools/Yiqun.h"
-#include "StPSUTools/CalibStr.h"
 #include "StPSUTools/TowerFPD.h"
 #include "StPSUTools/Geom.h"
 using namespace std;
@@ -40,8 +39,6 @@ private:
 	StFmsClusterCollection* mFmsClColl;	//! --clusters (and points within cluster) to be added to TDataSet
 	//StFmsPointCollection*   mFmsPtsColl;	//! --all the points (photons) extracted from clusters
 	Geom* fmsgeom;
-	CalibStr* fmsgain;
-	CalibStr* fmsgaincorr;
 	
 	ClassDef(StFmsPointMaker,0)
 };

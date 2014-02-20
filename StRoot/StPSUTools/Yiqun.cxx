@@ -1206,17 +1206,6 @@ Double_t Yiqun::EnergyInTowerByPhoton(Double_t widthLG, TowerFPD *p_tower, Photo
 Yiqun::Yiqun(TMatrix* pEm,Geom* pgeom,Int_t iew,Int_t nstb)
 {
   p_geom=pgeom;
-  p_gain=0;
-  p_gaincorr=0;
-  EW=iew;
-  NSTB=nstb;
-  Y(pEm);
-};
-Yiqun::Yiqun(TMatrix* pEm,Geom* pgeom,CalibStr* pgain,CalibStr* pgaincorr,Int_t iew,Int_t nstb)
-{  
-  p_geom=pgeom;
-  p_gain=pgain;
-  p_gaincorr=pgaincorr;
   EW=iew;
   NSTB=nstb;
   Y(pEm);
@@ -1276,20 +1265,13 @@ void Yiqun::Y(TMatrix* pEm)
 	  towers[cnt].row     = ir+1 ;
 	  towers[cnt].cluster = -1 ; 
 	  
-	  if((p_gain!=0) && (p_gaincorr!=0))
-	    {
-	      towers[cnt].adc_over_ped=0;
-	      Float_t fullgain=p_gain->GetValue(EW,NSTB,ir,ic)*(p_gaincorr->GetValue(EW,NSTB,ir,ic));
-	      if(fullgain>0)towers[cnt].adc_over_ped=(Int_t) (towers[cnt].energy/fullgain+.5);
-	      if(towers[cnt].adc_over_ped<1.)towers[cnt].energy=0.;
-	    };
 	  if(towers[cnt].energy>.001)tow_Arr->Add(&towers[cnt]);
 		
 	}
     }
     TIter next(tow_Arr);
     while(TowerFPD* tow=(TowerFPD*) next()){
-      tow->SetContext(tow_Arr,p_gain,p_gaincorr,EW,NSTB);
+      tow->SetContext(tow_Arr,EW,NSTB);
     }
 
   PRINT_FIT_1_RESULT=false;

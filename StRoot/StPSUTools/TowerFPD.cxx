@@ -14,7 +14,6 @@ TowerFPD::TowerFPD()
   adc_over_ped=9999;
   LinkDefined=false;
   CalibSet=false;  
-  Gain=GainCorr=0;
   IEW=0;// East/West undefined
   NSTB=0;// Detector Undefined
   ClaimedID=-1;// Mark as unclaimed
@@ -31,7 +30,6 @@ TowerFPD::TowerFPD(Float_t ene, Int_t towX, Int_t towY, Int_t clu)
  
   LinkDefined=false;
   CalibSet=false;  
-  Gain=GainCorr=0;
   IEW=0;// East/West undefined
   NSTB=0;// Detector Undefined
   ClaimedID=-1;// Mark as unclaimed
@@ -65,26 +63,13 @@ void TowerFPD::Print(void)
 }
 
 
-Bool_t TowerFPD::SetContext(TObjArray* towers,CalibStr* gain,CalibStr* gaincorr,Int_t iEW,Int_t nSTB)
+Bool_t TowerFPD::SetContext(TObjArray* towers,Int_t iEW,Int_t nSTB)
 {
   IEW=iEW;
   NSTB=nSTB;
-  CalibSet=true;
+  CalibSet=false;
   TowerSet=towers;
-  if(gain)
-    {
-      Gain=gain;
-    }
-  else CalibSet=false;
-  if(gaincorr)
-    {
-      GainCorr=gaincorr;
-    }
-  else CalibSet=false;
-  Live=false;
-  Float_t gn=Gain->GetValue(IEW,NSTB,row-1,col-1);
-  Float_t gnc=GainCorr->GetValue(IEW,NSTB,row-1,col-1);
-  if(gn*gnc>0)Live=true;
+  Live=true;
   TIter next(towers);
   if(Lnk_LRUD)delete Lnk_LRUD;
   Lnk_LRUD=new TObjArray(4);  
@@ -195,30 +180,6 @@ Int_t TowerFPD::CreateContiguous()
 Bool_t TowerFPD::NeighborsAlive(Float_t dcell)
 {
   if(!CalibSet)return false; // info not available so answer false
-  for(int ir=-(int) dcell;ir<=(int) dcell;ir++)
-    {
-      for(int ic=-(int) dcell;ic<= (int) dcell;ic++)
-	{
-	  Float_t dist=sqrt(ic*ic+ir*ir);
-	  if(dist<=dcell)
-	    {
-	      Int_t Row=row+ir-1;
-	      Int_t Col=col+ic-1;
-	      Int_t NRows=Gain->tm(IEW,NSTB)->GetNrows();
-	      Int_t NCols=Gain->tm(IEW,NSTB)->GetNcols();
-	      
-	      if( (Row>=0)&&(Row<NRows))
-	      {
-		if( (Col>=0) && (Col<NCols))
-		  {
-		    Float_t gn=Gain->GetValue(IEW,NSTB,Row,Col);
-		    Float_t gncor=GainCorr->GetValue(IEW,NSTB,Row,Col);
-		    if(gn*gncor<=0)return false;
-		  };
-	      };
-	    };
-	};
-    };
   return true;
 };
 

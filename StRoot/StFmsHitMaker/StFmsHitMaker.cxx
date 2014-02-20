@@ -17,7 +17,6 @@
 
 // PSU-FMS package
 #include "StPSUTools/Geom.h"
-#include "StPSUTools/CalibStr.h"
 #include "StPSUTools/FitTower.h"
 
 #include <iostream>

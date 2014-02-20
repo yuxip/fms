@@ -13,7 +13,6 @@
 #include "TMinuit.h"
 
 #include "StPSUTools/Yiqun.h"
-#include "StPSUTools/CalibStr.h"
 #include "StPSUTools/TowerFPD.h"
 #include "StPSUTools/Geom.h"
 using namespace std;
@@ -72,7 +71,6 @@ Int_t StFmsPointMaker::Init() {
 	//mFmsClColl  = new StFmsClusterCollection();		
 	//Get run# from StFmsHitMaker and access status files
 	fmsgeom = 0;
-	fmsgain = fmsgaincorr = 0;	
 	return StMaker::Init();
 }
 
@@ -81,12 +79,6 @@ Int_t StFmsPointMaker::InitRun(Int_t runNumber){ //gStFmsDbMaker is filled after
 	//geometries and calibration tables, which would stay constant for each Run
 	//only allocate new space in the begining, not in between runs
 	if(!fmsgeom)fmsgeom = new Geom();
-	if(!fmsgain)fmsgain = new CalibStr(12098008,"gain"); //12098008 is only used to setup the corrent dimension of calibration matrix
-	if(!fmsgaincorr)fmsgaincorr = new CalibStr(12098008,"gaincorr");
-	LOG_INFO <<" debug fmsgain: "<<endm;
-	fmsgain->tm(2,1)->Print();
-	LOG_INFO <<" debug fmsgaincorr: "<<endm;
-	fmsgaincorr->tm(2,1)->Print();
 
 }
 
@@ -125,7 +117,7 @@ Int_t StFmsPointMaker::FindPoint() {
 		if(Esum==0||Esum>500) continue; //to remove LED trails, for pp500 GeV
 
 		//call the cluster finder for each nstb
-		p_rec[instb] = new Yiqun(Energy[instb],fmsgeom,fmsgain,fmsgaincorr,2,instb+1);
+		p_rec[instb] = new Yiqun(Energy[instb],fmsgeom,2,instb+1);
 		
 		//Saved cluser info into StFmsCluster
 		Int_t iPh = 0;	//sequence # in Yiqun::photons[];

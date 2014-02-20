@@ -3,7 +3,6 @@
 #define MAX_NUMER_CLUSTERS 6
 #define MAX_NUMB_PHOTONS 7
 
-#include "CalibStr.h"
 #include "Geom.h"
 #include "TLorentzVector.h"
 #include "TObjArray.h"
@@ -38,10 +37,7 @@ class Yiqun: public TObject
   Float_t Fit2PhotonClust(HitCluster*);
   Int_t FitEvent(Int_t nTows, Int_t &nClusts, Int_t &nRealClusts,  Double_t &chiSqG, Bool_t &junkyEvent);
   Double_t EnergyInClusterByPhoton(Double_t widthLG, HitCluster*, PhotonHitFPD*);
-  CalibStr* p_gain;
-  CalibStr* p_gaincorr;
   Double_t EnergyInTowerByPhoton(Double_t, TowerFPD* , PhotonHitFPD* );
-  Yiqun(TMatrix* pEm,Geom* pgeom,CalibStr* pgain,CalibStr* pgaincorr,Int_t iew,Int_t nstb);
   Yiqun(TMatrix* pEm,Geom* pgeom,Int_t iew ,Int_t nstb);
   void Y(TMatrix*);
   ~Yiqun();

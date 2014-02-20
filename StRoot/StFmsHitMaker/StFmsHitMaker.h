@@ -23,14 +23,12 @@ class StMuFmsCollection;
 /*class FilesSet;
 class Geom;
 class Qt;
-class CalibStr;
 class RunDepMgr;
 class RunDepCor;
 class CellTDep;
 */
 
 #include "StPSUTools/Geom.h"
-#include "StPSUTools/CalibStr.h"
 #include "StPSUTools/FitTower.h"
 
 #include "TMatrix.h"
