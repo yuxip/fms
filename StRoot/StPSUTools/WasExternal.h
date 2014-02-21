@@ -33,8 +33,6 @@ class WasExternal: public TObject
       UseThis_Err=false;
       widLG[0]=3.81;
       widLG[1]=3.81;
-      dev=0;
-      dchi2=0;
       Force2Mass=-1.;
       UseEDepCorrection=true;
       /*
@@ -68,21 +66,6 @@ class WasExternal: public TObject
    could just be needed for Yiqun.
    */
   Bool_t  UseEDepCorrection;
-  /**
-   \note
-   Is only used in FitTower, despite being allocated and deleted in Yiqun. It
-   might as well just be a member of FitTower - in fact, it's only used in
-   FitTower::Fcn1(), so we could just as well create it locally there.
-   */
-  TMatrix* dev;
-  /**
-   \note
-   Basically the same deal as dev. Actually, even though I can see these
-   matrices being filled, they never seem to be used. So probably just
-   remove them.
-   */
-  TMatrix*  dchi2;
-  //
   /**
    \note
    An array of TowerFPD objects to fit in the FitTower fitting functions. It

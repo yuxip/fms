@@ -137,8 +137,6 @@ Double_t FitTower::GGams(Double_t *x, Double_t *para)
 
 void FitTower::Fcn1(Int_t& npara, Double_t* grad,  Double_t& fval, Double_t* para, Int_t iflag)
 {
-  *(we.dev)=0;
-  *(we.dchi2)=0;
   // number of expected photons
   // should ALWAYS be the first parameter "para[0]"
   //
@@ -244,7 +242,6 @@ void FitTower::Fcn1(Int_t& npara, Double_t* grad,  Double_t& fval, Double_t* par
     //		printf("inFcn  col=%d row=%d eMeas=%f: ",oneTow->col,oneTow->row,eMeas);
     //		printf("fitted eSS= %f \n",eSS);
     Double_t dchi2;
-    (*(we.dev))[oneTow->row-1][oneTow->col-1]=dev;
 
     if( we.choiceChi2 == 2 ) {
       //
@@ -266,7 +263,6 @@ void FitTower::Fcn1(Int_t& npara, Double_t* grad,  Double_t& fval, Double_t* par
       dchi2 = dev * dev / err ;
       float dsign=1.;
       if(dev<0)dsign=-1.;
-      (*(we.dchi2))[oneTow->row-1][oneTow->col-1]=dsign*dchi2;
     }
     else if( we.choiceChi2 == 1 ) {
       //

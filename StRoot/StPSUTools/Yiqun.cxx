@@ -1220,8 +1220,6 @@ void Yiqun::Y(TMatrix* pEm)
   tow_Arr=0;
   choiceChi2=2;  
   pwe=&(FitTower::we);
-  if(pwe->dev)delete pwe->dev;
-  if(pwe->dchi2)delete pwe->dchi2;
   widLG[0]=widLG[1]=(p_geom->FpdTowWid(EW,NSTB))[0];
   if(p_geom->FMSGeom)widLG[1]=(p_geom->FpdTowWid(EW,NSTB))[1];
   //pwe->myRand=NULL;
@@ -1244,10 +1242,6 @@ void Yiqun::Y(TMatrix* pEm)
 
   nrows=pEm->GetNrows();
   ncols=pEm->GetNcols();
-  pwe->dev=new TMatrix(*pEm);
-  pwe->dchi2=new TMatrix(*pEm);
-  *(pwe->dev)=0.;
-  *(pwe->dchi2)=0.;
 
   Int_t cnt=-1;
   tow_Arr=new TObjArray(NTower);
