@@ -52,13 +52,6 @@ FitTower::FitTower(TMatrix* pEm,Geom* pgeom,Int_t iew,Int_t nstb)
 
 };
 
-void FitTower::SetFreeGlobals(Double_t* fglobals,int dim)
-{
-  if(dim>0 && dim<=10)
-    {
-      for(int j=0;j<dim;j++)we.FreeGlobals[j]=fglobals[j];
-    };
-};
 Bool_t FitTower::Setwe_EDepCor(Bool_t useEdepCor)
 {
   we.UseEDepCorrection=useEdepCor;

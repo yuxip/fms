@@ -37,7 +37,6 @@ class WasExternal: public TObject
       dev=0;
       dchi2=0;
       Force2Mass=-1.;
-      for(int j=0;j<10;j++)FreeGlobals[j]=-1;
       SubClu2=false;
       UseEDepCorrection=true;
       /*
@@ -260,13 +259,6 @@ class WasExternal: public TObject
    See a1.
    */
   Float_t b3;
-  /**
-   \note
-   Apparently a collection of global values available to the user as needed.
-   They are never used, only set via FitTower::SetFreeGlobals(), which is never
-   called. Might as well scrap them.
-   */
-  Double_t FreeGlobals[10];//there to be used;
  private:
  ClassDef(WasExternal,3);
 
