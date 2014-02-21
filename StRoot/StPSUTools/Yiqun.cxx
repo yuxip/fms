@@ -1317,7 +1317,6 @@ void Yiqun::Y(TMatrix* pEm)
       maxHitsInRealCluster=25;
     };
   pwe->useLimitForPara=1;
-  pwe->showerShapeFunc=0; 
   NClusts=0;
   NRealClusts=0;
   ChiSqG=0.;
@@ -1325,8 +1324,6 @@ void Yiqun::Y(TMatrix* pEm)
   fitter=0;
 
   fitter = new FitTower(pEm,p_geom,EW,NSTB);
-  pwe->showerWidthX=1.0;
-  pwe->showerWidthY=1.0;
 
   fitter->SetTWidthCM(*(p_geom->FpdTowWid(EW,NSTB)));
   if(p_geom->FMSGeom)fitter->SetXYTWidthCM(p_geom->FpdTowWid(EW,NSTB));
@@ -1451,12 +1448,6 @@ TLorentzVector  Yiqun::mom(PhotonHitFPD* phot)
 };
 void Yiqun::Print()
 {
-  printf("ShowerShape=%d\n",pwe->showerShapeFunc);
-  printf("ShowerWidthX=%f\n",pwe->showerWidthX);
-  printf("ShowerWidthY=%f\n",pwe->showerWidthY);
-  
-  
-  
   std::cout << "choiceChi2 = " << choiceChi2 << "\n";
   std::cout << "posDif_1PC = " << posDif_1PC << "\n";
   std::cout << "eneRat_1PC = " << eneRat_1PC << "\n";

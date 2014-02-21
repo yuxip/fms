@@ -28,8 +28,6 @@ FitTower::FitTower(TMatrix* pEm,Geom* pgeom,Int_t iew,Int_t nstb)
   para[7] =  0.0 ;
   para[8] =  0.0 ;
   para[9] =  1.0 ;
-  we.showerWidthX=1.0;
-  we.showerWidthY=1.0;
   if(we.fcnSS==0)
     {
       we.fcnSS = new TF2("fFunctSS", &GGams, -25.0, 25.0, -25.0, 25.0, numbPara);
@@ -108,8 +106,8 @@ Double_t FitTower::FGams(Double_t *x, Double_t *para)
 {
   
   Double_t f=0;
-  Double_t xx=x[0]/we.showerWidthX;
-  Double_t yy=x[1]/we.showerWidthY;
+  Double_t xx=x[0];
+  Double_t yy=x[1];
   for(Int_t i=1;i<=3;i++) {
     Int_t j;
     j = i + 3 ;
@@ -192,40 +190,6 @@ void FitTower::Fcn1(Int_t& npara, Double_t* grad,  Double_t& fval, Double_t* par
     for(Int_t iph=0; iph<numbPh; iph++) {
       Int_t j;
       j = 3 * iph ;
-      
-      //2004 feb 25, added by akio
-      //If showerShapeFunc>0, it means we choose energy dependent
-      //shower shape. "measured" photon energy is in para[j+3].
-      //all we need to do is set the parameters in fncSS:
-      if(we.showerShapeFunc==1) 
-	{
-	  double e=para[j+3];			  
-	  //guess Egamma from Emeasured
-	  //  double e_measured=e;
-	  //  double e_gamma=0.6022+1.192*e_measured;
-	  //  double e=egamma;
-	  //get shower shape parameters as function of Egamma			  
-	  double loge=log(e);
-	  double a0 = 0.5728 + 0.07085*loge;
-	  double a1 = 0.01169 + 0.09739*loge;
-	  double a2 = 0.6311 - 0.02977*loge;
-	  double a3 = a0-a1-a2;
-	  double b1 = 2.512 - 0.4304*loge;
-	  double b2 = 0.8271 - 0.1500*loge;
-	  double b3 = 19.95 + 2.282*loge;
-	  //re-normarize to a1+a2+a3=1
-	  a1=a1/a0;
-	  a2=a2/a0;
-	  a3=a3/a0;
-	  //set parameters
-	  we.fcnSS->SetParameter(1,a1);
-	  we.fcnSS->SetParameter(2,a2);
-	  we.fcnSS->SetParameter(3,a3);
-	  we.fcnSS->SetParameter(4,b1);
-	  we.fcnSS->SetParameter(5,b2);
-	  we.fcnSS->SetParameter(6,b3);
-	  //printf("SS: E=%f a=%f %f %f %f b=%f %f %f\n",e,a0,a1,a2,a3,b1,b2,b3);
-	}
       
       //
       // shower-shape function calculate the fraction of energy

@@ -84,31 +84,12 @@ class WasExternal: public TObject
   TF2* fcnSS;
   /**
    \note
-   Is set to 0 at initialisation and never changed. There is code in FitTower
-   that tests if showerShapeFunc==1, but this can never execute. We could make
-   it a member of FitTower, but we could really just get rid of both it and any
-   code that relies on it being non-zero.
-   */
-  UInt_t showerShapeFunc;
-  /**
-   \note
    Is initialised to 2. There is code in FitTower that depends on choiceChi2==2
    or choiceChi2==1, but only the "2" version will ever execute. It is also
    referenced in Yiqun, but never used for anything, so it can be made a member
    of FitTower, if it's needed at all (which I don't think it is).
    */
   UInt_t choiceChi2;
-  /**
-   \note
-   Is initialised as 1, never changed, and is only used to divide another
-   variable (obviously, to no effect). Does not seem to be needed.
-   */
-  Float_t showerWidthX;
-  /**
-   \note
-   See showerWidthX
-   */
-  Float_t showerWidthY;
   /**
    \note
    "Width lead-glass" i.e. cell (x, y) widths. It is set via Geom, from the
