@@ -695,12 +695,7 @@ Float_t Yiqun::Fit2PhotonClust(HitCluster* p_clust)
   // need to set "nPhoton" before calling "GlobalFit(..)"
   //
   p_clust->nPhoton = 2;
-  if(pwe->DoGlobal) {
-    chiSq = GlobalFit(2, 1, p_clust);
-  }  // if
-  else {
-    std::cout << "derp shouldn't be here 1" << std::endl;
-  }
+  chiSq = GlobalFit(2, 1, p_clust);
     
   if(PRINT_FIT_2_RESULT){
     printf("2nd fit:\n");
@@ -1144,7 +1139,7 @@ Int_t Yiqun::FitEvent(Int_t nTows, Int_t &nClusts, Int_t &nRealClusts, Double_t 
 	// 2003-10-13
 	// only do global fit for 2 or more clusters (2-photon fit for one cluster already has global fit)
 	//
-	if(pwe->DoGlobal && nRealClusts > 1 ) 
+	if(nRealClusts > 1 ) 
 	  {
 	    chiSqG = GlobalFit(nPh, nRealClusts, clust) / ndfg ;
 	    Int_t iph=0;
@@ -1168,7 +1163,6 @@ Int_t Yiqun::FitEvent(Int_t nTows, Int_t &nClusts, Int_t &nRealClusts, Double_t 
 	  }
 	else 
 	  {
-    std::cout << "not doing anything because nRealClusts = " << nRealClusts << std::endl;
 	    // temp revove comment
 	    //std::cout << "Something wrong! Should NOT have " << nRealClusts << " real clusters! Error!" << "\n";
 	    chiSqG = -1 ;
@@ -1354,7 +1348,6 @@ void Yiqun::Y(TMatrix* pEm)
   std::cout << "\tb3 " << pwe->b3 << std::endl;
   std::cout << "UseThis_ab " << pwe->UseThis_ab << std::endl;
   std::cout << "UseThis_Err " << pwe->UseThis_Err << std::endl;
-  std::cout << "DoGlobal " << pwe->DoGlobal << std::endl;
   std::cout << "widLG " << pwe->widLG[0] << " " << pwe->widLG[1] << std::endl;
   std::cout << "Force2Mass " << pwe->Force2Mass << std::endl;
   std::cout << "Power1, Power2 " << pwe->Power1 << ", " << pwe->Power2 << std::endl;

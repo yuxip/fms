@@ -31,7 +31,6 @@ class WasExternal: public TObject
       fcnSS=0;
       UseThis_ab=false;
       UseThis_Err=false;
-      DoGlobal=true;
       widLG[0]=3.81;
       widLG[1]=3.81;
       dev=0;
@@ -151,12 +150,6 @@ class WasExternal: public TObject
    this flag at all.
    */
   UInt_t useLimitForPara;
-  /**
-   \note
-   Is initialised to true and never changed. Code with if(DoGlobal) in Yiqun
-   is always executed, so it seems pointless.
-   */
-  Bool_t DoGlobal;
   /**
    \note
    Always uses a default value because FitTower::Setwe_ErrFactors() is never

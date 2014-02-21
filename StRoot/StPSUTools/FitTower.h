@@ -31,7 +31,6 @@ class FitTower : public TObject
   static Bool_t Setwe_EDepCor(Bool_t useEdepCor=true);
   static Bool_t Setwe_ab(Float_t a1=.8,Float_t a2=.3,Float_t a3=-.1,Float_t b1=.8,Float_t b2=.2,Float_t b3=7.6);
   static Bool_t Setwe_ErrFactors(float errQ,float errFactor,Float_t p1= 1.95,Float_t p2=2.72,float energy_study=100.);
-  static Bool_t SetDoGlobal(Bool_t sdg=true);
   Double_t step[3*MAX_NUMB_PHOTONS+1];
   TowerUtil* pTowerUtil;
   static Double_t GGams(Double_t *x, Double_t *par);
