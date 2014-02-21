@@ -1212,11 +1212,6 @@ void Yiqun::Y(TMatrix* pEm)
 
   posDif_Gl=1.25;
   eneRat_Gl=0.3;
- if(!pwe->UseThis_Err)
-    {
-      pwe->errFactor=0.03;
-      pwe->errQ=0.01;
-    };
   maxGood1PhChi2NDF=5;
   minHTEneOverPhoton=0.25;
   maxHTEneOverPhoton=1.5;
@@ -1251,9 +1246,7 @@ void Yiqun::Y(TMatrix* pEm)
   std::cout << "\tb1 " << pwe->b1 << std::endl;
   std::cout << "\tb2 " << pwe->b2 << std::endl;
   std::cout << "\tb3 " << pwe->b3 << std::endl;
-  std::cout << "UseThis_Err " << pwe->UseThis_Err << std::endl;
   std::cout << "widLG " << pwe->widLG[0] << " " << pwe->widLG[1] << std::endl;
-  std::cout << "Power1, Power2 " << pwe->Power1 << ", " << pwe->Power2 << std::endl;
 }
 
 void Yiqun::PrintClu()
@@ -1371,8 +1364,6 @@ void Yiqun::Print()
   std::cout << "posDif_Gl = " << posDif_Gl << "\n";
   std::cout << "eneRat_Gl = " << eneRat_Gl << "\n";
   
-  std::cout << "errFactor = " << pwe->errFactor << "\n";
-  std::cout << "errQ = " << pwe->errQ << "\n";
   std::cout << "maxGood1PhChi2NDF = " << maxGood1PhChi2NDF << "\n";
   std::cout << "minHTEneOverPhoton = " << minHTEneOverPhoton << "\n";
   std::cout << "maxHTEneOverPhoton = " << maxHTEneOverPhoton << "\n";

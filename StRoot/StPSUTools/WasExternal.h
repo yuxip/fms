@@ -35,7 +35,6 @@ class WasExternal: public TObject
 					     0.1,0.1,0.2, 0.1,0.1,0.2};
       for(int j=0;j<3*MAX_NUMB_PHOTONS+1;j++)step[j]=step0[j];
       fcnSS=0;
-      UseThis_Err=false;
       widLG[0]=3.81;
       widLG[1]=3.81;
       /*
@@ -87,33 +86,6 @@ class WasExternal: public TObject
   Float_t widLG[2];//glass width X,Y
   /**
    \note
-   Always uses a default value because FitTower::Setwe_ErrFactors() is never
-   called, so UseThis_Err always evaluates false. However it *is* used, so we
-   need to keep it (at least the value, if not the actual variable). It is
-   only used in FitTower, so it should be placed there.
-   */
-  Double_t errFactor;
-  /**
-   \note
-   See errFactor.
-   */
-  Double_t errQ;
-  /**
-   \note
-   Is used in FitTower::Fcn1(). It is set via FitTower::Setwe_ErrFactors(), but
-   that function is never called in the code here (in fact, I can't find it
-   being called in Steve's original package either). It's actually only ever
-   used if we do Setwe_ErrFactors(), and we don't, so maybe it's not even
-   needed…
-   */
-  Float_t Power1;
-  /**
-   \note
-   See Power1.
-   */
-  Float_t Power2;
-  /**
-   \note
    Is only used in Yiqun, so it should located be there. Also, it is a TRandom
    object, which the ROOT developers themselves say is a bad generator. It may
    be that STAR specifies its own random generator, in which case we should use
@@ -131,14 +103,6 @@ class WasExternal: public TObject
    with an accessor method so Yiqun can get hold of it.
    */
   Double_t step[3*MAX_NUMB_PHOTONS+1];
-  /**
-   \note
-   Is only referenced by a function that is never used:
-   FitTower::Setwe_ErrFactors(). It is always false in the current form of the
-   code (this is the default value; it's not modified anywhere), so it's not
-   really needed.
-   */
-  Bool_t UseThis_Err;
   /**
    \note
    Only used in FitTower, and always a constant value, set in StFmsHitMaker via

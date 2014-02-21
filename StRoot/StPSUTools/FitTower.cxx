@@ -44,16 +44,6 @@ FitTower::FitTower(TMatrix* pEm,Geom* pgeom,Int_t iew,Int_t nstb)
 
 };
 
-Bool_t FitTower::Setwe_ErrFactors(float errQ,float errFactor,float p1,float p2,float energy_study)
-{
-  std::cout << "FitTower::Setwe_ErrFactors()" << std::endl;
-  we.errQ=errQ;
-  we.errFactor=errFactor;
-  we.UseThis_Err=true;
-  we.Power1=p1;
-  we.Power2=p2;
-};
-
 FitTower::~FitTower()
 {
   
@@ -120,7 +110,6 @@ void FitTower::Fcn1(Int_t& npara, Double_t* grad,  Double_t& fval, Double_t* par
   
   // we are in GeV, not ADC count
   //
-  //   Double_t we.errFactor = 0.15 ;
   
   TowerFPD * oneTow;
   
@@ -174,29 +163,18 @@ void FitTower::Fcn1(Int_t& npara, Double_t* grad,  Double_t& fval, Double_t* par
     //		printf("inFcn  col=%d row=%d eMeas=%f: ",oneTow->col,oneTow->row,eMeas);
     //		printf("fitted eSS= %f \n",eSS);
     Double_t dchi2;
-
-      //
-      // Larisa'e Chi2 function
-      //
-      
-      if(!we.UseThis_Err)
-	{
-	  err = we.errFactor * eMeas * (1 - eMeas/sumCl) + we.errQ ;
-	}
-      else
-	{
-	  Float_t power1=we.Power1;
-	  Float_t power2=we.Power2;
-	  err = (we.errFactor * pow(eMeas/sumCl,power1-.001*sumCl) * 
-		 pow(1 - eMeas/sumCl,power2-.007*sumCl))*sumCl
-	    +we.errQ;
-	};
-      dchi2 = dev * dev / err ;
-      float dsign=1.;
-      if(dev<0)dsign=-1.;
-    
-    fval += dchi2 ;
-    
+    const double errFactor = 0.03;
+    const double errQ = 0.01;
+    //
+    // Larisa'e Chi2 function
+    //
+ 	  err = (errFactor * pow(eMeas/sumCl,1.-.001*sumCl) *
+          pow(1 - eMeas/sumCl,1.-.007*sumCl))*sumCl
+          +errQ;
+    dchi2 = dev * dev / err;
+    float dsign=1.;
+    if(dev<0)dsign=-1.;
+    fval += dchi2;
   };
   
   
