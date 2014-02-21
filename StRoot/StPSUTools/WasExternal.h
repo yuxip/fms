@@ -41,7 +41,6 @@ class WasExternal: public TObject
       Force2Mass=-1.;
       for(int j=0;j<10;j++)FreeGlobals[j]=-1;
       SubClu2=false;
-      BlockFit=false;
       UseEDepCorrection=true;
       /*
       EDepCorrection=new TF1("EDepCorrection","(1-.11*exp(-(x)/[0])-.23*exp(-(x)/[1]))",1,250);
@@ -246,13 +245,6 @@ class WasExternal: public TObject
    FitTower, if indeed it is needed at all.
    */
   Float_t Force2Mass;
-  /**
-   \note
-   It defaults to false and is never changed via FitTower::SetBlockFit().
-   Perhaps it was used at some point for debugging, but it isn't any more, so
-   we can presumably scrap it.
-   */
-  Bool_t BlockFit;
   /**
    \note
    Only used in FitTower, and always a constant value, set in StFmsHitMaker via

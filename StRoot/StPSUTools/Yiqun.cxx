@@ -695,9 +695,13 @@ Float_t Yiqun::Fit2PhotonClust(HitCluster* p_clust)
   // need to set "nPhoton" before calling "GlobalFit(..)"
   //
   p_clust->nPhoton = 2;
-  if(pwe->DoGlobal) chiSq = GlobalFit(2, 1, p_clust);
-  
-  
+  if(pwe->DoGlobal) {
+    chiSq = GlobalFit(2, 1, p_clust);
+  }  // if
+  else {
+    std::cout << "derp shouldn't be here 1" << std::endl;
+  }
+    
   if(PRINT_FIT_2_RESULT){
     printf("2nd fit:\n");
     printf("chiSq = %f\n", chiSq);
@@ -841,7 +845,10 @@ Int_t Yiqun::FitEvent(Int_t nTows, Int_t &nClusts, Int_t &nRealClusts, Double_t 
 		ndf = clust[icc].tow->GetEntriesFast();
 
 		// for catag-1 cluster, do 1-photon fit
-		if(pwe->NoCatag)clustCatag=pwe->ForceCatag;//from SH	
+		if(pwe->NoCatag){
+		  std::cout << "derp we shouldn't be here!!!" << std::endl;
+  		clustCatag=pwe->ForceCatag;//from SH	
+  	}  // if
 		//
 		if( clustCatag == 1 ) {
 			clust[icc].nPhoton   = 1 ;
@@ -1166,6 +1173,7 @@ Int_t Yiqun::FitEvent(Int_t nTows, Int_t &nClusts, Int_t &nRealClusts, Double_t 
 	  }
 	else 
 	  {
+    std::cout << "not doing anything because nRealClusts = " << nRealClusts << std::endl;
 	    // temp revove comment
 	    //std::cout << "Something wrong! Should NOT have " << nRealClusts << " real clusters! Error!" << "\n";
 	    chiSqG = -1 ;
@@ -1332,7 +1340,6 @@ void Yiqun::Y(TMatrix* pEm)
   ChiSqG=0.;
   JunkyEvent=false;
   fitter=0;
-  if(pwe->BlockFit)return;
 
   fitter = new FitTower(pEm,p_geom,EW,NSTB);
   pwe->showerWidthX=1.0;
@@ -1342,6 +1349,22 @@ void Yiqun::Y(TMatrix* pEm)
   if(p_geom->FMSGeom)fitter->SetXYTWidthCM(p_geom->FpdTowWid(EW,NSTB));
   
  NPh = FitEvent(NTower, NClusts, NRealClusts, ChiSqG, JunkyEvent);
+
+  std::cout << "WasExternal a/b parameters:" << std::endl;
+  std::cout << "\ta1 " << pwe->a1 << std::endl;
+  std::cout << "\ta2 " << pwe->a2 << std::endl;
+  std::cout << "\ta3 " << pwe->a3 << std::endl;
+  std::cout << "\tb1 " << pwe->b1 << std::endl;
+  std::cout << "\tb2 " << pwe->b2 << std::endl;
+  std::cout << "\tb3 " << pwe->b3 << std::endl;
+  std::cout << "UseThis_ab " << pwe->UseThis_ab << std::endl;
+  std::cout << "UseThis_Err " << pwe->UseThis_Err << std::endl;
+  std::cout << "NoCatag " << pwe->NoCatag << std::endl;
+  std::cout << "DoGlobal " << pwe->DoGlobal << std::endl;
+  std::cout << "ForceCatag " << pwe->ForceCatag << std::endl;
+  std::cout << "widLG " << pwe->widLG[0] << " " << pwe->widLG[1] << std::endl;
+  std::cout << "Force2Mass " << pwe->Force2Mass << std::endl;
+  std::cout << "Power1, Power2 " << pwe->Power1 << ", " << pwe->Power2 << std::endl;
 }
 
 void Yiqun::PrintClu()

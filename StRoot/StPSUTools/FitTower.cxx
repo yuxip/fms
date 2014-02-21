@@ -83,6 +83,7 @@ Bool_t FitTower::SetNoCatag(Bool_t value,Int_t cat)
 }
 Bool_t FitTower::Setwe_ErrFactors(float errQ,float errFactor,float p1,float p2,float energy_study)
 {
+  std::cout << "FitTower::Setwe_ErrFactors()" << std::endl;
   we.errQ=errQ;
   we.errFactor=errFactor;
   we.UseThis_Err=true;
@@ -90,11 +91,6 @@ Bool_t FitTower::Setwe_ErrFactors(float errQ,float errFactor,float p1,float p2,f
   we.Power2=p2;
   we.Energy_study=energy_study;
 };
-
-void FitTower::SetBlockFit(Bool_t bl)
-{
-  we.BlockFit=bl;
-}
 
 Bool_t FitTower::Setwe_ab(Float_t a1,Float_t a2,Float_t a3,Float_t b1,Float_t b2,Float_t b3)
 {

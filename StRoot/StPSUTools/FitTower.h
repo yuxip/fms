@@ -34,7 +34,6 @@ class FitTower : public TObject
   static Bool_t SetNoCatag(Bool_t value,Int_t cat=1);
   static Bool_t SetDoGlobal(Bool_t sdg=true);
   static void SetFreeGlobals(Double_t* fglob,int dim=10);
-  static void SetBlockFit(Bool_t blockf=true);
   Double_t step[3*MAX_NUMB_PHOTONS+1];
   TowerUtil* pTowerUtil;
   static Double_t GGams(Double_t *x, Double_t *par);
