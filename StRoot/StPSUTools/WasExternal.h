@@ -36,7 +36,6 @@ class WasExternal: public TObject
       dev=0;
       dchi2=0;
       Force2Mass=-1.;
-      SubClu2=false;
       UseEDepCorrection=true;
       /*
       EDepCorrection=new TF1("EDepCorrection","(1-.11*exp(-(x)/[0])-.23*exp(-(x)/[1]))",1,250);
@@ -69,11 +68,6 @@ class WasExternal: public TObject
    could just be needed for Yiqun.
    */
   Bool_t  UseEDepCorrection;
-  /**
-   \note
-   It's never used, so it can be removed.
-   */
-  Bool_t SubClu2;
   /**
    \note
    Is only used in FitTower, despite being allocated and deleted in Yiqun. It
