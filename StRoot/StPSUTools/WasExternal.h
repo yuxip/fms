@@ -285,12 +285,6 @@ class WasExternal: public TObject
    called. Might as well scrap them.
    */
   Double_t FreeGlobals[10];//there to be used;
-  /**
-   \note
-   Isn't used; there is a setter method in FitTower, but it's never called,
-   so get rid of it.
-   */
-  Float_t Energy_study;
  private:
  ClassDef(WasExternal,3);
 

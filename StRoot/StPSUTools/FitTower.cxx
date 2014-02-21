@@ -89,7 +89,6 @@ Bool_t FitTower::Setwe_ErrFactors(float errQ,float errFactor,float p1,float p2,f
   we.UseThis_Err=true;
   we.Power1=p1;
   we.Power2=p2;
-  we.Energy_study=energy_study;
 };
 
 Bool_t FitTower::Setwe_ab(Float_t a1,Float_t a2,Float_t a3,Float_t b1,Float_t b2,Float_t b3)
