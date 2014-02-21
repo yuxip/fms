@@ -845,11 +845,6 @@ Int_t Yiqun::FitEvent(Int_t nTows, Int_t &nClusts, Int_t &nRealClusts, Double_t 
 		ndf = clust[icc].tow->GetEntriesFast();
 
 		// for catag-1 cluster, do 1-photon fit
-		if(pwe->NoCatag){
-		  std::cout << "derp we shouldn't be here!!!" << std::endl;
-  		clustCatag=pwe->ForceCatag;//from SH	
-  	}  // if
-		//
 		if( clustCatag == 1 ) {
 			clust[icc].nPhoton   = 1 ;
 			chiSq1 = FitOnePhoton(&clust[icc]);
@@ -1359,9 +1354,7 @@ void Yiqun::Y(TMatrix* pEm)
   std::cout << "\tb3 " << pwe->b3 << std::endl;
   std::cout << "UseThis_ab " << pwe->UseThis_ab << std::endl;
   std::cout << "UseThis_Err " << pwe->UseThis_Err << std::endl;
-  std::cout << "NoCatag " << pwe->NoCatag << std::endl;
   std::cout << "DoGlobal " << pwe->DoGlobal << std::endl;
-  std::cout << "ForceCatag " << pwe->ForceCatag << std::endl;
   std::cout << "widLG " << pwe->widLG[0] << " " << pwe->widLG[1] << std::endl;
   std::cout << "Force2Mass " << pwe->Force2Mass << std::endl;
   std::cout << "Power1, Power2 " << pwe->Power1 << ", " << pwe->Power2 << std::endl;

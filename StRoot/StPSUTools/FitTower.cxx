@@ -75,12 +75,6 @@ Bool_t FitTower::SetDoGlobal(Bool_t sdg)
   we.DoGlobal=sdg;
   return we.DoGlobal;
 };
-Bool_t FitTower::SetNoCatag(Bool_t value,Int_t cat)
-{
-  we.NoCatag=value;
-  we.ForceCatag=cat;
-  return value;
-}
 Bool_t FitTower::Setwe_ErrFactors(float errQ,float errFactor,float p1,float p2,float energy_study)
 {
   std::cout << "FitTower::Setwe_ErrFactors()" << std::endl;

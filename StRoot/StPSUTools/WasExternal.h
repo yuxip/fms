@@ -31,9 +31,7 @@ class WasExternal: public TObject
       fcnSS=0;
       UseThis_ab=false;
       UseThis_Err=false;
-      NoCatag=false;
       DoGlobal=true;
-      ForceCatag=0;
       widLG[0]=3.81;
       widLG[1]=3.81;
       dev=0;
@@ -160,22 +158,6 @@ class WasExternal: public TObject
    is always executed, so it seems pointless.
    */
   Bool_t DoGlobal;
-  /**
-   \note
-   Is initialised to false and never changed. The only functions that use it
-   are FitTower::SetNoCatag(), which sets it (and is never called), and
-   Yiqun::FitEvent(), which has an if(NoCatag) clause, which is never executed,
-   so it makes sense to get rid of it.
-   */
-  Bool_t NoCatag;
-  //  Bool_t NoCatag2;
-  /**
-   \note
-   Initialised to 0, never changes because FitTower::SetNoCatag() isn't called
-   (that is the only place it is set), and is only used in case if(NoCatag)
-   evaluates true, which it never does. Doesn't seem to serve a function.
-   */
-  Int_t ForceCatag;
   /**
    \note
    Always uses a default value because FitTower::Setwe_ErrFactors() is never
