@@ -84,14 +84,6 @@ class WasExternal: public TObject
   TF2* fcnSS;
   /**
    \note
-   Is initialised to 2. There is code in FitTower that depends on choiceChi2==2
-   or choiceChi2==1, but only the "2" version will ever execute. It is also
-   referenced in Yiqun, but never used for anything, so it can be made a member
-   of FitTower, if it's needed at all (which I don't think it is).
-   */
-  UInt_t choiceChi2;
-  /**
-   \note
    "Width lead-glass" i.e. cell (x, y) widths. It is set via Geom, from the
    database, which is good. There are functions to set it via FitTower, but I
    don't think these are needed, as it's only ever needed internally in Yiqun.

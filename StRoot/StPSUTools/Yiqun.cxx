@@ -1218,7 +1218,6 @@ void Yiqun::Y(TMatrix* pEm)
   pTowerUtil=new TowerUtil();
   pTowerUtil->SetMomentEcutoff(.5);  
   tow_Arr=0;
-  choiceChi2=2;  
   pwe=&(FitTower::we);
   widLG[0]=widLG[1]=(p_geom->FpdTowWid(EW,NSTB))[0];
   if(p_geom->FMSGeom)widLG[1]=(p_geom->FpdTowWid(EW,NSTB))[1];
@@ -1231,7 +1230,6 @@ void Yiqun::Y(TMatrix* pEm)
   }
   */
 
-  pwe->choiceChi2= choiceChi2;
   NTower=pEm->GetNoElements();
 
   if(NTower>578)
@@ -1448,7 +1446,6 @@ TLorentzVector  Yiqun::mom(PhotonHitFPD* phot)
 };
 void Yiqun::Print()
 {
-  std::cout << "choiceChi2 = " << choiceChi2 << "\n";
   std::cout << "posDif_1PC = " << posDif_1PC << "\n";
   std::cout << "eneRat_1PC = " << eneRat_1PC << "\n";
   

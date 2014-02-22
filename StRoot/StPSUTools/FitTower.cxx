@@ -158,16 +158,13 @@ void FitTower::Fcn1(Int_t& npara, Double_t* grad,  Double_t& fval, Double_t* par
   //
   Double_t sumCl = 0;
   
-  if( we.choiceChi2 == 2 ) 
-    {
-      TIter next(we.tow2Fit);
-      while(oneTow=(TowerFPD*) next())sumCl+=oneTow->energy;
-    }
+  TIter next(we.tow2Fit);
+  while(oneTow=(TowerFPD*) next())sumCl+=oneTow->energy;
   
   // loop over all towers that are involved in the fit
   //
-  TIter next(we.tow2Fit);
-  while(oneTow=(TowerFPD*) next())
+  TIter nextTower(we.tow2Fit);
+  while(oneTow=(TowerFPD*) nextTower())
     {
       
     // center of tower in unit of "cm"
@@ -207,7 +204,6 @@ void FitTower::Fcn1(Int_t& npara, Double_t* grad,  Double_t& fval, Double_t* par
     //		printf("fitted eSS= %f \n",eSS);
     Double_t dchi2;
 
-    if( we.choiceChi2 == 2 ) {
       //
       // Larisa'e Chi2 function
       //
@@ -227,31 +223,6 @@ void FitTower::Fcn1(Int_t& npara, Double_t* grad,  Double_t& fval, Double_t* par
       dchi2 = dev * dev / err ;
       float dsign=1.;
       if(dev<0)dsign=-1.;
-    }
-    else if( we.choiceChi2 == 1 ) {
-      //
-      // Steve's Chi2 function
-      //
-      // 2003-09-11
-      //
-      // translate into unit of GeV
-      //
-      err = we.errFactor * sqrt( eMeas ) ;
-      if( err < 0.25 )
-	err = sqrt( err * err + 0.25 ) ;
-      
-      // 2003-09-11
-      // do not understand yet!
-      //
-      if( eSS < 1.25 )
-	err = sqrt( eSS + eMeas + 3 / 4 );
-      
-      dchi2 = dev * dev / err / err ;
-    }
-    else {
-      std::cout << "Your \"choiceChi2\" = " << we.choiceChi2 << " is invalid! Quit!!!" << "\n";
-      exit(-1);
-    }
     
     fval += dchi2 ;
     

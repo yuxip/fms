@@ -64,7 +64,6 @@ class Yiqun: public TObject
   Int_t NClusts;
   Int_t NRealClusts;
   Bool_t JunkyEvent;
-  UInt_t choiceChi2;
   Float_t posDif_1PC;    // in unit of Lead-glass
   Float_t eneRat_1PC;
 
