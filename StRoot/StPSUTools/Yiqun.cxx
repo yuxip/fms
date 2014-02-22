@@ -1335,7 +1335,6 @@ void Yiqun::Y(TMatrix* pEm)
   std::cout << "\tb1 " << pwe->b1 << std::endl;
   std::cout << "\tb2 " << pwe->b2 << std::endl;
   std::cout << "\tb3 " << pwe->b3 << std::endl;
-  std::cout << "UseThis_ab " << pwe->UseThis_ab << std::endl;
   std::cout << "UseThis_Err " << pwe->UseThis_Err << std::endl;
   std::cout << "widLG " << pwe->widLG[0] << " " << pwe->widLG[1] << std::endl;
   std::cout << "Force2Mass " << pwe->Force2Mass << std::endl;

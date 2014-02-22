@@ -24,12 +24,17 @@ class WasExternal: public TObject
  public:
   WasExternal()
     {
+      a1 = 1.070804;
+      a2 = 0.167773;
+      a3 = -0.238578;
+      b1 = 0.535845;
+      b2 = 0.850233;
+      b3 = 2.382637;
       Double_t step0[3*MAX_NUMB_PHOTONS+1]= {0, 0.1,0.1,0.2, 0.1,0.1,0.2, 0.1,
 					     0.1,0.2, 0.1,0.1,0.2, 0.1,0.1,0.2, 
 					     0.1,0.1,0.2, 0.1,0.1,0.2};
       for(int j=0;j<3*MAX_NUMB_PHOTONS+1;j++)step[j]=step0[j];
       fcnSS=0;
-      UseThis_ab=false;
       UseThis_Err=false;
       widLG[0]=3.81;
       widLG[1]=3.81;
@@ -146,13 +151,6 @@ class WasExternal: public TObject
    with an accessor method so Yiqun can get hold of it.
    */
   Double_t step[3*MAX_NUMB_PHOTONS+1];
-  /**
-   \note
-   This flag is only used by FitTower, and so can be part of it. It is always
-   true in the current form of the code (because it is set so in StFmsHitMaker),
-   so it's not really needed.
-   */
-  Bool_t UseThis_ab;
   /**
    \note
    Is only referenced by a function that is never used:

@@ -34,10 +34,6 @@ StFmsHitMaker::StFmsHitMaker(const char* name) : StMaker(name){
 	LOG_INFO << "StFmsHitMaker initializing...."<<endm;
 	LOG_DEBUG << "StFmsHitMaker::constructor." << endm;
 
-	//asy. shower shape not available in StPSUTools
-	Float_t a1[3]={1.070804, 0.167773, -0.238578};//top frac 85
-	Float_t b1[3]={0.535845, 0.850233, 2.382637};
-	FitTower::Setwe_ab(a1[0],a1[1],a1[2],b1[0],b1[1],b1[2]);
 	for(Int_t i = 0; i < 4; i++){
 		mAdc[i] = mEnergy[i] = 0;
 	}

@@ -9,12 +9,6 @@ FitTower::FitTower(TMatrix* pEm,Geom* pgeom,Int_t iew,Int_t nstb)
   fCol = pEm->GetNcols() ;
   fRow = pEm->GetNrows() ;
   fTWidthCM=*(pgeom->FpdTowWid(iew,nstb));
-  if(!we.UseThis_ab)
-    {
-      
-      Setwe_ab(.8,.3,-.1,.8,.2,7.6);
-    };
-
   Int_t numbPara = 10;
   Double_t para[numbPara];
   
@@ -69,18 +63,6 @@ Bool_t FitTower::Setwe_ErrFactors(float errQ,float errFactor,float p1,float p2,f
   we.UseThis_Err=true;
   we.Power1=p1;
   we.Power2=p2;
-};
-
-Bool_t FitTower::Setwe_ab(Float_t a1,Float_t a2,Float_t a3,Float_t b1,Float_t b2,Float_t b3)
-{
-  we.a1=a1;
-  we.a2=a2;
-  we.a3=a3;
-  we.b1=b1;
-  we.b2=b2;
-  we.b3=b3;
-  we.UseThis_ab=true;
-  return true;
 };
 
 FitTower::~FitTower()
