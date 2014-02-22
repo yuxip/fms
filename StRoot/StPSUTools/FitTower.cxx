@@ -11,14 +11,13 @@ FitTower::FitTower(TMatrix* pEm,Geom* pgeom,Int_t iew,Int_t nstb)
   fTWidthCM=*(pgeom->FpdTowWid(iew,nstb));
   Int_t numbPara = 10;
   Double_t para[numbPara];
-  
   para[0] = fTWidthCM ;
-  para[1] =  we.a1 ;
-  para[2] =  we.a2 ;
-  para[3] =  we.a3 ;
-  para[4] =  we.b1 ;
-  para[5] =  we.b2 ;
-  para[6] =  we.b3 ;
+  para[1] =  1.070804;
+  para[2] =  0.167773;
+  para[3] =  -0.238578;
+  para[4] =  0.535845;
+  para[5] =  0.850233;
+  para[6] =  2.382637;
   para[7] =  0.0 ;
   para[8] =  0.0 ;
   para[9] =  1.0 ;

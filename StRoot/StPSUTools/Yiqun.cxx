@@ -1223,13 +1223,6 @@ void Yiqun::Y(TMatrix* pEm)
   
  NPh = FitEvent(NTower, NClusts, NRealClusts, ChiSqG, JunkyEvent);
 
-  std::cout << "WasExternal a/b parameters:" << std::endl;
-  std::cout << "\ta1 " << pwe->a1 << std::endl;
-  std::cout << "\ta2 " << pwe->a2 << std::endl;
-  std::cout << "\ta3 " << pwe->a3 << std::endl;
-  std::cout << "\tb1 " << pwe->b1 << std::endl;
-  std::cout << "\tb2 " << pwe->b2 << std::endl;
-  std::cout << "\tb3 " << pwe->b3 << std::endl;
   std::cout << "widLG " << pwe->widLG[0] << " " << pwe->widLG[1] << std::endl;
 }
 
