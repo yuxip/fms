@@ -38,7 +38,6 @@ class WasExternal: public TObject
       UseThis_Err=false;
       widLG[0]=3.81;
       widLG[1]=3.81;
-      Force2Mass=-1.;
       /*
       EDepCorrection=new TF1("EDepCorrection","(1-.11*exp(-(x)/[0])-.23*exp(-(x)/[1]))",1,250);
       EDepCorrection->SetParameter(0,5);
@@ -140,14 +139,6 @@ class WasExternal: public TObject
    really needed.
    */
   Bool_t UseThis_Err;
-  /**
-   \note
-   Not clear what it is for. It can be set via FitTower::SetForceMass(), but
-   that function is never called so it is never changed from the default value
-   of -1. It is only used in FitTower::Fcn2(), so it can be made a member of
-   FitTower, if indeed it is needed at all.
-   */
-  Float_t Force2Mass;
   /**
    \note
    Only used in FitTower, and always a constant value, set in StFmsHitMaker via

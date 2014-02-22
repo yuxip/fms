@@ -64,7 +64,6 @@ class FitTower : public TObject
 	    const Double_t *low, const Double_t *up);
   Int_t Fit2Pin1Clust(const Double_t *para, const Double_t *step, 
 		      const Double_t *low, const Double_t *up);
-  static Bool_t SetForceMass(Float_t fmass=-1.);
  private:	
   
   ClassDef(FitTower,4);

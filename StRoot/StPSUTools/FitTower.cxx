@@ -44,12 +44,6 @@ FitTower::FitTower(TMatrix* pEm,Geom* pgeom,Int_t iew,Int_t nstb)
 
 };
 
-Bool_t  FitTower::SetForceMass(Float_t fmass)
-{
-  we.Force2Mass=fmass;
-  return true;
-}  
-
 Bool_t FitTower::Setwe_ErrFactors(float errQ,float errFactor,float p1,float p2,float energy_study)
 {
   std::cout << "FitTower::Setwe_ErrFactors()" << std::endl;
@@ -419,7 +413,6 @@ void FitTower::Fcn2(Int_t & nparam, Double_t *grad, Double_t &fval, Double_t *pa
   Double_t oldParam[7];
   //// playing
   
-  float dd0=we.Force2Mass*2./param[6]/(sqrt(1-param[5]*param[5]))*730.;
   float dd=param[3];
   ///
   oldParam[0] = param[0] ;
@@ -433,14 +426,4 @@ void FitTower::Fcn2(Int_t & nparam, Double_t *grad, Double_t &fval, Double_t *pa
   // then just call "Fcn1(...)"
   //
   Fcn1(nparam, grad, fval, oldParam, iflag);
-  Double_t dfval=pow(fabs(dd-dd0)/.002,2)-1;
-  if(we.Force2Mass>0&& (dfval>0))
-    {
-      fval=fval+dfval;
-      float e0=param[6];
-      float zz=param[5];
-      float mm=e0*sqrt(1-zz*zz)*dd/730./2.;
-      //      printf("fcn with E0=%f zgg=%f m=%f  dd=%f dd0=%f val=%f \n",e0,zz,mm,dd,dd0,fval);
-      //      printf("x0=%f y0=%f x1=%f y1=%f \n",oldParam[1],oldParam[2],oldParam[4],oldParam[5]);
-    };
 };
