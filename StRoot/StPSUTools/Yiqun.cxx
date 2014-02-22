@@ -1,4 +1,5 @@
 #include "Yiqun.h"
+#include <TRandom.h>  // For ROOT global random generator, gRandom
 using namespace std;
 using namespace PSUGlobals;
 
@@ -380,14 +381,6 @@ Float_t Yiqun::GlobalFit(const Int_t nPh, const Int_t nCl, HitCluster *p_clust)
 Float_t Yiqun::Fit2PhotonClust(HitCluster* p_clust)
 {
   const Double_t step2[7] = {0, 0.02, 0.02, 0.01, 0.01, 0.01, 0.1} ;
-  
-  // random number (for Z_gg)
-  //
-  if( !(pwe->myRand) ) {
-    std::cout << "Initialize random generator (for Z_gg and d_gg)!" << "\n";
-    (pwe->myRand) = new TRandom();
-  }
-  
   // sigma of cluster
   //
   // 	Double_t sigma;
@@ -468,7 +461,7 @@ Float_t Yiqun::Fit2PhotonClust(HitCluster* p_clust)
   
   // randomize the starting point of Z_gg (from -0.1 to 0.1)
   //
-  start[5]  = 0.1 * (2 * (pwe->myRand)->Rndm() - 1) ;
+  start[5]  = 0.1 * (2 * gRandom->Rndm() - 1) ;
   
     lowLim[1] = start[1] - posDif_2PC * widLG[0] ;
     lowLim[2] = start[2] - posDif_2PC * widLG[1] ;
@@ -1138,15 +1131,6 @@ void Yiqun::Y(TMatrix* pEm)
   pwe=&(FitTower::we);
   widLG[0]=widLG[1]=(p_geom->FpdTowWid(EW,NSTB))[0];
   if(p_geom->FMSGeom)widLG[1]=(p_geom->FpdTowWid(EW,NSTB))[1];
-  //pwe->myRand=NULL;
-
-  /*
-  if( !(pwe->myRand) ) {
-    std::cout << "Initialize random generator (for Z_gg and d_gg)!" << "\n";
-    (pwe->myRand) = new TRandom();
-  }
-  */
-
   NTower=pEm->GetNoElements();
 
   if(NTower>578)

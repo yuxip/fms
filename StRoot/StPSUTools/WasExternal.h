@@ -86,16 +86,6 @@ class WasExternal: public TObject
   Float_t widLG[2];//glass width X,Y
   /**
    \note
-   Is only used in Yiqun, so it should located be there. Also, it is a TRandom
-   object, which the ROOT developers themselves say is a bad generator. It may
-   be that STAR specifies its own random generator, in which case we should use
-   that, or else we just use the ROOT global gRandom, which is a much superior
-   TRandom3; there doesn't seem a need to define a separate random generator
-   for Yiqun.
-   */
-  TRandom *myRand;
-  /**
-   \note
    Is some kind of array used in the fitting procedure, used by both Yiqun and
    FitTower (FitTower copies the WasExternal array but doesn't modify it; Yiqun
    uses the WasExternal version directly; so both appear to use the same
