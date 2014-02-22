@@ -41,7 +41,6 @@ Float_t Yiqun::FitOnePhoton(HitCluster* p_clust)
 	start[2] = widLG[1] * p_clust->y0;
 	start[3] = p_clust->energy;
 
-	if( pwe->useLimitForPara == 1 ) {
 		//
 		// use limit
 		//
@@ -52,22 +51,6 @@ Float_t Yiqun::FitOnePhoton(HitCluster* p_clust)
 		upLim[1] = start[1] + posDif_1PC * widLG[0] ;
 		upLim[2] = start[2] + posDif_1PC * widLG[1] ;
 		upLim[3] = start[3] * (1 + eneRat_1PC) ;
-	}
-	else if( pwe->useLimitForPara == 2 ) {
-		//
-		// just limit the energy
-		//
-		lowLim[1] = upLim[1] = lowLim[2] = upLim[2] = 0 ;
-		lowLim[3] = 0;
-		upLim[3]  = 100;
-	}
-	else {
-		// no limit when "useLimitForPara==0"
-		//
-		for(Int_t jkp=1; jkp<=3; jkp++) {
-			lowLim[jkp] = upLim[jkp] = 0 ;
-		}
-	}
 
 	// call fitter->Fit(...), return status
 	//
@@ -153,7 +136,6 @@ Float_t Yiqun::FitTwoPhoton(HitCluster* p_clust)
 	start[5]  = widLG[1] * p_clust->photon[0].yPos;
 	start[6]  = p_clust->photon[0].energy;
 
-	if( pwe->useLimitForPara == 1 ) {
 		lowLim[1] = start[1] - 0.7 * widLG[0] ;
 		lowLim[2] = start[2] - 0.7 * widLG[1] ;
 		lowLim[3] = start[3] * 0.6 ;
@@ -169,22 +151,6 @@ Float_t Yiqun::FitTwoPhoton(HitCluster* p_clust)
 		upLim[4]  = start[4] + 0.6 * widLG[0];
 		upLim[5]  = start[5] + 0.6 * widLG[1];
 		upLim[6]  = start[6] * 1.7 ;
-	}
-	else if( pwe->useLimitForPara == 2 ) {
-		//
-		// just limit the energy
-		//
-		lowLim[1] = upLim[1] = lowLim[2] = upLim[2] = lowLim[4] = upLim[4] = lowLim[5] = upLim[5] = 0 ;
-		lowLim[3] = lowLim[6] = 0;
-		upLim[3]  = upLim[6]   = 100;
-	}
-	else {
-		// no limit when "useLimitForPara==0"
-		//
-		for(Int_t jkp=1; jkp<=6; jkp++) {
-			lowLim[jkp] = upLim[jkp] = 0 ;
-		}
-	}
 
 	// call fitter->Fit(...), return status
 	//
@@ -331,33 +297,6 @@ Float_t Yiqun::GlobalFit(const Int_t nPh, const Int_t nCl, HitCluster *p_clust)
 
 	lowLim[0] = 0.5;
 	lowLim[0] = MAX_NUMB_PHOTONS + 0.5 ;
-
-
-// 	std::cout << "useLimitForPara = " << pwe->useLimitForPara << "\n";
-
-
-	// 2003-09-23
-	// no limit when "useLimitForPara==0" !!!
-	//
-	if( pwe->useLimitForPara == 0 ) {
-		for(Int_t jkp=1; jkp<=3*nPh; jkp++) {
-			lowLim[jkp] = upLim[jkp] = 0 ;
-		}
-	}
-	else if( pwe->useLimitForPara == 2 ) {
-		//
-		// just limit the energy
-		//
-		for(Int_t jkp=1; jkp<=3*nPh; jkp++) {
-			lowLim[jkp] = upLim[jkp] = 0 ;
-			if( jkp%3 == 0 ){
-				lowLim[jkp] = 0;
-				upLim[jkp]  = 100;
-			}
-		}
-	}
-
-
 	// fit status, and flag
 	//
 	Int_t status, iflag=1;
@@ -531,7 +470,6 @@ Float_t Yiqun::Fit2PhotonClust(HitCluster* p_clust)
   //
   start[5]  = 0.1 * (2 * (pwe->myRand)->Rndm() - 1) ;
   
-  if( pwe->useLimitForPara == 1 ) {
     lowLim[1] = start[1] - posDif_2PC * widLG[0] ;
     lowLim[2] = start[2] - posDif_2PC * widLG[1] ;
     lowLim[6] = start[6] * (1 - eneRat_2PC) ;
@@ -570,27 +508,6 @@ Float_t Yiqun::Fit2PhotonClust(HitCluster* p_clust)
     
     upLim[4]  = start[4] + maxTheta ;
     upLim[5]  =   1.0 ;
-  }
-  else if( pwe->useLimitForPara == 2 ) {
-    //
-    // limit the energy (and Z_gg), d_gg (in "cm")
-    //
-    
-    lowLim[1] = upLim[1] = lowLim[2] = upLim[2] =  lowLim[4] = upLim[4] = 0 ;
-    lowLim[3] = 0.4 * widLG[0] ;
-    upLim[3]  = 7.0 * widLG[0] ;
-    lowLim[5] = -1.0;
-    upLim[5]  =  1.0;
-    lowLim[6] = 0;
-    upLim[6]  = 100;
-  }
-  else {
-    // no limit when "useLimitForPara==0"
-    //
-    for(Int_t jkp=1; jkp<=6; jkp++) {
-      lowLim[jkp] = upLim[jkp] = 0 ;
-    }
-  }
   
   
   // 	// 2003-10-13
@@ -1314,7 +1231,6 @@ void Yiqun::Y(TMatrix* pEm)
       //      maxHitsInRealCluster=4;
       maxHitsInRealCluster=25;
     };
-  pwe->useLimitForPara=1;
   NClusts=0;
   NRealClusts=0;
   ChiSqG=0.;
@@ -1464,7 +1380,6 @@ void Yiqun::Print()
   std::cout << "maxRatioSpill = " << maxRatioSpill << "\n";
   std::cout << "MaxChi2Catag2 = " << MaxChi2Catag2 << "\n";
   std::cout << "minRealClusterEne = " << minRealClusterEne << "\n";
-  std::cout << "useLimitForPara = " << pwe->useLimitForPara << "\n";
 };
 
 Yiqun::~Yiqun()

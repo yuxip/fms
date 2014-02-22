@@ -88,15 +88,6 @@ class WasExternal: public TObject
   Float_t widLG[2];//glass width X,Y
   /**
    \note
-   Only used in Yiqun, initialised to 1. But, even though there is
-   code in Yiqun::FitOnePhoton(), Yiqun::FitTwoPhoton(), Yiqun::GlobalFit()
-   and Yiqun::Fit2PhotonClust() that have if(useLimitForPara ==<different
-   values>), it is never changed from 1, so there doesn't seem much use for
-   this flag at all.
-   */
-  UInt_t useLimitForPara;
-  /**
-   \note
    Always uses a default value because FitTower::Setwe_ErrFactors() is never
    called, so UseThis_Err always evaluates false. However it *is* used, so we
    need to keep it (at least the value, if not the actual variable). It is
