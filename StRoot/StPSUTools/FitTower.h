@@ -28,7 +28,6 @@ class FitTower : public TObject
   TF2* fcnSS;
   TObjArray* tow2Fit;
   static  WasExternal we;
-  static Bool_t Setwe_EDepCor(Bool_t useEdepCor=true);
   static Bool_t Setwe_ErrFactors(float errQ,float errFactor,Float_t p1= 1.95,Float_t p2=2.72,float energy_study=100.);
   Double_t step[3*MAX_NUMB_PHOTONS+1];
   TowerUtil* pTowerUtil;

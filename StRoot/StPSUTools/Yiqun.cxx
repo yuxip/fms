@@ -1415,8 +1415,6 @@ TLorentzVector  Yiqun::mom(Int_t ph_num)
   TVector3 uvec(0.,0.,0.);
   if(dist!=0)uvec=(1./dist)*vvec;
   Float_t phEnergy=photons[ph_num].energy;
-  if(pwe->UseEDepCorrection)
-    {
       if(NSTB<3)
 	{
 	  phEnergy=phEnergy*pwe->EDepCorrection->Eval(20)/pwe->EDepCorrection->Eval(phEnergy);
@@ -1425,7 +1423,6 @@ TLorentzVector  Yiqun::mom(Int_t ph_num)
 	{
 	  phEnergy=phEnergy*pwe->EDepCorrection->Eval(30.)/pwe->EDepCorrection->Eval(phEnergy);
 	};
-    };
   TVector3  mom3;
   mom3=phEnergy*uvec;
   TLorentzVector mom4(mom3,phEnergy);

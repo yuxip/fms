@@ -44,11 +44,6 @@ FitTower::FitTower(TMatrix* pEm,Geom* pgeom,Int_t iew,Int_t nstb)
 
 };
 
-Bool_t FitTower::Setwe_EDepCor(Bool_t useEdepCor)
-{
-  we.UseEDepCorrection=useEdepCor;
-  return true;
-};
 Bool_t  FitTower::SetForceMass(Float_t fmass)
 {
   we.Force2Mass=fmass;

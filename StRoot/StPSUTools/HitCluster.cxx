@@ -41,8 +41,6 @@ void HitCluster::EDepUpdate(WasExternal* pwe)
   Float_t Eratio=1;
   if(!IsEUpdated)
     {
-        if(pwe->UseEDepCorrection)
-	  {
 	    if(NSTB<3)
 	      {
 		Eratio=pwe->EDepCorrection->Eval(20)/pwe->EDepCorrection->Eval(energy);
@@ -51,7 +49,6 @@ void HitCluster::EDepUpdate(WasExternal* pwe)
 	      {
 		Eratio=pwe->EDepCorrection->Eval(30.)/pwe->EDepCorrection->Eval(energy);
 	      };
-	  };
 	energy=energy*Eratio;
 	TIter next(tow);
 	TowerFPD* hit;

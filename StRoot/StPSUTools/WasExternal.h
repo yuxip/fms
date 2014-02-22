@@ -39,7 +39,6 @@ class WasExternal: public TObject
       widLG[0]=3.81;
       widLG[1]=3.81;
       Force2Mass=-1.;
-      UseEDepCorrection=true;
       /*
       EDepCorrection=new TF1("EDepCorrection","(1-.11*exp(-(x)/[0])-.23*exp(-(x)/[1]))",1,250);
       EDepCorrection->SetParameter(0,5);
@@ -55,22 +54,13 @@ class WasExternal: public TObject
   //temporary SH
   /**
    \note
-   The function used when UseEDepCorrection is true.
-   We could replace the flag with only allocating the function if it is
-   required, and use the pointer as the flag. See also notes for
-   UseEDepCorrection.
-   */
-  TF1* EDepCorrection;
-  /**
-   \note
-   Defaults to true and is never changed, so maybe we scrap code that relies on
-   it evaluating as false. It is used in both HitCluster and Yiqun, and is set
-   via FitTower::Setwe_EDepCor(), but that function is never called. If it is
-   retained we have to decide how to pass it to both HitCluster and Yiqun.
-   Also, I'm not actually sure if the HitCluster usage is ever called… so
+   Response function for nonlinear energy correction, based on cerenkov studies.
+   It should be part of another class, but is used in both HitCluster and Yiqun.
+   We therefore have to decide how to pass it to both HitCluster and Yiqun.
+   Note, I'm not actually sure if the HitCluster usage is ever called… so
    could just be needed for Yiqun.
    */
-  Bool_t  UseEDepCorrection;
+  TF1* EDepCorrection;
   /**
    \note
    An array of TowerFPD objects to fit in the FitTower fitting functions. It
