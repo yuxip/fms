@@ -28,7 +28,6 @@ class WasExternal: public TObject
 					     0.1,0.2, 0.1,0.1,0.2, 0.1,0.1,0.2, 
 					     0.1,0.1,0.2, 0.1,0.1,0.2};
       for(int j=0;j<3*MAX_NUMB_PHOTONS+1;j++)step[j]=step0[j];
-      fcnSS=0;
       widLG[0]=3.81;
       widLG[1]=3.81;
       /*
@@ -61,14 +60,6 @@ class WasExternal: public TObject
    anywhere else.
    */
   TObjArray* tow2Fit;
-  /**
-   \note
-   This function is allocated in FitTower, never deleted (maybe ROOT does that),
-   then copied by FitTower (not sure what the need is for that). It is also used
-   once by Yiqun, but as Yiqun has a member FitTower we could just make it a
-   member of FitTower.
-   */
-  TF2* fcnSS;
   /**
    \note
    "Width lead-glass" i.e. cell (x, y) widths. It is set via Geom, from the

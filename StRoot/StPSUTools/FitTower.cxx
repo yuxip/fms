@@ -2,6 +2,16 @@
 using namespace PSUGlobals;
 ClassImp(FitTower)
 
+namespace {
+Int_t numbPara = 10;
+TF2 showerShapeFitFunction("showerShapeFitFunction", &FitTower::GGams,
+                           -25.0, 25.0, -25.0, 25.0, numbPara);
+}  // unnamed namespace
+
+TF2* FitTower::GetFunctShowShape() {
+  return &showerShapeFitFunction;
+}
+
 FitTower::FitTower(TMatrix* pEm,Geom* pgeom,Int_t iew,Int_t nstb)
 {
   SetStep();
@@ -9,7 +19,6 @@ FitTower::FitTower(TMatrix* pEm,Geom* pgeom,Int_t iew,Int_t nstb)
   fCol = pEm->GetNcols() ;
   fRow = pEm->GetNrows() ;
   fTWidthCM=*(pgeom->FpdTowWid(iew,nstb));
-  Int_t numbPara = 10;
   Double_t para[numbPara];
   para[0] = fTWidthCM ;
   para[1] =  1.070804;
@@ -21,21 +30,7 @@ FitTower::FitTower(TMatrix* pEm,Geom* pgeom,Int_t iew,Int_t nstb)
   para[7] =  0.0 ;
   para[8] =  0.0 ;
   para[9] =  1.0 ;
-  if(we.fcnSS==0)
-    {
-      we.fcnSS = new TF2("fFunctSS", &GGams, -25.0, 25.0, -25.0, 25.0, numbPara);
-
-      we.fcnSS->SetParameters(para); 
-      fFunctSS=new TF2(*(we.fcnSS));
-    }
-  else
-    {
-      we.fcnSS->SetParameters(para); 
-      fFunctSS=new TF2(*(we.fcnSS));
-    };
-  
-  // copy the global Shower-shape function pointer to the local function
-  //
+  showerShapeFitFunction.SetParameters(para); 
   // create a Minuit instance
   //
 
@@ -50,7 +45,6 @@ FitTower::~FitTower()
     {
       delete fMn;
     };
-  if(fFunctSS)delete fFunctSS;
   
   delete pTowerUtil;
 };
@@ -152,7 +146,7 @@ void FitTower::Fcn1(Int_t& npara, Double_t* grad,  Double_t& fval, Double_t* par
       // in coords of center of tower relative to photon
       //
       
-      Double_t Eshape = para[j+3] * we.fcnSS->Eval(xx-para[j+1], yy-para[j+2], 0);
+      Double_t Eshape = para[j+3] * showerShapeFitFunction.Eval(xx-para[j+1], yy-para[j+2], 0);
       //	    LastShape.Fill(oneTow->col - 0.5,oneTow->row - 0.5,Eshape);
       eSS+=Eshape;
     }

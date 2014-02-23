@@ -12,6 +12,15 @@
 #include "TMath.h"
 #include "TowerFPD.h"
 namespace PSUGlobals {//$NMSPC
+/**
+ \todo
+ It may be safer to make FitTower a singleton class, or something like that.
+ The shower shape fit function is shared across all objects (by necessity, in
+ order to interface with TMinuit), but each object updates the function itself
+ with different parameters. Therefore bad things would happen if there were
+ more than one object in existence at any time. There isn't ever more than one
+ instance created in this code, but I think it would be good to enforce that.
+ */
 class FitTower : public TObject
 {
  public:
@@ -25,7 +34,6 @@ class FitTower : public TObject
   FitTower(){};
 
   ~FitTower();
-  TF2* fcnSS;
   TObjArray* tow2Fit;
   static  WasExternal we;
   Double_t step[3*MAX_NUMB_PHOTONS+1];
@@ -51,14 +59,13 @@ class FitTower : public TObject
       fTYWidthCM=we.widLG[1]=ptw[1];
     };
   void SetFCN(void (*fcn)(Int_t &, Double_t *, Double_t &, Double_t *, Int_t));
-  void SetFunctShowShape(TF2 *fSS) {fFunctSS = fSS;};
   void SetNumberPhoton(const Int_t nP);
 
   void GetRow(Int_t &row) {row=fRow;};
   void GetCol(Int_t &col) {col=fCol;};
   void GetParameter(Double_t *ap){/* not implemeted*/};
   void GetTWidthCM(Double_t &tw) {tw=fTWidthCM;};
-  TF2* GetFunctShowShape(void) {return fFunctSS;};
+  TF2* GetFunctShowShape();
   Int_t Fit(const Double_t *par, const Double_t *step, 
 	    const Double_t *low, const Double_t *up);
   Int_t Fit2Pin1Clust(const Double_t *para, const Double_t *step, 
@@ -73,7 +80,6 @@ class FitTower : public TObject
   Double_t    fTWidthCM;      // width of one lead glass module
   Double_t    fTXWidthCM;      // width of one lead glass module in X
   Double_t    fTYWidthCM;      // width of one lead glass module in Y
-  TF2 *       fFunctSS;       // shower-shape function
   Double_t    fNumbPhotons;   // number of photons to be fitted: Minuit wants a Double_t!
   Double_t    fFitPara[3*MAX_NUMB_PHOTONS+1];  // Minuit fit parameter
 

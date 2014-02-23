@@ -1106,7 +1106,7 @@ Double_t Yiqun::EnergyInTowerByPhoton(Double_t widthLG, TowerFPD *p_tower, Photo
 
 	xx = ( (Double_t) p_tower->col - 0.5 ) * widLG[0] - p_photon->xPos ;
 	yy = ( (Double_t) p_tower->row - 0.5 ) * widLG[1] - p_photon->yPos ;
-	eSS = p_photon->energy * (pwe->fcnSS)->Eval( xx, yy, 0 );
+	eSS = p_photon->energy * fitter->GetFunctShowShape()->Eval( xx, yy, 0 );
 
 	return eSS;
 };
