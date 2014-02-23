@@ -55,7 +55,7 @@ Float_t Yiqun::FitOnePhoton(HitCluster* p_clust)
 
 	// call fitter->Fit(...), return status
 	//
-	status = fitter->Fit(start, pwe->step, lowLim, upLim);
+	status = fitter->Fit(start, fitter->step, lowLim, upLim);
 
 
 	// 2003-10-09
@@ -95,7 +95,7 @@ Float_t Yiqun::FitOnePhoton(HitCluster* p_clust)
 	    printf(" start    step   lowLim   upLim     par    error \n");
 	    for(Int_t jpar=0; jpar<nPar; jpar++) {
 	      printf("%7.2f %7.2f %7.2f %7.2f %7.2f %7.2f\n", start[jpar],
-		     pwe->step[jpar],lowLim[jpar],upLim[jpar],
+		     fitter->step[jpar],lowLim[jpar],upLim[jpar],
 		     param[jpar],error[jpar]);
 	    };
 	  };
@@ -155,7 +155,7 @@ Float_t Yiqun::FitTwoPhoton(HitCluster* p_clust)
 
 	// call fitter->Fit(...), return status
 	//
-	status = fitter->Fit(start, pwe->step, lowLim, upLim);
+	status = fitter->Fit(start, fitter->step, lowLim, upLim);
 
 
 	// 2003-10-09
@@ -199,7 +199,7 @@ Float_t Yiqun::FitTwoPhoton(HitCluster* p_clust)
 	  printf(" start    step   lowLim   upLim     par    error \n");
 	  for(Int_t jpar=0; jpar<nPar; jpar++) {
 	    printf("%7.2f %7.2f %7.2f %7.2f %7.2f %7.2f\n", start[jpar],
-		   pwe->step[jpar],lowLim[jpar],upLim[jpar],param[jpar],
+		   fitter->step[jpar],lowLim[jpar],upLim[jpar],param[jpar],
 		   error[jpar]);
 	  }
 	};
@@ -304,7 +304,7 @@ Float_t Yiqun::GlobalFit(const Int_t nPh, const Int_t nCl, HitCluster *p_clust)
 
 	// call fitter->Fit(...), return status
 	//
-	status = fitter->Fit(start, pwe->step, lowLim, upLim);
+	status = fitter->Fit(start, fitter->step, lowLim, upLim);
 
 
 	// 2003-10-09
@@ -362,7 +362,7 @@ Float_t Yiqun::GlobalFit(const Int_t nPh, const Int_t nCl, HitCluster *p_clust)
 	  printf(" start    step   lowLim   upLim     par    error \n");
 	  for(Int_t jpar=0; jpar<nPar; jpar++) {
 	    printf("%7.2f %7.2f %7.2f %7.2f %7.2f %7.2f\n", start[jpar],
-		   pwe->step[jpar],lowLim[jpar],upLim[jpar],param[jpar],
+		   fitter->step[jpar],lowLim[jpar],upLim[jpar],param[jpar],
 		   error[jpar]);
 	  }
 	};

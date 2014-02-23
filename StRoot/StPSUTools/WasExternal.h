@@ -24,10 +24,6 @@ class WasExternal: public TObject
  public:
   WasExternal()
     {
-      Double_t step0[3*MAX_NUMB_PHOTONS+1]= {0, 0.1,0.1,0.2, 0.1,0.1,0.2, 0.1,
-					     0.1,0.2, 0.1,0.1,0.2, 0.1,0.1,0.2, 
-					     0.1,0.1,0.2, 0.1,0.1,0.2};
-      for(int j=0;j<3*MAX_NUMB_PHOTONS+1;j++)step[j]=step0[j];
       widLG[0]=3.81;
       widLG[1]=3.81;
       /*
@@ -69,15 +65,6 @@ class WasExternal: public TObject
    there.
    */
   Float_t widLG[2];//glass width X,Y
-  /**
-   \note
-   Is some kind of array used in the fitting procedure, used by both Yiqun and
-   FitTower (FitTower copies the WasExternal array but doesn't modify it; Yiqun
-   uses the WasExternal version directly; so both appear to use the same
-   numbers). No need to have it external; probably best as a member of FitTower
-   with an accessor method so Yiqun can get hold of it.
-   */
-  Double_t step[3*MAX_NUMB_PHOTONS+1];
  private:
  ClassDef(WasExternal,3);
 

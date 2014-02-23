@@ -52,8 +52,11 @@ FitTower::~FitTower()
 void FitTower::SetStep()
 {
   fMn=0;
-
-  for(int j=0;j<3*MAX_NUMB_PHOTONS+1;j++)step[j]= we.step[j];
+  const Double_t step0[3 * MAX_NUMB_PHOTONS + 1]= {
+    0.0, 0.1, 0.1, 0.2, 0.1, 0.1, 0.2, 0.1, 0.1, 0.2, 0.1,
+    0.1, 0.2, 0.1, 0.1, 0.2, 0.1, 0.1, 0.2, 0.1, 0.1, 0.2
+  };
+  for(int j=0;j<3*MAX_NUMB_PHOTONS+1;j++)step[j]= step0[j];
 };
 
 Double_t FitTower::FGams(Double_t *x, Double_t *para)
