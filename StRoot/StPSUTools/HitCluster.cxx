@@ -8,6 +8,7 @@
 #include "TowerFPD.h"
 #include "PhotonHitFPD.h"
 #include "HitCluster.h"
+#include "Yiqun.h"
 using namespace std;
 using namespace PSUGlobals;
 
@@ -43,11 +44,11 @@ void HitCluster::EDepUpdate(WasExternal* pwe)
     {
 	    if(NSTB<3)
 	      {
-		Eratio=pwe->EDepCorrection->Eval(20)/pwe->EDepCorrection->Eval(energy);
+		Eratio=Yiqun::GetEDepCorrection()->Eval(20)/Yiqun::GetEDepCorrection()->Eval(energy);
 	      }
 	    else
 	      {
-		Eratio=pwe->EDepCorrection->Eval(30.)/pwe->EDepCorrection->Eval(energy);
+		Eratio=Yiqun::GetEDepCorrection()->Eval(30.)/Yiqun::GetEDepCorrection()->Eval(energy);
 	      };
 	energy=energy*Eratio;
 	TIter next(tow);

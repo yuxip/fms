@@ -24,28 +24,10 @@ class WasExternal: public TObject
  public:
   WasExternal()
     {
-      /*
-      EDepCorrection=new TF1("EDepCorrection","(1-.11*exp(-(x)/[0])-.23*exp(-(x)/[1]))",1,250);
-      EDepCorrection->SetParameter(0,5);
-      EDepCorrection->SetParameter(1,70);
-      */
-      EDepCorrection=new TF1("EDepCorrection","(1.3-.15*exp(-(x)/[0])-.6*exp(-(x)/[1]))",1,250);
-      EDepCorrection->SetParameter(0,10.);
-      EDepCorrection->SetParameter(1,70);
-      
     };
   
   ~WasExternal(){};
   //temporary SH
-  /**
-   \note
-   Response function for nonlinear energy correction, based on cerenkov studies.
-   It should be part of another class, but is used in both HitCluster and Yiqun.
-   We therefore have to decide how to pass it to both HitCluster and Yiqun.
-   Note, I'm not actually sure if the HitCluster usage is ever called… so
-   could just be needed for Yiqun.
-   */
-  TF1* EDepCorrection;
  private:
  ClassDef(WasExternal,3);
 

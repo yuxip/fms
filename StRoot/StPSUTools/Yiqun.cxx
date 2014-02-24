@@ -11,6 +11,7 @@ ClassImp(Yiqun)
 //-----------------------------static
 
   WasExternal FitTower::we;
+TF1* Yiqun::EDepCorrection(NULL);
 
 Float_t Yiqun::FitOnePhoton(HitCluster* p_clust)
 {
@@ -1300,11 +1301,11 @@ TLorentzVector  Yiqun::mom(Int_t ph_num)
   Float_t phEnergy=photons[ph_num].energy;
       if(NSTB<3)
 	{
-	  phEnergy=phEnergy*pwe->EDepCorrection->Eval(20)/pwe->EDepCorrection->Eval(phEnergy);
+	  phEnergy=phEnergy*Yiqun::GetEDepCorrection()->Eval(20)/Yiqun::GetEDepCorrection()->Eval(phEnergy);
 	}
       else
 	{
-	  phEnergy=phEnergy*pwe->EDepCorrection->Eval(30.)/pwe->EDepCorrection->Eval(phEnergy);
+	  phEnergy=phEnergy*Yiqun::GetEDepCorrection()->Eval(30.)/Yiqun::GetEDepCorrection()->Eval(phEnergy);
 	};
   TVector3  mom3;
   mom3=phEnergy*uvec;
@@ -1355,3 +1356,18 @@ Yiqun::~Yiqun()
  
   if(tow_Arr)delete tow_Arr;
 };
+
+TF1* Yiqun::GetEDepCorrection() {
+  if (!Yiqun::EDepCorrection) {
+    // This instantiation would seemingly leak memory, as it is not freed
+    // anywhere. However, ROOT stores all functions in a global function list,
+    // accessible via gROOT->GetListOfFunctions(). Therefore the ROOT
+    // environment should take care of deleting it.
+    Yiqun::EDepCorrection = new TF1("EDepCorrection",
+                                    "(1.3-.15*exp(-(x)/[0])-.6*exp(-(x)/[1]))",
+                                    1, 250);
+    Yiqun::EDepCorrection->SetParameter(0, 10.);
+    Yiqun::EDepCorrection->SetParameter(1, 70.);
+  }  // if
+  return Yiqun::EDepCorrection;
+}

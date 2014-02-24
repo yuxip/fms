@@ -86,6 +86,11 @@ class Yiqun: public TObject
   Int_t maxHitsInRealCluster;
   Double_t step[3*MAX_NUMB_PHOTONS+1];
   Double_t widLG[2];
+  static TF1* EDepCorrection;
+  /**
+   Response function for nonlinear energy correction, based on cerenkov studies.
+   */
+  static TF1* GetEDepCorrection();
 };
 }
 #endif
