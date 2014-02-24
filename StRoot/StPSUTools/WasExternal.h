@@ -24,8 +24,6 @@ class WasExternal: public TObject
  public:
   WasExternal()
     {
-      widLG[0]=3.81;
-      widLG[1]=3.81;
       /*
       EDepCorrection=new TF1("EDepCorrection","(1-.11*exp(-(x)/[0])-.23*exp(-(x)/[1]))",1,250);
       EDepCorrection->SetParameter(0,5);
@@ -56,15 +54,6 @@ class WasExternal: public TObject
    anywhere else.
    */
   TObjArray* tow2Fit;
-  /**
-   \note
-   "Width lead-glass" i.e. cell (x, y) widths. It is set via Geom, from the
-   database, which is good. There are functions to set it via FitTower, but I
-   don't think these are needed, as it's only ever needed internally in Yiqun.
-   As Yiqun already has a member Geom, we can just access this information from
-   there.
-   */
-  Float_t widLG[2];//glass width X,Y
  private:
  ClassDef(WasExternal,3);
 

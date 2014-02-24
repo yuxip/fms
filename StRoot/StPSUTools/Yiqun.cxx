@@ -1222,8 +1222,6 @@ void Yiqun::Y(TMatrix* pEm)
   if(p_geom->FMSGeom)fitter->SetXYTWidthCM(p_geom->FpdTowWid(EW,NSTB));
   
  NPh = FitEvent(NTower, NClusts, NRealClusts, ChiSqG, JunkyEvent);
-
-  std::cout << "widLG " << pwe->widLG[0] << " " << pwe->widLG[1] << std::endl;
 }
 
 void Yiqun::PrintClu()

@@ -8,6 +8,9 @@ TF2 showerShapeFitFunction("showerShapeFitFunction", &FitTower::GGams,
                            -25.0, 25.0, -25.0, 25.0, numbPara);
 }  // unnamed namespace
 
+// Instantiate static member
+Float_t FitTower::widLG[2];
+
 TF2* FitTower::GetFunctShowShape() {
   return &showerShapeFitFunction;
 }
@@ -129,8 +132,8 @@ void FitTower::Fcn1(Int_t& npara, Double_t* grad,  Double_t& fval, Double_t* par
     //
     //Note from SFH need more clever position for FMS
 
-    xx = ( (Double_t) oneTow->col - 0.5 ) * we.widLG[0] ;
-    yy = ( (Double_t) oneTow->row - 0.5 ) * we.widLG[1] ;
+    xx = ( (Double_t) oneTow->col - 0.5 ) * FitTower::widLG[0] ;
+    yy = ( (Double_t) oneTow->row - 0.5 ) * FitTower::widLG[1] ;
     
     // measured energy
     //

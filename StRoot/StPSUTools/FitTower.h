@@ -51,12 +51,12 @@ class FitTower : public TObject
     {
       fTWidthCM = tw;
       fTXWidthCM=fTYWidthCM=tw;
-      we.widLG[0]=we.widLG[1]=tw;
+      FitTower::widLG[0] = FitTower:: widLG[1] = tw;
     };
   void SetXYTWidthCM(Float_t*  ptw)
     {
-      fTXWidthCM=we.widLG[0]=ptw[0];
-      fTYWidthCM=we.widLG[1]=ptw[1];
+      fTXWidthCM = FitTower::widLG[0] = ptw[0];
+      fTYWidthCM = FitTower::widLG[1] = ptw[1];
     };
   void SetFCN(void (*fcn)(Int_t &, Double_t *, Double_t &, Double_t *, Int_t));
   void SetNumberPhoton(const Int_t nP);
@@ -82,7 +82,7 @@ class FitTower : public TObject
   Double_t    fTYWidthCM;      // width of one lead glass module in Y
   Double_t    fNumbPhotons;   // number of photons to be fitted: Minuit wants a Double_t!
   Double_t    fFitPara[3*MAX_NUMB_PHOTONS+1];  // Minuit fit parameter
-
+  static Float_t widLG[2];//glass width X,Y
 };
 }
 #endif
