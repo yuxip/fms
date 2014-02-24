@@ -23,7 +23,6 @@
 
 
 #include "PhotonHitFPD.h"
-#include "WasExternal.h"
 #define MAX_PHOTON_PER_CLUSTER 2
 
 namespace PSUGlobals {//$NMSPC
@@ -56,7 +55,7 @@ class HitCluster : public TObject {
   void AddCluster(HitCluster* p_bclu=0);
   ~HitCluster();
   Bool_t IsEUpdated;
-  void EDepUpdate(WasExternal* pwe); 
+  void EDepUpdate();
   void Clear(void) ;
   
   HitCluster& operator=(const HitCluster& rhs) 

@@ -10,7 +10,6 @@
 #include "TVector3.h"
 #include "FitTower.h"
 #include "TowerUtil.h"
-#include "WasExternal.h"
 
 #include "TMath.h"
 #include "TRandom.h"
@@ -25,7 +24,6 @@ class Yiqun: public TObject
   
  public:
   TowerUtil* pTowerUtil;
-  WasExternal* pwe;
   Int_t nrows;
   Int_t ncols;
   

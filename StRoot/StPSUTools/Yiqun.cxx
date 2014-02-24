@@ -10,7 +10,6 @@ ClassImp(Yiqun)
 //
 //-----------------------------static
 
-  WasExternal FitTower::we;
 TF1* Yiqun::EDepCorrection(NULL);
 
 Float_t Yiqun::FitOnePhoton(HitCluster* p_clust)
@@ -1129,7 +1128,6 @@ void Yiqun::Y(TMatrix* pEm)
   pTowerUtil=new TowerUtil();
   pTowerUtil->SetMomentEcutoff(.5);  
   tow_Arr=0;
-  pwe=&(FitTower::we);
   widLG[0]=widLG[1]=(p_geom->FpdTowWid(EW,NSTB))[0];
   if(p_geom->FMSGeom)widLG[1]=(p_geom->FpdTowWid(EW,NSTB))[1];
   NTower=pEm->GetNoElements();

@@ -6,7 +6,6 @@
 #include "Geom.h"
 #include "TMatrix.h"
 #include "TMinuit.h"
-#include "WasExternal.h"
 #include "TF2.h"
 #include "TowerUtil.h"
 #include "TMath.h"
@@ -35,7 +34,6 @@ class FitTower : public TObject
 
   ~FitTower();
   static TObjArray* tow2Fit;
-  static  WasExternal we;
   static const Int_t MAX_NUMB_PHOTONS = 7;
   Double_t step[3*MAX_NUMB_PHOTONS+1];
   TowerUtil* pTowerUtil;

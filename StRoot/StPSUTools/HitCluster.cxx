@@ -35,10 +35,9 @@ HitCluster::~HitCluster()
   if(tow)delete tow;
 };
 
-void HitCluster::EDepUpdate(WasExternal* pwe)
+void HitCluster::EDepUpdate()
 {
   if(IEW != 2 )return;
-  if(pwe==0)return;
   Float_t Eratio=1;
   if(!IsEUpdated)
     {
