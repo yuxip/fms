@@ -46,14 +46,6 @@ class WasExternal: public TObject
    could just be needed for Yiqun.
    */
   TF1* EDepCorrection;
-  /**
-   \note
-   An array of TowerFPD objects to fit in the FitTower fitting functions. It
-   makes more sense to me to just pass the tower array directly to FitTower as
-   arguments to the relevant fitter functions, as this array isn't needed
-   anywhere else.
-   */
-  TObjArray* tow2Fit;
  private:
  ClassDef(WasExternal,3);
 

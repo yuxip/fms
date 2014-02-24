@@ -34,7 +34,7 @@ class FitTower : public TObject
   FitTower(){};
 
   ~FitTower();
-  TObjArray* tow2Fit;
+  static TObjArray* tow2Fit;
   static  WasExternal we;
   Double_t step[3*MAX_NUMB_PHOTONS+1];
   TowerUtil* pTowerUtil;

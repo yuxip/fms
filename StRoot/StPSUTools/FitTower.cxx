@@ -8,8 +8,9 @@ TF2 showerShapeFitFunction("showerShapeFitFunction", &FitTower::GGams,
                            -25.0, 25.0, -25.0, 25.0, numbPara);
 }  // unnamed namespace
 
-// Instantiate static member
+// Instantiate static members
 Float_t FitTower::widLG[2];
+TObjArray* FitTower::tow2Fit(NULL);
 
 TF2* FitTower::GetFunctShowShape() {
   return &showerShapeFitFunction;
@@ -117,12 +118,12 @@ void FitTower::Fcn1(Int_t& npara, Double_t* grad,  Double_t& fval, Double_t* par
   //
   Double_t sumCl = 0;
   
-  TIter next(we.tow2Fit);
+  TIter next(FitTower::tow2Fit);
   while(oneTow=(TowerFPD*) next())sumCl+=oneTow->energy;
   
   // loop over all towers that are involved in the fit
   //
-  TIter nextTower(we.tow2Fit);
+  TIter nextTower(FitTower::tow2Fit);
   while(oneTow=(TowerFPD*) nextTower())
     {
       
@@ -254,7 +255,7 @@ Int_t FitTower::Fit(const Double_t *para, const Double_t *step, const Double_t *
   
   // check that there is a pointer to TObjArray of towers
   //
-  if( !(we.tow2Fit) ) {
+  if( !(FitTower::tow2Fit) ) {
     std::cerr << "no tower data available! return -1!" << "\n";
     return -1;
   }
@@ -321,7 +322,7 @@ Int_t FitTower::Fit2Pin1Clust(const Double_t *para, const Double_t *step, const 
   
   // check that there is a pointer to TObjArray of towers
   //
-  if( !(we.tow2Fit) ) {
+  if( !(FitTower::tow2Fit) ) {
     std::cerr << "no tower data available! return -1!" << "\n";
     return -1;
   }

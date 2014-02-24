@@ -738,7 +738,7 @@ Int_t Yiqun::FitEvent(Int_t nTows, Int_t &nClusts, Int_t &nRealClusts, Double_t 
 		// point to the real TObjArray that contains the towers to be fitted
 		// it is the same tower array for the cluster or all alternative clusters
 		//
-		pwe->tow2Fit = clust[icc].tow ;
+		fitter->tow2Fit = clust[icc].tow ;
 
 		// store the goodness of fit
 		//
@@ -1044,7 +1044,7 @@ Int_t Yiqun::FitEvent(Int_t nTows, Int_t &nClusts, Int_t &nRealClusts, Double_t 
 	    ndfg = 1;
 	  }
 	
-	pwe->tow2Fit = &allTow ;
+	fitter->tow2Fit = &allTow ;
 
 	// 2003-10-13
 	// only do global fit for 2 or more clusters (2-photon fit for one cluster already has global fit)
