@@ -224,7 +224,7 @@ Float_t Yiqun::GlobalFit(const Int_t nPh, const Int_t nCl, HitCluster *p_clust)
 
 	// by design, we can only fit up to "MAX_NUMB_PHOTONS" (currently 4) photons
 	//
-	if( nPh > MAX_NUMB_PHOTONS || nPh < 2 ) {
+	if( nPh > FitTower::MAX_NUMB_PHOTONS || nPh < 2 ) {
 	  std::cout << "Global fit! Can not fit " << nPh << " photons! ERROR!" << "\n";
 		return -9999;
 	}
@@ -239,13 +239,13 @@ Float_t Yiqun::GlobalFit(const Int_t nPh, const Int_t nCl, HitCluster *p_clust)
 
 	// fit parameters(starting positions), errors, and gradients of function
 	//
-	Double_t param[3*MAX_NUMB_PHOTONS+1];
-	Double_t error[3*MAX_NUMB_PHOTONS+1];
-	Double_t gradient[3*MAX_NUMB_PHOTONS+1];
+	Double_t param[3*FitTower::MAX_NUMB_PHOTONS+1];
+	Double_t error[3*FitTower::MAX_NUMB_PHOTONS+1];
+	Double_t gradient[3*FitTower::MAX_NUMB_PHOTONS+1];
 
 	// starting position, lower and upper limit of parameters
 	//
-	Double_t start[3*MAX_NUMB_PHOTONS+1], lowLim[3*MAX_NUMB_PHOTONS+1], upLim[3*MAX_NUMB_PHOTONS+1];
+	Double_t start[3*FitTower::MAX_NUMB_PHOTONS+1], lowLim[3*FitTower::MAX_NUMB_PHOTONS+1], upLim[3*FitTower::MAX_NUMB_PHOTONS+1];
 
 
 	// at least 2 photons: global fit!
@@ -265,7 +265,7 @@ Float_t Yiqun::GlobalFit(const Int_t nPh, const Int_t nCl, HitCluster *p_clust)
 		for(Int_t jp=0; jp<p_clust[ic].nPhoton; jp++)
 		  {
 		    
-		    if( totPh > MAX_NUMB_PHOTONS ) {
+		    if( totPh > FitTower::MAX_NUMB_PHOTONS ) {
 		      std::cout << "Total # of photons in " << nCl << " clusters is at least " << totPh << "! I can NOT do fit! ERROR!" << "\n";
 		      return -9999;
 		    }
@@ -298,7 +298,7 @@ Float_t Yiqun::GlobalFit(const Int_t nPh, const Int_t nCl, HitCluster *p_clust)
 	start[0] = totPh ;
 
 	lowLim[0] = 0.5;
-	lowLim[0] = MAX_NUMB_PHOTONS + 0.5 ;
+	lowLim[0] = FitTower::MAX_NUMB_PHOTONS + 0.5 ;
 	// fit status, and flag
 	//
 	Int_t status, iflag=1;
@@ -1016,12 +1016,12 @@ Int_t Yiqun::FitEvent(Int_t nTows, Int_t &nClusts, Int_t &nRealClusts, Double_t 
 	// 2003-09-08
 	// if there are more than 1 cluster, do a global fit!
 	//
-	if( nPh > MAX_NUMB_PHOTONS ) 
+	if( nPh > FitTower::MAX_NUMB_PHOTONS ) 
 	  {
 	    //
 	    // myFitter can only do up to "MAX_NUMB_PHOTONS"-photon fit
 	    //
-	    std::cout << "Can not fit " << nPh << " (more than " << MAX_NUMB_PHOTONS << " photons!" << "\n";
+	    std::cout << "Can not fit " << nPh << " (more than " << FitTower::MAX_NUMB_PHOTONS << " photons!" << "\n";
 	    chiSqG = -1;
 	    return nPh;
 	  }

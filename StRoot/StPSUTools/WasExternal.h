@@ -5,7 +5,6 @@
 #include "TMinuit.h"
 #include "TRandom.h"
 #include "TMatrix.h"
-#define MAX_NUMB_PHOTONS 7
 
 namespace PSUGlobals {//$NMSPC
 /**

@@ -16,8 +16,6 @@
 // total # of tower (North-South, or Top-Bottom)
 //
 
-#define MAX_NUMB_PHOTONS 7
-
 // maximum number of clusters that will can be handled
 //
 #define MAX_NUMER_CLUSTERS 6

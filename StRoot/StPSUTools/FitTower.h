@@ -36,6 +36,7 @@ class FitTower : public TObject
   ~FitTower();
   static TObjArray* tow2Fit;
   static  WasExternal we;
+  static const Int_t MAX_NUMB_PHOTONS = 7;
   Double_t step[3*MAX_NUMB_PHOTONS+1];
   TowerUtil* pTowerUtil;
   static Double_t GGams(Double_t *x, Double_t *par);

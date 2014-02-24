@@ -1,7 +1,6 @@
 #ifndef YIQUN_H
 #define YIQUN_H
 #define MAX_NUMER_CLUSTERS 6
-#define MAX_NUMB_PHOTONS 7
 
 #include "Geom.h"
 #include "TLorentzVector.h"
@@ -54,7 +53,7 @@ class Yiqun: public TObject
   TObjArray* tow_Arr;
   FitTower* fitter;
   HitCluster clust[MAX_NUMER_CLUSTERS];
-  PhotonHitFPD photons[MAX_NUMB_PHOTONS+3]; 
+  PhotonHitFPD photons[FitTower::MAX_NUMB_PHOTONS+3]; 
   Bool_t PRINT_FIT_1_RESULT;
   Bool_t  PRINT_FIT_2_RESULT;
   Bool_t PRINT_FIT_ALL_RESULT;
@@ -84,7 +83,7 @@ class Yiqun: public TObject
   Float_t MaxChi2Catag2;
   Float_t minRealClusterEne;
   Int_t maxHitsInRealCluster;
-  Double_t step[3*MAX_NUMB_PHOTONS+1];
+  Double_t step[3*FitTower::MAX_NUMB_PHOTONS+1];
   Double_t widLG[2];
   static TF1* EDepCorrection;
   /**
