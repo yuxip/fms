@@ -64,7 +64,7 @@ void testFms_stfms( Int_t ibegin = 1, Int_t iend = 100, const char* file = "fms7
 	dbMk->SetDEBUG(0);
 	dbMk->SetDateTime(20110601, 0);
 
-	StFmsDbMaker* fmsdb = new StFmsDbMaker("fmsdbmaker");
+	StFmsDbMaker* fmsdb = new StFmsDbMaker("fmsDb");
 	fmsdb->setDebug(0);
 
 	// Endcap database

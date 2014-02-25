@@ -5,6 +5,10 @@
 #ifndef StFmsPointMaker_HH
 #define StFmsPointMaker_HH
 
+#include <vector>
+
+#include <TMatrix.h>
+
 #ifndef StMaker_H
 #define StMaker_H
 #include "StMaker.h"
@@ -15,6 +19,7 @@
 using namespace std;
 using namespace PSUGlobals;
 
+class StFmsDbMaker;
 class StFmsHitMaker;
 class StFmsClusterCollection;
 class StFmsPointCollection;
@@ -34,7 +39,11 @@ public:
 private:
 
 	Int_t FindPoint();			//  --interface to the actual photon reconstruction
+	Bool_t initialiseEnergyMatrices();
+  Bool_t Legal(Int_t iew, Int_t nstb, Int_t row0, Int_t col0);
 
+  StFmsDbMaker* mFmsDbMaker;
+	std::vector<TMatrix> mEnergyMatrices;
 	StFmsHitMaker* mFmsHitMaker;		//! --provide access to energy matrices and/or hit list
 	StFmsClusterCollection* mFmsClColl;	//! --clusters (and points within cluster) to be added to TDataSet
 	//StFmsPointCollection*   mFmsPtsColl;	//! --all the points (photons) extracted from clusters

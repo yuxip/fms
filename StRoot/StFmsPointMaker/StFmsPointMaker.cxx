@@ -1,9 +1,17 @@
 
 #include "StFmsPointMaker.h"
+
+#include "StEvent/StEvent.h"
+#include "StEvent/StFmsCollection.h"
+#include "StEvent/StFmsHit.h"
+#include "StFmsDbMaker/StFmsDbMaker.h"
 #include "StFmsHitMaker/StFmsHitMaker.h"
 #include "StFmsClusterCollection.h"
 #include "StFmsPointCollection.h"
 #include "StFmsClHitCollection.h"
+#include "StMuDSTMaker/COMMON/StMuDst.h"
+#include "StMuDSTMaker/COMMON/StMuFmsCollection.h"
+#include "StMuDSTMaker/COMMON/StMuFmsHit.h"
 
 #include "StMessMgr.h"
 
@@ -56,6 +64,11 @@ void StFmsPointMaker::Clear( const char* opt ) {
 		mFmsPtsColl = 0;
         }
 */
+  std::vector<TMatrix>::iterator iter;
+  for (iter = mEnergyMatrices.begin(); iter != mEnergyMatrices.end(); ++iter) {
+    std::cout << "tpbdebug clearing energy matrices at end of event" << std::endl;
+    *iter = 0.f;
+  }  // for
 	LOG_INFO <<"after StFmsPointMaker::Clear()" <<endm;
 	StMaker::Clear();	
 
@@ -79,7 +92,24 @@ Int_t StFmsPointMaker::InitRun(Int_t runNumber){ //gStFmsDbMaker is filled after
 	//geometries and calibration tables, which would stay constant for each Run
 	//only allocate new space in the begining, not in between runs
 	if(!fmsgeom)fmsgeom = new Geom();
-
+	// Ensure we can access database information
+	mFmsDbMaker = static_cast<StFmsDbMaker*>(GetMaker("fmsDb"));
+	if (!mFmsDbMaker) {
+		std::cout << "tpbdebug initialiseEnergyMatrices() failed to set mFmsDbMaker" << std::endl;
+	  return kStErr;
+	}  // if
+	// Create energy matrices of the correct (row, column) dimensions for each
+	// FMS subdetector, and initialise all elements to zero.
+	mEnergyMatrices.assign(4, TMatrix());
+	for(Int_t i = 0; i < 4; i++){
+    Int_t detectorId = i + 8;  // FMS detector ID in range [8, 11]
+    Int_t nRows = mFmsDbMaker->nRow(detectorId);
+    Int_t nCols = mFmsDbMaker->nColumn(detectorId);
+    mEnergyMatrices.at(i).ResizeTo(nRows, nCols);
+    mEnergyMatrices.at(i) = 0.f;
+		std::cout << "tpbdebug InitRun() initialised energy matrix " << i << std::endl;
+		mEnergyMatrices.at(i).Dump();
+  }  // for
 }
 
 Int_t StFmsPointMaker::Finish() {
@@ -94,7 +124,8 @@ Int_t StFmsPointMaker::Make() {
 	mFmsClColl  = new StFmsClusterCollection();
 //	mFmsPtsColl = new StFmsPointCollection();
 	
-	if(FindPoint()==kStOk){
+  initialiseEnergyMatrices();
+  if(FindPoint()==kStOk){
 		 LOG_INFO << "Cluster finder returns successfully" <<endm;
 		 return kStOk;
 	}
@@ -104,20 +135,17 @@ Int_t StFmsPointMaker::Make() {
 	
 Int_t StFmsPointMaker::FindPoint() {
 	
-	TMatrix** Energy;
-	Energy = mFmsHitMaker->GetEnergyMatrices();
-	
 	LOG_INFO << " StFmsPointMaker::FindPoint() " << endm;
-	
 	
 	Yiqun* p_rec[4];
 	for(Int_t instb = 0; instb < 4; instb++){
 		
-		Float_t Esum = Energy[instb]->Sum();
+		Float_t Esum = mEnergyMatrices.at(instb).Sum();
 		if(Esum==0||Esum>500) continue; //to remove LED trails, for pp500 GeV
 
 		//call the cluster finder for each nstb
-		p_rec[instb] = new Yiqun(Energy[instb],fmsgeom,2,instb+1);
+		std::cout << "tpbdebug accessing energy matrix " << instb << " of " << mEnergyMatrices.size() << std::endl;
+		p_rec[instb] = new Yiqun(&mEnergyMatrices.at(instb),fmsgeom,2,instb+1);
 		
 		//Saved cluser info into StFmsCluster
 		Int_t iPh = 0;	//sequence # in Yiqun::photons[];
@@ -251,3 +279,90 @@ Int_t StFmsPointMaker::FindPoint() {
 	return kStOk;
 }
 
+Bool_t StFmsPointMaker::initialiseEnergyMatrices() {
+	/*
+  StEvent* event = static_cast<StEvent*>(GetInputDS("StEvent"));
+  if (!event) {
+		std::cout << "tpbdebug initialiseEnergyMatrices() failed to access StEvent" << std::endl;
+    return false;
+  }  // if
+  StFmsCollection* fms = event->fmsCollection();
+  if (!fms) {
+		std::cout << "tpbdebug initialiseEnergyMatrices() failed to access StFmsCollection" << std::endl;
+    return false;
+  }  // if
+  */
+  StMuFmsCollection* fms = StMuDst::muFmsCollection();
+  if (!fms) {
+		std::cout << "tpbdebug initialiseEnergyMatrices() failed to access StMuFmsCollection" << std::endl;
+    return false;
+  }  // if
+  for (unsigned int i = 0; i < fms->numberOfHits(); i++) {
+    StMuFmsHit* hit = fms->getHit(i);
+    Int_t detector = hit->detectorId();
+    Int_t channel = hit->channel();
+    Int_t row = mFmsDbMaker->getRowNumber(detector, channel);
+    Int_t column = mFmsDbMaker->getColumnNumber(detector, channel);
+    Int_t nstb = 0;
+    Int_t ew  = 2;  // east=1, west=2
+    switch(detector) {
+      case 9:  // south large
+        nstb = 2;
+        break;
+      case 8:  // north large
+        nstb = 1;
+        break;
+      case 11:  // south small
+        nstb = 4;
+        break;
+      case 10:  // north small
+        nstb = 3;
+        break;
+      default:
+        nstb = 0;
+        break;
+    }  // switch	
+    Float_t energy = 0.f;
+    if (detector > 0 || channel > 0) {
+      std::cout << "tpbdebug reading db for gain/correction" << std::endl;
+      Float_t g1 = mFmsDbMaker->getGain(detector, channel);
+      Float_t g2 = mFmsDbMaker->getGainCorrection(detector, channel);
+      energy = hit->adc() * g1 * g2;
+    }  // if
+    if(nstb == 1 || nstb == 2) {
+      // because channel geometry in the database assigns row1 as the bottom row
+      row = 35 - row;
+    }  // if
+    if(nstb == 3 || nstb == 4) {
+      row = 25 - row;
+    }  // if
+    if(!Legal(ew, nstb, row - 1, column - 1)) {
+      continue;
+    }  // if
+    if (hit->adc() > 0) {
+      mEnergyMatrices.at(nstb - 1)[row - 1][column - 1] = energy;
+    }  // if
+  }  // for
+//  std::cout << "tpbdebug here is the energy matrix from point maker " << std::endl;
+//  mEnergyMatrices.at(0).Print();
+}
+
+Bool_t StFmsPointMaker::Legal(Int_t iew,Int_t nstb,Int_t row0,Int_t col0){
+	//nstb starts from 1
+	//row0,col0 starts from 0	
+	if(iew>0 && iew<2)return false;
+	if(nstb<1 || nstb>4)return false;
+	if(nstb>2){
+      		if(row0<0 || row0>23)return false;
+		if(col0<0 || col0>11)return false;
+		if(fabs(1.*row0-11.5)<5 && col0<5)return false;
+	}
+	else{
+		if(row0<0 || row0>33)return false;
+		if(col0<0 || col0>16)return false;
+		if(fabs(1.*row0-16.5)<8 && col0<8)return false;
+		if(row0<col0-9.5)return false;
+		if(33-row0<col0-9.5)return false;
+	}	
+  return true;
+}

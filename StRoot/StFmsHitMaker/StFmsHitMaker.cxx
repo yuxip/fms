@@ -144,7 +144,7 @@ int StFmsHitMaker::Make(){
 	//after this step triggerData is pointing to StTriggerData block of StEvent
 
 	if(flag>0){
-	
+	  std::cout << "tpbdebug StFmsHitMaker flag == " << flag << std::endl;
 		mFmsCollection = new StFmsCollection();
 		//create StFmsHit and add it to StFmsCollection
 		for(unsigned short crt=1; crt<=4; crt++){
@@ -266,6 +266,8 @@ int StFmsHitMaker::Make(){
 
 	}//flag, received fms data from mudst, triggerdata, etc.
 
+//  std::cout << "tpbdebug here is the energy matrix from hit maker " << std::endl;
+//  mEnergy[0]->Print();
  
 /*   
 	//flag = 0; //yuxi debug
