@@ -3,6 +3,9 @@
 #include <iostream>
 #include <math.h>
 
+#include <algorithm>
+#include <list>
+
 #include <TCollection.h>
 #include "TText.h"
 #include "TCutG.h"
@@ -20,17 +23,6 @@ namespace {
  Some are only used once, but it is easier to keep track of their values, and
  more self-documenting, if they are all named, and set in the same location.
  */
-// Total # of towers (North-South, or Top-Bottom)
-// North and South
-const Int_t NS_ETA_NUM = 7;
-const Int_t NS_PHI_NUM = 7;
-// Top and Bottom
-const Int_t TB_ETA_NUM = 5;
-const Int_t TB_PHI_NUM = 5;
-// maximum number of clusters that will can be handled
-const Int_t MAX_NUMER_CLUSTERS = 6;
-const Int_t nNSTow = NS_ETA_NUM * NS_PHI_NUM;
-const Int_t nTBTow = TB_ETA_NUM * TB_PHI_NUM ;
 const Float_t maxDistanceFromPeak = 0.3;
 const Int_t minTowerCatag02 = 5;
 const Float_t cutEcSigma[2][2] = {{2.1, 7.0}, {2.1, 2.0}};
@@ -38,6 +30,10 @@ const Float_t minEcSigma2Ph = 35.;
 const Float_t maxEcSigma1Ph = 10.;
 const Float_t minTowerEnergy = 0.01;
 const Float_t minRatioPeakTower = 1.6;
+
+typedef TowerUtil::TowerList TowerList;
+typedef TowerList::iterator TowerIter;
+
 /*
  Test for a tower that can be a cluster peak.
  
@@ -47,14 +43,12 @@ const Float_t minRatioPeakTower = 1.6;
  that returning true does not mean the tower *is* a peak, merely that it *can*
  be (i.e. it is consistent with that hypothesis given this input).
  */
-Bool_t couldBePeakTower(TowerFPD* tower, TObjArray* nonPeakTowers,
-                        double minEnergyRatio) {
+Bool_t couldBePeakTower(TowerFPD* tower, TowerList* nonPeakTowers) {
   Bool_t couldBePeak(true);
-  for (Int_t i(0); i < nonPeakTowers->GetEntriesFast(); ++i) {
-    TowerFPD* nonPeak = static_cast<TowerFPD*>(nonPeakTowers->At(i));
+  for (TowerIter i = nonPeakTowers->begin(); i != nonPeakTowers->end(); ++i) {
     // Compare this tower's energy with that of its immediate neighbours
-    if (tower->IsNeighbor(nonPeak)) {
-      if (tower->energy < minEnergyRatio * nonPeak->energy) {
+    if (tower->IsNeighbor(*i)) {
+      if (tower->energy < minRatioPeakTower * (*i)->energy) {
         couldBePeak = false;
         break;
       }  // if
@@ -67,6 +61,8 @@ Bool_t couldBePeakTower(TowerFPD* tower, TObjArray* nonPeakTowers,
  Populate an STL container of pointers from a ROOT collection.
  
  Returns the size of the filled container.
+ No objects are duplicated; the STL container points to the same objects (and
+ in the same order) as the ROOT collection.
  */
 template<typename StlContainer>
 typename StlContainer::size_type fillStlContainerFromRootCollection(
@@ -79,143 +75,54 @@ typename StlContainer::size_type fillStlContainerFromRootCollection(
   }  // while
   return container->size();
 }
+
+/**
+ Comparison function to sort towers in order of ascending energy.
+ */
+struct AscendingTowerEnergySorter {
+  bool operator()(const TowerFPD* a, const TowerFPD* b) const {
+    return a->Compare(b) < 0;
+  }
+};
+
+/**
+ Predicate for testing if a test tower is a neighbour of a reference tower.
+ 
+ If the test tower
+ has energy below the global cutoff, always return false, even if it is a neighbour
+ of the reference tower.
+ */
+struct TowerIsNeighbor
+    : public std::binary_function<TowerFPD*, TowerFPD*, bool> {
+  bool operator()(TowerFPD* test, TowerFPD* reference) const {
+    if(test->energy < minTowerEnergy) {
+      return false;
+    }  // if
+    return test->IsNeighbor(reference);
+  }
+};  // End of class TowerIsNeighbor
+
+struct TowerEnergyIsAboveThreshold {
+  bool operator()(const TowerFPD* tower) const {
+    return !(tower->energy < minTowerEnergy);
+  }
+};
 }  // unnamed namespace
 
-TowerUtil::TowerUtil() {
-  arrValley=NULL;
-  neighbor=NULL;
-  SetMomentEcutoff();
-};
-
-TowerUtil::~TowerUtil() {
-  if(arrValley)delete arrValley;
-  if(neighbor)delete neighbor;
-};
-
-Int_t TowerUtil::FindTowerCluster(TObjArray *arrTow, HitCluster *clust) {
-  // the neighbor TObjArray
-  neighbor = new TObjArray(20);
-  neighbor->Clear();
-  // the "valley" TObjArray
-  arrValley = new TObjArray(16);
-  arrValley->Clear();
-  // number of "peaks" that has the same shortest distance to a "valley" tower
-  Int_t nPeakSameDist[nNSTow];
-  // store which "peaks" have the same shortest distance to a "valley" tower
-  Int_t peaksToValley[nNSTow][MAX_NUMER_CLUSTERS];
-  Int_t nClusts = 0 ;
-  // We assume that "TObjArray *arrTow" is already sorted, however, to be safe,
-  // sort tower by energy, if not done already
-  if( !(arrTow->IsSorted()) )
-    arrTow->Sort();
-  TowerFPD *high;
-  // "TObjArray::Sort()" sorts the array from small to big ( [0]<=[1]<=...<=[48] )
-  // need to take care of that
-  // have to go last object first!
-  // The algoriths is such, first get the highest tower (which is ALWAYS the last one),
-  // and it and all its neighbors to the next cluster. Then repeat the process over the
-  // remaining towers.
-  while( !arrTow->IsEmpty() ) {
-    // By design, this tower is the highest tower in "arrTow", but it could be lower
-    // than a tower in "neighbor"
-    high = (TowerFPD *) arrTow->Last() ;
-    // when tower energy is less than minTowerEnergy, break out the loop!
-    if( high->energy < minTowerEnergy )
-      break;
-		// 2003-08-15
-		// Fix a logical loop hole in deciding if a tower is
-		//    a peak; Need to first compare the highest tower
-		//    remained in "arrTow" to all towers in "neighbor" which is its neighbor,
-		//    and if it is lower than any of those, it is
-		//    a neighbor. Move it to "neighbor" and continue to
-		//    the next tower in "arrTow".
-    Bool_t isPeak = couldBePeakTower(high, neighbor, minRatioPeakTower);
-    TowerFPD *resTow;
-    Int_t nT;
-    // if "high" is not a peak, move it to "neighbor"
-    if( !isPeak ) {
-    	arrTow->Remove(high);
-    	neighbor->Add(high);
-    }
-    // else if "high" is a peak
-    // remove the high tower from the original TObjArray, and add it to the next cluster
-    else {
-      high->cluster = nClusts ;
-      arrTow->Remove(high);
-      (clust[nClusts].tow)->Add(high);
-      // loop over rest of original TObjArray, and move any towers neighboring "high"
-      // to "neighbor"
-      nT = arrTow->GetEntriesFast();
-      for(Int_t i=nT-1; i>=0; i--) {
-        resTow = (TowerFPD *) arrTow->At(i);
-        // do NOT add tower with "zero" energy to cluster!
-        // when tower energy is less than minTowerEnergy, break out the loop over "neighbor"!
-        if( resTow->energy < minTowerEnergy )
-          break;
-        // if "resTow" is the immediate neighbor of "high", add it to the "neighbor"
-        if( resTow->IsNeighbor(high) ) {
-          arrTow->Remove(resTow);
-          neighbor->Add(resTow);
-        }
-      } // loop over the rest of towers in "arrTow"
-    } // when "high" is a "peak"
-    // 2003-09-27
-    // Do the follow, no matter "high" is a "peak" or "neighbor"!
-    // To close the logic loop hole that a tower which is seperated (by towers of the same energy) from
-    //   the "neighbor" towers becomes a peak, just because it happens to be in front of those towers
-    //   of the same energy (since the sorting can not distinguish that).
-    // We need to again loop over "arrTow", move any tower (that is neighboring any of the "neighbor"
-    //   towers and also has lower (or equal) energy than that "neighbor" tower) to "neighbor"
-    // Every time we remove a tower from "arrTow" (except we just simply go over all items in TObjArray
-    //   sequentially without worrying the relative order), we need to compress "arrTow"!
-    //   Since we assume that it has no emty slot!
-    arrTow->Compress();
-    nT = arrTow->GetEntriesFast();
-    for(Int_t ii=nT-1; ii>=0; ii--) {
-      resTow = (TowerFPD *) arrTow->At(ii);
-      // do NOT add tower with "zero" energy to cluster!
-      // when tower energy is less than minTowerEnergy, break out the loop over "arrTow"!
-      if( resTow->energy < minTowerEnergy )
-        break;
-      if (!couldBePeakTower(resTow, neighbor, minRatioPeakTower)) {
-        arrTow->Remove( resTow);
-        neighbor->Add(resTow);
-      }  // if
-    }
-    // compress "arrTow" again
-    // Every time we remove a tower from "arrTow" (except we just simply go over all items in TObjArray
-    //   sequentially without worrying the relative order), we need to compress "arrTow"!
-    //   Since we assume that it has no emty slot!
-    arrTow->Compress();
-    // increment "nClusts" when we find a "peak"
-    if( isPeak ) {
-      nClusts++ ;
-      // when reaching maximum number of clusters, break out the loop!
-      if( nClusts >= MAX_NUMER_CLUSTERS )
-        break;
-    }
-  } // loop over "arrTow"
-  // now that we know all the peaks, let's decide the affiliation of
-  // those remote neighbor-towers in "neighbor" TObjArray
-  // First, we need to sort the "neighbor" TObjArray, because we want to consider the "neighbor" towers
-  //    from higher towers to lower towers
-  neighbor->UnSort();
-  neighbor->Sort();
-  // 	neighbor->Compress();
-  // extremely faraway distance (no distance between towers can be this large!)
+unsigned TowerUtil::associateTowersWithClusters(TowerList& neighbor,
+                                                HitCluster *clust,
+                                                TObjArray* arrValley) {
+  Int_t jjn = neighbor.size() - 1 ;
   const Float_t ExtremelyFaraway = 99999 ;
   // distance to peak of cluster
-  Float_t distToClust[MAX_NUMER_CLUSTERS] ;
+  Float_t distToClust[maxNClusters] ;
   TowerFPD *nbT;
   TowerFPD *pkT;
-  // All towers in "neighbor" must belong to a cluster.
-  // Loop over them, check if it is bordering a cluster.
-  //   If yes, move it to the nearest cluster, and move on to the next tower.
-  //   If no, move on to the next tower.
-  //   When reach the end of the array, start from the beginning.
-  Int_t jjn = neighbor->GetEntriesFast() - 1 ;
-  while( !neighbor->IsEmpty() ) {
-    nbT = (TowerFPD *) neighbor->At(jjn);
+  TowerList associated;
+  typedef TowerList::reverse_iterator TowerRIter;
+  for (TowerRIter i = neighbor.rbegin(); i != neighbor.rend(); ++i) {
+    nbT = *i;
+    Int_t numbTowBefore = neighbor.size();
     // towers in "neighbor" should NEVER be lower than "minTowerEnergy"
     if( nbT->energy < minTowerEnergy ) {
       cout << "Something is wrong! A tower in \"neighbor\" has energy " << nbT->energy;
@@ -297,86 +204,67 @@ Int_t TowerUtil::FindTowerCluster(TObjArray *arrTow, HitCluster *clust) {
       nPeakSameDist[numbValleyTower] = 0 ;
       for(Int_t llc=0; llc<nClusts; llc++) {
         if( distToClust[llc] == minDist ) {
-          peaksToValley[numbValleyTower][ nPeakSameDist[numbValleyTower] ] = llc ;
+          int npeaks = nPeakSameDist[numbValleyTower];
+          peaksToValley[numbValleyTower][npeaks] = llc ;
           nPeakSameDist[numbValleyTower] ++ ;
         }
       }
       if( nPeakSameDist[numbValleyTower] == 1 ) {
         // Only one "peak" is closest to "nbT". "nbT" belongs to this "peak"!
         nbT->cluster = whichCluster ;
-        neighbor->Remove(nbT);
+        associated.push_back(nbT);
         (clust[whichCluster].tow)->Add(nbT);
+        std::cout << "tpbdebug associate neighbour " << jjn << " with cluster " << whichCluster << std::endl;
       }
       else if( nPeakSameDist[numbValleyTower] > 1 ) {
-        neighbor->Remove(nbT);
+        associated.push_back(nbT);
         arrValley->Add(nbT);
+        std::cout << "tpbdebug add neighbour " << jjn << " to valley array" << std::endl;
       }
       else {
         cout << "Something wrong in your logic! nPeakSameDist = " << nPeakSameDist << "! Error!" << endl;
       }
+    } else {
+      cout << "tpbdebug didn't find cluster with dist < ExtremelyFaraway" << endl;
     }
     // move forward on to the next tower
     jjn-- ;
-    if( jjn == -1 ) {
+    if( jjn == -1 ) {  // Means we've been through the entire list again
       // Counts number of towers in "neighbor". If the next iteration does not move any tower to a cluster
       //    (same number of towers), we have an infinite loop. Break out and print out error message!
-      Int_t numbTowBefore;
-      numbTowBefore = neighbor->GetEntriesFast() ;
-      neighbor->Compress();
-      jjn = neighbor->GetEntriesFast() - 1;
+      jjn = neighbor.size() - 1;
       if( numbTowBefore > 0 && (jjn + 1) == numbTowBefore ) {
-  	    break;
-	    }
+        std::cout << "tpbdebug <deprecated> breaking out of neighbour association with " << neighbor.size() << " remaining" << std::endl;
+//  	    break;
+	    }  // if
     }
   } // loop over TObjArray "neighbor"
-  // 2003-10-12
-  // calculate the moment of clusters, then decide where the "valley" towers should go
-  for(Int_t ic=0; ic<nClusts; ic++) {
-    CalClusterMoment(&clust[ic]);
-  }  
-  Int_t numbVal = arrValley->GetEntriesFast();
-  for(Int_t iVal = 0; iVal<numbVal; iVal++) {
-    nbT = (TowerFPD *) arrValley->At(iVal);
-    // which cluster should this tower belong?
-    Int_t whichCluster = -1;
-    Float_t minDist;
-    minDist = ExtremelyFaraway ;
-    for(Int_t lc=0; lc<nPeakSameDist[iVal]; lc++) {
-      // which cluster is this?
-      Int_t jkc;
-      jkc = peaksToValley[iVal][lc] ;
-      Float_t delc, delr;
-      delc = clust[jkc].x0 - (nbT->col - 0.5) ;
-      delr = clust[jkc].y0 - (nbT->row - 0.5) ;
-      distToClust[lc] = sqrt( delc * delc + delr * delr ) ;
-      // check if the distance to the "center" of this cluster is smaller
-      if( distToClust[lc] < minDist ) {
-        minDist = distToClust[lc] ;
-        whichCluster = jkc ;
-      }
-    }
-    // move the tower to the appropriate cluster
-    if( minDist < ExtremelyFaraway ) {
-      nbT->cluster = whichCluster ;
-      neighbor->Remove(nbT);
-      (clust[whichCluster].tow)->Add(nbT);
-    } else {
-      cout << "Something is wrong! The following \"Valley\" tower does not belong to any cluster! Error!" << endl;
-      nbT->Print();
-      cout << "!!!!!!!!\n" << endl;
-    }
-  }  // end of for loop over valley towers
-  // 2003-10-12
-  // If there are still towers left in "neighbor", distribute them to clusters
-  neighbor->Compress();
-  jjn = neighbor->GetEntriesFast() - 1 ;
-  while( !neighbor->IsEmpty() ) {
-    nbT = (TowerFPD *) neighbor->At(jjn);
+  for (TowerIter i = associated.begin(); i != associated.end(); ++i) {
+    neighbor.remove(*i);
+  }  // for
+  return associated.size();
+}
+
+unsigned TowerUtil::associateResidualTowersWithClusters(TowerList& neighbor,
+                                                HitCluster *clust,
+                                                TObjArray* arrValley) {
+  Int_t jjn = neighbor.size() - 1 ;
+  const Float_t ExtremelyFaraway = 99999 ;
+  // distance to peak of cluster
+  Float_t distToClust[maxNClusters] ;
+  TowerFPD *nbT;
+  TowerFPD *pkT;
+  TowerList associated;
+  std::cout << "tpbdebug handling " << neighbor.size() << " residual towers" << std::endl;
+  typedef TowerList::reverse_iterator TowerRIter;
+  for (TowerRIter i = neighbor.rbegin(); i != neighbor.rend(); ++i) {
+    nbT = *i;
+    Int_t numbTowBefore = neighbor.size();
     // towers in "neighbor" should NEVER be lower than "minTowerEnergy"
-    if( nbT->energy < minTowerEnergy ) {
+    if (nbT->energy < minTowerEnergy) {
       cout << "Something is wrong! A tower in \"neighbor\" has energy " << nbT->energy;
       cout << ". Lower than " << minTowerEnergy << ".\n" << endl;
-    }
+    }  // if
     // which cluster should this tower belong?
     Int_t whichCluster;
     // the smallest distance to the peaks
@@ -421,8 +309,9 @@ Int_t TowerUtil::FindTowerCluster(TObjArray *arrTow, HitCluster *clust) {
     // move the tower to the appropriate cluster
     if( minDist < ExtremelyFaraway ) {
   	  nbT->cluster = whichCluster ;
-	    neighbor->Remove(nbT);
+      associated.push_back(nbT);
 	    (clust[whichCluster].tow)->Add(nbT);
+	    std::cout << "tpbdebug associating residual neighbor " << jjn << " with cluster " << whichCluster << std::endl;
 	  }
     // move forward on to the next tower
     jjn-- ;
@@ -430,22 +319,213 @@ Int_t TowerUtil::FindTowerCluster(TObjArray *arrTow, HitCluster *clust) {
       // Counts number of towers in "neighbor". If the next iteration does not move any tower to a cluster
       //    (same number of towers), we have an infinite loop. Break out and print out error message!
       Int_t numbTowBefore;
-      numbTowBefore = neighbor->GetEntriesFast() ;
-      neighbor->Compress();
-      jjn = neighbor->GetEntriesFast() - 1;
+      numbTowBefore = neighbor.size();
+      jjn = neighbor.size() - 1;
   	  if( numbTowBefore > 0 && (jjn + 1) == numbTowBefore ) {
 	      cout << "Infinite loop! The following towers are not claimed by any cluster!" << endl;
-	      for(Int_t jbt=jjn; jbt>=0; jbt--) {
-    		  cout << "\t";
-		      ( (TowerFPD *) neighbor->At(jbt) )->Print();
-    		}
+	      for (TowerIter i = neighbor.begin(); i != neighbor.end(); ++i) {
+	        cout << "\t";
+	        (*i)->Print();
+	      }  // for
 	      cout << "\n  Algorithm could not deal with the case when \"neighbor\" is higher than the ";
 	      cout << "closest \"peak\", but towers surrounding it all belongs to that cluster!\n" << endl;
 	      cout << "Check the event! No (or bad) pedestal subtraction!?? \n" << endl;
-	      break;
+//	      break;
 	    }
   	}
   } // loop over TObjArray "neighbor"
+  for (TowerIter i = associated.begin(); i != associated.end(); ++i) {
+    neighbor.remove(*i);
+  }  // for
+  return associated.size();
+}
+
+TowerUtil::TowerUtil() : nClusts(0) {
+  arrValley=NULL;
+  neighbor=NULL;
+  SetMomentEcutoff();
+};
+
+TowerUtil::~TowerUtil() {
+  if(arrValley)delete arrValley;
+  if(neighbor)delete neighbor;
+};
+
+Int_t TowerUtil::FindTowerCluster(TObjArray *inputTow, HitCluster *clust) {
+  TowerList arrTow;
+  fillStlContainerFromRootCollection(*inputTow, &arrTow);
+  // the neighbor TObjArray
+  TowerList neighbor;
+  // the "valley" TObjArray
+  arrValley = new TObjArray(16);
+  arrValley->Clear();
+  // We assume that "TObjArray *inputTow" is already sorted, however, to be safe,
+  // sort tower by energy, if not done already
+  arrTow.sort(AscendingTowerEnergySorter());
+  TowerFPD *high;
+  // "TObjArray::Sort()" sorts the array from small to big ( [0]<=[1]<=...<=[48] )
+  // need to take care of that
+  // have to go last object first!
+  // The algoriths is such, first get the highest tower (which is ALWAYS the last one),
+  // and it and all its neighbors to the next cluster. Then repeat the process over the
+  // remaining towers.
+  while(!arrTow.empty()) {
+    // By design, this tower is the highest tower in "arrTow", but it could be lower
+    // than a tower in "neighbor"
+    TowerFPD* high = arrTow.back();
+    // when tower energy is less than minTowerEnergy, break out the loop!
+    if(high->energy < minTowerEnergy) {
+      break;
+    }  // if
+		// 2003-08-15
+		// Fix a logical loop hole in deciding if a tower is
+		//    a peak; Need to first compare the highest tower
+		//    remained in "arrTow" to all towers in "neighbor" which is its neighbor,
+		//    and if it is lower than any of those, it is
+		//    a neighbor. Move it to "neighbor" and continue to
+		//    the next tower in "arrTow".
+    TowerFPD *resTow;
+    Bool_t isPeak = couldBePeakTower(high, &neighbor);
+    // if "high" is not a peak, move it to "neighbor"
+    if (!isPeak) {
+      std::cout << "tpbdebug At arrTow size " << arrTow.size() << " got is not peak" << std::endl;
+      arrTow.remove(high);
+      neighbor.push_back(high);
+    } else {
+      std::cout << "tpbdebug At arrTow size " << arrTow.size() << " got IS peak" << std::endl;
+      // else if "high" is a peak
+      // remove the high tower from the original TObjArray, and add it to the next cluster
+      arrTow.remove(high);
+      std::cout << "tpbdebug Adding tower with E = " << high->energy << " to cluster " << nClusts << std::endl;
+      high->cluster = nClusts;
+      (clust[nClusts].tow)->Add(high);
+      // loop over rest of original TObjArray, and move any towers neighboring "high"
+      // to "neighbor"
+      // Find the first tower above the minimum energy threshold, as we will want
+      // to exclude these in many cases (we may want to create two separate lists,
+      // with above- and below-threshold towers, but let's try to mimic Steve's
+      // implementation for now).
+      TowerIter aboveThreshold = std::find_if(arrTow.begin(), arrTow.end(),
+                                              TowerEnergyIsAboveThreshold());
+      // Partition the remaining hits so that neighbours of the high tower are
+      // placed at the end, and non-neighbours placed at the start. Use
+      // stable_partition so we don't alter the energy ordering.
+      TowerIter newEnd = std::stable_partition(aboveThreshold, arrTow.end(),
+          std::not1(std::bind2nd(TowerIsNeighbor(), high)));
+      // Now copy the neighbors to the neighbor list, and erase them from the
+      // master tower list
+      unsigned initialSize = arrTow.size();
+      neighbor.insert(neighbor.end(), newEnd, arrTow.end());
+      arrTow.erase(newEnd, arrTow.end());
+      arrTow.sort(AscendingTowerEnergySorter());
+      std::cout << "tpbdebug removed " << initialSize - arrTow.size() << " neighbours" << std::endl;
+    } // when "high" is a "peak"
+    // 2003-09-27
+    // Do the follow, no matter "high" is a "peak" or "neighbor"!
+    // To close the logic loop hole that a tower which is seperated (by towers of the same energy) from
+    //   the "neighbor" towers becomes a peak, just because it happens to be in front of those towers
+    //   of the same energy (since the sorting can not distinguish that).
+    // We need to again loop over "arrTow", move any tower (that is neighboring any of the "neighbor"
+    //   towers and also has lower (or equal) energy than that "neighbor" tower) to "neighbor"
+    // Every time we remove a tower from "arrTow" (except we just simply go over all items in TObjArray
+    //   sequentially without worrying the relative order), we need to compress "arrTow"!
+    //   Since we assume that it has no emty slot!
+    TowerIter aboveThreshold = std::find_if(arrTow.begin(), arrTow.end(),
+                                            TowerEnergyIsAboveThreshold());
+    unsigned initialSize = arrTow.size();
+    TowerList above;
+    std::copy(aboveThreshold, arrTow.end(), std::back_inserter(above));
+    above.reverse();
+    for (TowerIter i = above.begin(); i != above.end(); ++i) {
+      if (!couldBePeakTower(*i, &neighbor)) {
+        neighbor.push_back(*i);
+        arrTow.remove(*i);
+      }  // if
+    }  // for
+    std::cout << "tpbdebug removed " << initialSize - arrTow.size() <<
+      " adjacent towers that could not be peak towers" << std::endl;
+    // increment "nClusts" when we find a "peak"
+    if (isPeak) {
+      nClusts++ ;
+      // when reaching maximum number of clusters, break out the loop!
+      if (nClusts >= maxNClusters) {
+        break;
+      }  // if
+    }  // if
+  }  // End of for loop over "arrTow"
+  // now that we know all the peaks, let's decide the affiliation of
+  // those remote neighbor-towers in "neighbor" TObjArray
+  // First, we need to sort the "neighbor" TObjArray, because we want to consider the "neighbor" towers
+  //    from higher towers to lower towers
+  neighbor.sort(AscendingTowerEnergySorter());
+  std::cout << "tpbdebug " << neighbor.size() << " neighbours need to be affiliated with clusters" << std::endl;
+  // extremely faraway distance (no distance between towers can be this large!)
+  const Float_t ExtremelyFaraway = 99999 ;
+  // distance to peak of cluster
+  Float_t distToClust[maxNClusters] ;
+  TowerFPD *nbT;
+  TowerFPD *pkT;
+  // Each loop of association goes through the entire remaining neighbor list
+  // and tries to associate each neighbor with a cluster.
+  // Keep doing this until we make an entire loop through all neighbors without
+  // successfully associating anything (nSuccessfulAssociations == 0). Then we stop, lest
+  // we end up in an infinite loop when we can't associate all neighbors.
+  unsigned nSuccessfulAssociations(0);
+  do {
+    nSuccessfulAssociations =
+      associateTowersWithClusters(neighbor, clust, arrValley);
+  } while(nSuccessfulAssociations > 0);
+  // All towers in "neighbor" must belong to a cluster.
+  // Loop over them, check if it is bordering a cluster.
+  //   If yes, move it to the nearest cluster, and move on to the next tower.
+  //   If no, move on to the next tower.
+  //   When reach the end of the array, start from the beginning.
+  Int_t jjn = neighbor.size() - 1;
+  // 2003-10-12
+  // calculate the moment of clusters, then decide where the "valley" towers should go
+  for(Int_t ic=0; ic<nClusts; ic++) {
+    CalClusterMoment(&clust[ic]);
+  }  
+  Int_t numbVal = arrValley->GetEntriesFast();
+  std::cout << "tpbdebug handling " << numbVal << " valley towers" << std::endl;
+  for(Int_t iVal = 0; iVal<numbVal; iVal++) {
+    nbT = (TowerFPD *) arrValley->At(iVal);
+    // which cluster should this tower belong?
+    Int_t whichCluster = -1;
+    Float_t minDist;
+    minDist = ExtremelyFaraway ;
+    for(Int_t lc=0; lc<nPeakSameDist[iVal]; lc++) {
+      // which cluster is this?
+      Int_t jkc;
+      jkc = peaksToValley[iVal][lc] ;
+      Float_t delc, delr;
+      delc = clust[jkc].x0 - (nbT->col - 0.5) ;
+      delr = clust[jkc].y0 - (nbT->row - 0.5) ;
+      distToClust[lc] = sqrt( delc * delc + delr * delr ) ;
+      // check if the distance to the "center" of this cluster is smaller
+      if( distToClust[lc] < minDist ) {
+        minDist = distToClust[lc] ;
+        whichCluster = jkc ;
+      }
+    }
+    // move the tower to the appropriate cluster
+    if( minDist < ExtremelyFaraway ) {
+      nbT->cluster = whichCluster ;
+      neighbor.remove(nbT);
+      (clust[whichCluster].tow)->Add(nbT);
+      std::cout << "tpbdebug associate valley tower " << iVal << " with cluster " << whichCluster << std::endl;
+    } else {
+      cout << "Something is wrong! The following \"Valley\" tower does not belong to any cluster! Error!" << endl;
+      nbT->Print();
+      cout << "!!!!!!!!\n" << endl;
+    }
+  }  // end of for loop over valley towers
+  // 2003-10-12
+  // If there are still towers left in "neighbor", distribute them to clusters
+  do {
+    nSuccessfulAssociations =
+      associateResidualTowersWithClusters(neighbor, clust, arrValley);
+  } while(nSuccessfulAssociations > 0);
   // 2003-08-26
   // Sort towers by energy (descending, higher energy towers first)
   for(Int_t jc=0; jc<nClusts; jc++) {
@@ -477,9 +557,9 @@ Int_t TowerUtil::FindTowerCluster(TObjArray *arrTow, HitCluster *clust) {
   // now add those "zero" towers to the clusters
   // those towers serve the purpose of preventing the creation of bogus peak
   //   (peak where there is no energy deposited at the tower)
-  arrTow->Compress();
-  for(Int_t jz=0; jz<arrTow->GetEntriesFast(); jz++) {
-    nbT = (TowerFPD *) arrTow->At(jz);
+  TowerList toRemove;
+  for (TowerIter i = arrTow.begin(); i != arrTow.end(); ++i) {
+    nbT = *i;
     // which cluster should this tower belong?
     Int_t whichCluster = 0;
     // the smallest distance to the peaks
@@ -510,13 +590,14 @@ Int_t TowerUtil::FindTowerCluster(TObjArray *arrTow, HitCluster *clust) {
     // Do not want to add too many "zero" towers to a cluster!
     if( minDist < maxDistanceFromPeak ) {
       nbT->cluster = whichCluster ;
-      arrTow->Remove(nbT);
+      toRemove.push_back(nbT);
       (clust[whichCluster].tow)->Add(nbT);
     }
   }
-  neighbor->Clear();
-  delete neighbor;
-  neighbor=NULL;
+  for (TowerIter i = toRemove.begin(); i != toRemove.end(); ++i) {
+    arrTow.remove(*i);
+  }  // for
+  neighbor.clear();
   arrValley->Clear();
   delete arrValley;
   arrValley=NULL;
