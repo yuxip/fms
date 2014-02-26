@@ -4,14 +4,14 @@
 #include "StEvent/StEvent.h"
 #include "StEvent/StFmsCollection.h"
 #include "StEvent/StFmsHit.h"
+#include "StEvent/StTriggerData.h"
 #include "StFmsDbMaker/StFmsDbMaker.h"
 #include "StFmsHitMaker/StFmsHitMaker.h"
 #include "StFmsClusterCollection.h"
 #include "StFmsPointCollection.h"
 #include "StFmsClHitCollection.h"
 #include "StMuDSTMaker/COMMON/StMuDst.h"
-#include "StMuDSTMaker/COMMON/StMuFmsCollection.h"
-#include "StMuDSTMaker/COMMON/StMuFmsHit.h"
+#include "StMuDSTMaker/COMMON/StMuEvent.h"
 
 #include "StMessMgr.h"
 
@@ -66,7 +66,6 @@ void StFmsPointMaker::Clear( const char* opt ) {
 */
   std::vector<TMatrix>::iterator iter;
   for (iter = mEnergyMatrices.begin(); iter != mEnergyMatrices.end(); ++iter) {
-    std::cout << "tpbdebug clearing energy matrices at end of event" << std::endl;
     *iter = 0.f;
   }  // for
 	LOG_INFO <<"after StFmsPointMaker::Clear()" <<endm;
@@ -95,7 +94,6 @@ Int_t StFmsPointMaker::InitRun(Int_t runNumber){ //gStFmsDbMaker is filled after
 	// Ensure we can access database information
 	mFmsDbMaker = static_cast<StFmsDbMaker*>(GetMaker("fmsDb"));
 	if (!mFmsDbMaker) {
-		std::cout << "tpbdebug initialiseEnergyMatrices() failed to set mFmsDbMaker" << std::endl;
 	  return kStErr;
 	}  // if
 	// Create energy matrices of the correct (row, column) dimensions for each
@@ -107,8 +105,6 @@ Int_t StFmsPointMaker::InitRun(Int_t runNumber){ //gStFmsDbMaker is filled after
     Int_t nCols = mFmsDbMaker->nColumn(detectorId);
     mEnergyMatrices.at(i).ResizeTo(nRows, nCols);
     mEnergyMatrices.at(i) = 0.f;
-		std::cout << "tpbdebug InitRun() initialised energy matrix " << i << std::endl;
-		mEnergyMatrices.at(i).Dump();
   }  // for
 }
 
@@ -144,7 +140,6 @@ Int_t StFmsPointMaker::FindPoint() {
 		if(Esum==0||Esum>500) continue; //to remove LED trails, for pp500 GeV
 
 		//call the cluster finder for each nstb
-		std::cout << "tpbdebug accessing energy matrix " << instb << " of " << mEnergyMatrices.size() << std::endl;
 		p_rec[instb] = new Yiqun(&mEnergyMatrices.at(instb),fmsgeom,2,instb+1);
 		
 		//Saved cluser info into StFmsCluster
@@ -280,71 +275,61 @@ Int_t StFmsPointMaker::FindPoint() {
 }
 
 Bool_t StFmsPointMaker::initialiseEnergyMatrices() {
-	/*
-  StEvent* event = static_cast<StEvent*>(GetInputDS("StEvent"));
-  if (!event) {
-		std::cout << "tpbdebug initialiseEnergyMatrices() failed to access StEvent" << std::endl;
-    return false;
-  }  // if
-  StFmsCollection* fms = event->fmsCollection();
-  if (!fms) {
-		std::cout << "tpbdebug initialiseEnergyMatrices() failed to access StFmsCollection" << std::endl;
-    return false;
-  }  // if
-  */
-  StMuFmsCollection* fms = StMuDst::muFmsCollection();
-  if (!fms) {
-		std::cout << "tpbdebug initialiseEnergyMatrices() failed to access StMuFmsCollection" << std::endl;
-    return false;
-  }  // if
-  for (unsigned int i = 0; i < fms->numberOfHits(); i++) {
-    StMuFmsHit* hit = fms->getHit(i);
-    Int_t detector = hit->detectorId();
-    Int_t channel = hit->channel();
-    Int_t row = mFmsDbMaker->getRowNumber(detector, channel);
-    Int_t column = mFmsDbMaker->getColumnNumber(detector, channel);
-    Int_t nstb = 0;
-    Int_t ew  = 2;  // east=1, west=2
-    switch(detector) {
-      case 9:  // south large
-        nstb = 2;
-        break;
-      case 8:  // north large
-        nstb = 1;
-        break;
-      case 11:  // south small
-        nstb = 4;
-        break;
-      case 10:  // north small
-        nstb = 3;
-        break;
-      default:
-        nstb = 0;
-        break;
-    }  // switch	
-    Float_t energy = 0.f;
-    if (detector > 0 || channel > 0) {
-      std::cout << "tpbdebug reading db for gain/correction" << std::endl;
-      Float_t g1 = mFmsDbMaker->getGain(detector, channel);
-      Float_t g2 = mFmsDbMaker->getGainCorrection(detector, channel);
-      energy = hit->adc() * g1 * g2;
-    }  // if
-    if(nstb == 1 || nstb == 2) {
-      // because channel geometry in the database assigns row1 as the bottom row
-      row = 35 - row;
-    }  // if
-    if(nstb == 3 || nstb == 4) {
-      row = 25 - row;
-    }  // if
-    if(!Legal(ew, nstb, row - 1, column - 1)) {
-      continue;
-    }  // if
-    if (hit->adc() > 0) {
-      mEnergyMatrices.at(nstb - 1)[row - 1][column - 1] = energy;
-    }  // if
+  const StTriggerData* triggerData = 
+      static_cast<const StTriggerData*>(StMuDst::event()->triggerData());
+  // Loop over QT crate, slot and channel in the trigger data
+  // and fill FMS energy matrices for this event.
+  for (unsigned short crt = 1; crt <= 4; crt++){
+    for (unsigned short slot = 1; slot <= 16; slot++){
+      for (unsigned short ch = 0; ch < 32; ch++){
+        unsigned short adc=triggerData->fmsADC(crt, slot - 1, ch);
+        unsigned short tdc=triggerData->fmsTDC(crt, slot - 1, ch);
+        // Determine the detector ID, row and channel
+        Int_t detector(0);
+        Int_t channel(0);
+        mFmsDbMaker->getReverseMap(crt, slot, ch, &detector, &channel);
+        Int_t row = mFmsDbMaker->getRowNumber(detector, channel);
+        Int_t column = mFmsDbMaker->getColumnNumber(detector, channel);
+        Int_t nstb = 0;
+        switch (detector) {
+          case 9:  // south large
+            nstb = 2;
+            break;
+          case 8:  // north large
+            nstb = 1;
+            break;
+          case 11:  // south small
+            nstb = 4;
+            break;
+          case 10:  // north small
+            nstb = 3;
+            break;
+          default:
+            nstb = 0;
+            break;
+        }  // switch	
+        Float_t energy = 0.f;
+        if (detector > 0 || channel > 0) {
+          Float_t g1 = mFmsDbMaker->getGain(detector, channel);
+          Float_t g2 = mFmsDbMaker->getGainCorrection(detector, channel);
+          energy = adc * g1 * g2;
+        }  // if
+        if (nstb == 1 || nstb == 2) {
+          // because channel geometry in the database assigns row1 as the bottom row
+          row = 35 - row;
+        } else if (nstb == 3 || nstb == 4) {
+          row = 25 - row;
+        }  // if
+        Int_t ew  = 2;  // east=1, west=2
+        if (!Legal(ew, nstb, row - 1, column - 1)) {
+          continue;
+        }  // if
+        if (adc > 0) {
+          mEnergyMatrices.at(nstb - 1)[row - 1][column - 1] = energy;
+        }  // if
+      }  // for
+    }  // for
   }  // for
-//  std::cout << "tpbdebug here is the energy matrix from point maker " << std::endl;
-//  mEnergyMatrices.at(0).Print();
 }
 
 Bool_t StFmsPointMaker::Legal(Int_t iew,Int_t nstb,Int_t row0,Int_t col0){
