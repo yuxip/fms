@@ -33,27 +33,15 @@ StFmsHitMaker::StFmsHitMaker(const char* name) : StMaker(name){
 	mMuFmsColl = NULL;
 	LOG_INFO << "StFmsHitMaker initializing...."<<endm;
 	LOG_DEBUG << "StFmsHitMaker::constructor." << endm;
-
-	for(Int_t i = 0; i < 4; i++){
-		mAdc[i] = mEnergy[i] = 0;
-	}
 }
 
 StFmsHitMaker::~StFmsHitMaker(){
   
   LOG_INFO << "StFmsHitMaker::destructor." << endm;
-  for(Int_t i = 0; i < 4; i++){
-	if(mAdc[i]) { delete mAdc[i]; mAdc[i] = 0; }
-	if(mEnergy[i]){ delete mEnergy[i]; mEnergy[i] = 0;}
-  }
 }
 
 void StFmsHitMaker::Clear(Option_t* option){
   LOG_DEBUG << "StFmsHitMaker::Clear()" << endm;
-  for(Int_t i = 0; i < 4; i++){
-	if(mAdc[i]) *(mAdc[i]) = 0.;
-	if(mEnergy[i]) *(mEnergy[i]) = 0.;
-  }
   StMaker::Clear(option);
 }
 
@@ -68,17 +56,6 @@ int StFmsHitMaker::Init() {
 int StFmsHitMaker::InitRun(Int_t runNumber) {
   
 	LOG_INFO << "StFmsHitMaker::InitRun --run# changed to " << runNumber << endm;
-	//initial energy/adc matrices
-	for(Int_t j = 0; j < 4; j++){
-                Int_t detectorId = j+8;
-                LOG_INFO<<"nstb = "<<j+1<<", NROWS = "<<gStFmsDbMaker->nRow(detectorId)<<", NCOLS = "<<gStFmsDbMaker->nColumn(detectorId)<<endm;
-		//only allocate new space in the begining, not in between runs
-		if(!(mAdc[j]))mAdc[j] = new TMatrix(gStFmsDbMaker->nRow(detectorId),gStFmsDbMaker->nColumn(detectorId));
-		if(!(mEnergy[j]))mEnergy[j] = new TMatrix(gStFmsDbMaker->nRow(detectorId),gStFmsDbMaker->nColumn(detectorId));
-                *(mAdc[j]) = 0.;
-                *(mEnergy[j]) = 0.;
-
-        }
 	mFmsDbMaker = gStFmsDbMaker;
 	mCurrentRunNumber = runNumber; //called by maker's method :InitRun(run); when the run# changes
 
@@ -144,7 +121,6 @@ int StFmsHitMaker::Make(){
 	//after this step triggerData is pointing to StTriggerData block of StEvent
 
 	if(flag>0){
-	  std::cout << "tpbdebug StFmsHitMaker flag == " << flag << std::endl;
 		mFmsCollection = new StFmsCollection();
 		//create StFmsHit and add it to StFmsCollection
 		for(unsigned short crt=1; crt<=4; crt++){
@@ -179,86 +155,31 @@ int StFmsHitMaker::Make(){
 				}
       			}	
     		}
-    
 
-  		// Read DB and put DetectorId, channeel and apply Calibration to get Energy
-  		LOG_DEBUG<<"2nd pass"<<endm;
-    		for(unsigned int i=0; i<mFmsCollection->numberOfHits(); i++){
-      			int d,c; //detector Id, channel# (starts from 1)
-      			StFmsHit* fmsHit = (mFmsCollection->hits())[i];
-      			int crt   =fmsHit->qtCrate();
-      			int slot  =fmsHit->qtSlot();
-      			int ch    =fmsHit->qtChannel();
-      			float adc =fmsHit->adc();
-      			mFmsDbMaker->getReverseMap(crt,slot,ch,&d,&c);
-		//	int ns = mFmsDbMaker->northSouth(d);
-		//	int type = mFmsDbMaker->type(d);
-			int row = mFmsDbMaker->getRowNumber(d,c);
-			int col = mFmsDbMaker->getColumnNumber(d,c);
-			int nstb = 0;
-			int ew  = 2; //east=1, west=2
-			switch(d){
-				case 9: //south large
-					nstb = 2;
-					break;
-				case 8: //north large
-					nstb = 1;
-					break;
-				case 11: //south small
-					nstb = 4;
-					break;
-				case 10: //north small
-					nstb = 3;
-					break;
-				default:
-					nstb = 0;
-					break;
-			}			
 
-      			float e=0.0;
-      			if(d>0 || c>0){
-				float g1 = mFmsDbMaker->getGain(d,c);
-				float g2 = mFmsDbMaker->getGainCorrection(d,c);
-				e = adc*g1*g2;
-			}
-      		
-      			fmsHit->setDetectorId(d);
-      			fmsHit->setChannel(c);
-      			fmsHit->setEnergy(e);
-		//	fmsHit->setRow(row); //seems impossible to change StFmsHit definition in StEvent
-		//	fmsHit->setCol(col);
-		//	fmsHit->setNs(ns);
-		//	fmsHit->setType(type);
-			if(nstb==1||nstb==2){
-				row = 35 - row; //because channel geometry in the database assigns row1 as the bottom row
-			}
-			if(nstb==3||nstb==4){
-				row = 25 - row;
-			}			
-			if(!Legal(ew,nstb,row-1,col-1)){
-		//		LOG_INFO<<" illegal (nstb,row,col), dId = "<<dId<<", crt = "<<crt<<", slot = "<<slot<<", ch = "<<ch<<", nstb1 = "<<nstb<<", row0 = "<<row-1<<", col0 = "<<col-1<<endm;
-				continue;
-			}
-		//	populate adc and energy matrices
-			if(adc>0){
-				(*(mAdc[nstb-1]))[row-1][col-1] = adc;
-				(*(mEnergy[nstb-1]))[row-1][col-1] = e;
-		//	LOG_INFO<<"adc of dId "<<dId<<", crt "<<crt<<", slot "<<slot<<", ch "<<ch<<", nstb1 "<<nstb<<", row0 "<<row-1<<", col0 "<<col-1<<" is: "<<adc<<endm;
-			}
-			
+  /// Read DB and put DetectorId, channeel and apply Calibration to get Energy
+  if(flag>0){
+    for(unsigned int i=0; i<mFmsCollection->numberOfHits(); i++){
+      int d,c;
+      StFmsHit* fmsHit = (mFmsCollection->hits())[i];
+      int crt   =fmsHit->qtCrate();
+      int slot  =fmsHit->qtSlot();
+      int ch    =fmsHit->qtChannel();
+      float adc =fmsHit->adc();
+      mFmsDbMaker->getReverseMap(crt,slot,ch,&d,&c);
+      float e=0.0;
+      if(d>0 || c>0){
+  float g1=mFmsDbMaker->getGain(d,c);
+  float g2=mFmsDbMaker->getGainCorrection(d,c);
+  e       =adc*g1*g2;
+      }
+      fmsHit->setDetectorId(d);
+      fmsHit->setChannel(c);
+      fmsHit->setEnergy(e);
+      if(GetDebug()>0) fmsHit->print();
+    }
+  }
 
-			if(GetDebug()>0) fmsHit->print();
-		}
-
-		/*
-		cout<<"debug adc, energy arrays"<<endl;
-		for(Int_t j = 0; j < 4; j++){
-			cout<<"adc_"<<j<<endl;
-			mAdc[j]->Print();
-			cout<<"energy_"<<j<<endl;
-			mEnergy[j]->Print();
-		}*/
-  
   		LOG_INFO<<"StFmsHitMaker::Make got "<<mFmsCollection->numberOfHits()<<" hits in StFmsCollection"<<endm;
 	
 
@@ -266,9 +187,6 @@ int StFmsHitMaker::Make(){
 
 	}//flag, received fms data from mudst, triggerdata, etc.
 
-//  std::cout << "tpbdebug here is the energy matrix from hit maker " << std::endl;
-//  mEnergy[0]->Print();
- 
 /*   
 	//flag = 0; //yuxi debug
 	if(flag==0) { //read hits created during production
@@ -301,30 +219,4 @@ int StFmsHitMaker::Finish(){
   
   LOG_INFO << "StFmsHitMaker::Finish() " << endm;
   return kStOk;
-}
-
-TMatrix** StFmsHitMaker::GetEnergyMatrices() {
-	
-	return mEnergy;
-}
-
-Bool_t StFmsHitMaker::Legal(Int_t iew,Int_t nstb,Int_t row0,Int_t col0){
-	//nstb starts from 1
-	//row0,col0 starts from 0	
-
-	if(iew>0 && iew<2)return false;
-	if(nstb<1 || nstb>4)return false;
-	if(nstb>2){
-      		if(row0<0 || row0>23)return false;
-		if(col0<0 || col0>11)return false;
-		if(fabs(1.*row0-11.5)<5 && col0<5)return false;
-	}
-	else{
-		if(row0<0 || row0>33)return false;
-		if(col0<0 || col0>16)return false;
-		if(fabs(1.*row0-16.5)<8 && col0<8)return false;
-		if(row0<col0-9.5)return false;
-		if(33-row0<col0-9.5)return false;
-	}	
-  return true;
 }

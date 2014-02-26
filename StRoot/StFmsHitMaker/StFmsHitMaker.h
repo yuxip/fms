@@ -57,10 +57,6 @@ private:
   StFmsCollection*   mFmsCollection; //! FMS data structure for StEvent
   StMuFmsCollection* mMuFmsColl;     //! FMS data structure for StMuEvent
 
-  TMatrix*	     mAdc[4];	     //!
-  TMatrix*	     mEnergy[4];     //!
-  TMatrix*	     mStatus[4];     //! cell status table
-
   Int_t mCurrentRunNumber;
   ClassDef(StFmsHitMaker,1);
 };
