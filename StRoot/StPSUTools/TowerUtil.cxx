@@ -13,6 +13,33 @@ using namespace PSUGlobals;
 
 ClassImp(TowerUtil);
 
+namespace {
+/*
+ Test for a tower that can form a cluster peak.
+ 
+ Returns true if a tower can be a peak tower, given a global population of
+ known non-peak towers and a minimum ratio between the energy of peak towers and
+ non-peak towers. Returns false if the tower can not possibly be a peak. Note
+ that returning true does not mean the tower *is* a peak, merely that it *can*
+ be (i.e. it is consistent with that hypothesis given this input).
+ */
+Bool_t couldBePeakTower(TowerFPD* tower, TObjArray* nonPeakTowers,
+                        double minEnergyRatio) {
+  Bool_t couldBePeak(true);
+  for (Int_t i(0); i < nonPeakTowers->GetEntriesFast(); ++i) {
+    TowerFPD* nonPeak = static_cast<TowerFPD*>(nonPeakTowers->At(i));
+    // Compare this tower's energy with that of its immediate neighbours
+    if (tower->IsNeighbor(nonPeak)) {
+      if (tower->energy < minEnergyRatio * nonPeak->energy) {
+        couldBePeak = false;
+        break;
+      }  // if
+    }  // if
+  } // end of for loop over non-peak towers
+  return couldBePeak;
+}
+}  // unnamed namespace
+
 TowerUtil::TowerUtil() {
   arrValley=NULL;
   neighbor=NULL;
@@ -73,21 +100,7 @@ Int_t TowerUtil::FindTowerCluster(TObjArray *arrTow, HitCluster *clust) {
 		//    and if it is lower than any of those, it is
 		//    a neighbor. Move it to "neighbor" and continue to
 		//    the next tower in "arrTow".
-    TowerFPD *nbTow;
-    Bool_t isPeak;
-    isPeak = true ;
-    for(Int_t jn=0; jn<neighbor->GetEntriesFast(); jn++) {
-    	nbTow = (TowerFPD *) neighbor->At(jn);
-    	if( high->IsNeighbor(nbTow) ) {
-				// 2003-09-13
-				// Now require "peak" tower energy be at least "minRatioPeakTower" times
-				//   that of "neighbor" tower				//
-  	    if( high->energy < (minRatioPeakTower * nbTow->energy) ) {
-      		isPeak = false ;
-      		break;
-	      }
-	    }
-    } // loop over towers in "neighbor"
+    Bool_t isPeak = couldBePeakTower(high, neighbor, minRatioPeakTower);
     TowerFPD *resTow;
     Int_t nT;
     // if "high" is not a peak, move it to "neighbor"
@@ -135,18 +148,10 @@ Int_t TowerUtil::FindTowerCluster(TObjArray *arrTow, HitCluster *clust) {
       // when tower energy is less than minTowerEnergy, break out the loop over "arrTow"!
       if( resTow->energy < minTowerEnergy )
         break;
-      for(Int_t kn=0; kn<neighbor->GetEntriesFast(); kn++) {
-        nbTow = (TowerFPD *) neighbor->At(kn);
-        if( resTow->IsNeighbor(nbTow) ) {
-          // 2003-09-27
-          // unless "resTow" is a peak ("minRatioPeakTower" times of energy of "nbTow"), it is a neighbor!
-          if( resTow->energy < (minRatioPeakTower * nbTow->energy) ) {
-            arrTow->Remove( resTow);
-            neighbor->Add(resTow);
-            break;
-          }
-        }
-      }
+      if (!couldBePeakTower(resTow, neighbor, minRatioPeakTower)) {
+        arrTow->Remove( resTow);
+        neighbor->Add(resTow);
+      }  // if
     }
     // compress "arrTow" again
     // Every time we remove a tower from "arrTow" (except we just simply go over all items in TObjArray
@@ -360,6 +365,7 @@ Int_t TowerUtil::FindTowerCluster(TObjArray *arrTow, HitCluster *clust) {
         continue;
       // loop over all towers in this cluster
       TowerFPD *towInClust;
+      if
       for(Int_t jt=0; jt<(clust[ic].tow)->GetEntriesFast(); jt++) {
 	      // check if "nbT" is neigboring any tower in this cluster
 	      towInClust = (TowerFPD *) (clust[ic].tow)->At(jt) ;
