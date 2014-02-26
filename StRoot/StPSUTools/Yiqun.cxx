@@ -2,7 +2,34 @@
 #include <TRandom.h>  // For ROOT global random generator, gRandom
 using namespace std;
 using namespace PSUGlobals;
-
+#include <TCanvas.h>
+#include <algorithm>
+#include <functional>
+namespace {
+// Lack of c++0x in STAR-standard gcc as of writing so we provide our own
+// implementation of copy_if - http://en.cppreference.com/w/cpp/algorithm/copy
+template<class InputIterator, class OutputIterator, class UnaryPredicate>
+OutputIterator copy_if(InputIterator start, InputIterator end, 
+                       OutputIterator outStart, UnaryPredicate predicate) {
+  return std::remove_copy_if(start, end, outStart, std::not1(predicate));
+}
+// Unary predicate for selecting good clusters.
+struct IsGoodCluster : public std::unary_function<const HitCluster*, bool> {
+  // Initialise with minimum energy and maximum number of towers
+  IsGoodCluster(double minEnergy, int maxTowers)
+    : energy(minEnergy), towers(maxTowers) { }
+  // Returns true if the cluster has both energy > min energy and number of
+  // towers <= maximum number of towers. Returns false otherwise.
+  // Use a pointer argument to avoid reference-to-reference problems when
+  // binding the predicate.
+  bool operator()(const HitCluster* cluster) const {
+    return cluster->energy > energy && cluster->tow->GetEntries() <= towers;
+  }
+  double energy;
+  int towers;
+};
+}  // unnamed namespace
+#include <list>
 ClassImp(Yiqun)
 
 
@@ -14,200 +41,48 @@ TF1* Yiqun::EDepCorrection(NULL);
 
 Float_t Yiqun::FitOnePhoton(HitCluster* p_clust)
 {
-
-	Double_t chiSq;
-
+  // 4 parameters are passed to the fitting routine: nPhotons, x, y, energy
+  // Starting points for the fit parameters:
+  const Double_t start[4] = {
+    1.0, widLG[0] * p_clust->x0, widLG[1] * p_clust->y0, p_clust->energy};
+  // Maximum allowed deviations from the start points:
+  const Double_t delta[4] = {
+    0.5, 0.5 * widLG[0], 0.5 * widLG[1], 0.15 * p_clust->energy};
+  // Lower and upper physical limits of fit parameters = start +/- delta
+  Double_t lowLim[4], upLim[4];
+  for (int i(0); i < 4; ++i) {
+    lowLim[i] = start[i] - delta[i];
+    upLim[i] = start[i] + delta[i];
+  }  // for
+	Int_t status = fitter->Fit(start, fitter->step, lowLim, upLim);
+	// check return status
+	if (status != 0) {
+		std::cerr << "Minuit fit returns " << status << "!" << std::endl;
+	}  // if
 	// fit parameters(starting positions), errors, and gradients of function
-	//
 	Double_t param[4];
 	Double_t error[4];
+	// get the fit result
+	fitter->fMn->GetParameter(0, param[0], error[0]);
+	// 3 parameters per photon, and the 1st parameter giving the number of photons
+	Int_t nPar = 3*((Int_t) param[0])+1;
+	for (Int_t ipar = 1; ipar < nPar; ipar++) {
+		fitter->fMn->GetParameter(ipar, param[ipar], error[ipar]);
+	}  // for
+	// put the fit result back in "clust"
+	p_clust->photon[0].xPos    = param[1];
+	p_clust->photon[0].errXPos = error[1];
+	p_clust->photon[0].yPos    = param[2];
+	p_clust->photon[0].errYPos = error[2];
+	p_clust->photon[0].energy  = param[3];
+	p_clust->photon[0].errEne  = error[3];
+	// evaluate the Chi-square function
 	Double_t gradient[4];
-
-	// starting position, lower and upper limit of parameters
-	//
-	Double_t start[4], lowLim[4], upLim[4];
-
-	// fit status, and flag
-	//
-	Int_t status, iflag=1;
-
-
-	// constant parameter: 1 photon
-	//
-	start[0] = 1;
-	lowLim[0] = 0.5;
-	lowLim[0] = 1.5;
-
-	start[1] = widLG[0] * p_clust->x0;
-	start[2] = widLG[1] * p_clust->y0;
-	start[3] = p_clust->energy;
-
-		//
-		// use limit
-		//
-		lowLim[1] = start[1] - posDif_1PC * widLG[0] ;
-		lowLim[2] = start[2] - posDif_1PC * widLG[1] ;
-		lowLim[3] = start[3] * (1 - eneRat_1PC) ;
-	
-		upLim[1] = start[1] + posDif_1PC * widLG[0] ;
-		upLim[2] = start[2] + posDif_1PC * widLG[1] ;
-		upLim[3] = start[3] * (1 + eneRat_1PC) ;
-
-	// call fitter->Fit(...), return status
-	//
-	status = fitter->Fit(start, fitter->step, lowLim, upLim);
-
-
-	// 2003-10-09
-	// check return status
-	//
-	if( status != 0 ) {
-		std::cout << "Minuit fit returns " << status << "!" << "\n";
-	}
-
-
-	// get the fit result
-	//
-	fitter->fMn->GetParameter(0, param[0], error[0]);
-	Int_t nPar = 3*((Int_t) param[0])+1;
-	for(Int_t ipar=1; ipar<nPar; ipar++) {
-		fitter->fMn->GetParameter(ipar, param[ipar], error[ipar]);
-	}
-
-
-	// put the fit result back in "clust"
-	//
-	p_clust->photon[0].xPos    = param[1];
-	p_clust->photon[0].errXPos = error[1];
-	p_clust->photon[0].yPos    = param[2];
-	p_clust->photon[0].errYPos = error[2];
-	p_clust->photon[0].energy  = param[3];
-	p_clust->photon[0].errEne  = error[3];
-
-
-	// evaluate the Chi-square function
-	//
-	fitter->fMn->Eval(4, gradient, chiSq, param, iflag);
-
-	if(PRINT_FIT_1_RESULT)
-	  {
-	    printf("chiSq = %f\n", chiSq);
-	    printf(" start    step   lowLim   upLim     par    error \n");
-	    for(Int_t jpar=0; jpar<nPar; jpar++) {
-	      printf("%7.2f %7.2f %7.2f %7.2f %7.2f %7.2f\n", start[jpar],
-		     fitter->step[jpar],lowLim[jpar],upLim[jpar],
-		     param[jpar],error[jpar]);
-	    };
-	  };
-	return chiSq;
-}
-
-
-Float_t Yiqun::FitTwoPhoton(HitCluster* p_clust)
-{
-
 	Double_t chiSq;
-
-	// fit parameters(starting positions), errors, and gradients of function
-	//
-	Double_t param[7];
-	Double_t error[7];
-	Double_t gradient[7];
-
-	// starting position, lower and upper limit of parameters
-	//
-	Double_t start[7], lowLim[7], upLim[7];
-
-	// fit status, and flag
-	//
-	Int_t status, iflag=1;
-
-
-	// constant parameter: 2 photon
-	//
-	start[0] = 2;
-	lowLim[0] = 1.5;
-	lowLim[0] = 2.5;
-
-	start[1]  = widLG[0] * p_clust->photon[0].xPos;
-	start[2]  = widLG[1] * p_clust->photon[0].yPos;
-	start[3]  = p_clust->photon[0].energy;
-
-	start[4]  = widLG[0] * p_clust->photon[0].xPos;
-	start[5]  = widLG[1] * p_clust->photon[0].yPos;
-	start[6]  = p_clust->photon[0].energy;
-
-		lowLim[1] = start[1] - 0.7 * widLG[0] ;
-		lowLim[2] = start[2] - 0.7 * widLG[1] ;
-		lowLim[3] = start[3] * 0.6 ;
-	
-		upLim[1]  = start[1] + 0.7 * widLG[0] ;
-		upLim[2]  = start[2] + 0.7 * widLG[1] ;
-		upLim[3]  = start[3] * 1.6 ;
-
-		lowLim[4] = start[4] - 0.6 * widLG[0];
-		lowLim[5] = start[5] - 0.6 * widLG[1];
-		lowLim[6] = start[6] * 0.6 ;
-	
-		upLim[4]  = start[4] + 0.6 * widLG[0];
-		upLim[5]  = start[5] + 0.6 * widLG[1];
-		upLim[6]  = start[6] * 1.7 ;
-
-	// call fitter->Fit(...), return status
-	//
-	status = fitter->Fit(start, fitter->step, lowLim, upLim);
-
-
-	// 2003-10-09
-	// check return status
-	//
-	if( status != 0 ) {
-		std::cout << "Minuit fit returns " << status << "!" << "\n";
-	}
-
-
-	// get the fit result
-	//
-	fitter->fMn->GetParameter(0, param[0], error[0]);
-	Int_t nPar = 3*((Int_t) param[0])+1;
-	for(Int_t ipar=1; ipar<nPar; ipar++) {
-		fitter->fMn->GetParameter(ipar, param[ipar], error[ipar]);
-	}
-
-	// put the fit result back in "clust"
-	//
-	p_clust->photon[0].xPos    = param[1];
-	p_clust->photon[0].errXPos = error[1];
-	p_clust->photon[0].yPos    = param[2];
-	p_clust->photon[0].errYPos = error[2];
-	p_clust->photon[0].energy  = param[3];
-	p_clust->photon[0].errEne  = error[3];
-
-	p_clust->photon[1].xPos    = param[4];
-	p_clust->photon[1].errXPos = error[4];
-	p_clust->photon[1].yPos    = param[5];
-	p_clust->photon[1].errYPos = error[5];
-	p_clust->photon[1].energy  = param[6];
-	p_clust->photon[1].errEne  = error[6];
-
-	// evaluate the Chi-square function
-	//
-	fitter->fMn->Eval(7, gradient, chiSq, param, iflag);
-
-	if(PRINT_FIT_2_RESULT){
-	  printf("chiSq = %f\n", chiSq);
-	  printf(" start    step   lowLim   upLim     par    error \n");
-	  for(Int_t jpar=0; jpar<nPar; jpar++) {
-	    printf("%7.2f %7.2f %7.2f %7.2f %7.2f %7.2f\n", start[jpar],
-		   fitter->step[jpar],lowLim[jpar],upLim[jpar],param[jpar],
-		   error[jpar]);
-	  }
-	};
+	Int_t iflag = 1;
+	fitter->fMn->Eval(4, gradient, chiSq, param, iflag);
 	return chiSq;
 }
-
-
-
 
 // 2003-10-10
 // Global fit, return x (or y) positions (or errors) in "cm"!
@@ -357,15 +232,6 @@ Float_t Yiqun::GlobalFit(const Int_t nPh, const Int_t nCl, HitCluster *p_clust)
 	Double_t chiSq;
 	fitter->fMn->Eval(7, gradient, chiSq, param, iflag);
 
-	if(PRINT_FIT_ALL_RESULT){
-	  printf("chiSq = %f\n", chiSq);
-	  printf(" start    step   lowLim   upLim     par    error \n");
-	  for(Int_t jpar=0; jpar<nPar; jpar++) {
-	    printf("%7.2f %7.2f %7.2f %7.2f %7.2f %7.2f\n", start[jpar],
-		   fitter->step[jpar],lowLim[jpar],upLim[jpar],param[jpar],
-		   error[jpar]);
-	  }
-	};
 	return chiSq;
 	
 }
@@ -537,16 +403,6 @@ Float_t Yiqun::Fit2PhotonClust(HitCluster* p_clust)
   //
   fitter->fMn->Eval(7, gradient, chiSq, param, iflag);
 
-  if(PRINT_FIT_2_RESULT){
-    printf("1st fit:\n");
-    printf("chiSq = %f\n", chiSq);
-    printf(" start    step   lowLim   upLim     par    error \n");
-    for(Int_t jpar=0; jpar<nPar; jpar++) {
-      printf("%7.2f %7.2f %7.2f %7.2f %7.2f %7.2f\n", start[jpar],step2[jpar],lowLim[jpar],upLim[jpar],param[jpar],error[jpar]);
-    }
-  };
-  
-  
   // 	// 2003-10-13
   // 	// 2nd fit: use result of 1st fit as starting point, and free all fixed parameter
   // 	//
@@ -607,16 +463,11 @@ Float_t Yiqun::Fit2PhotonClust(HitCluster* p_clust)
   p_clust->nPhoton = 2;
   chiSq = GlobalFit(2, 1, p_clust);
     
-  if(PRINT_FIT_2_RESULT){
-    printf("2nd fit:\n");
-    printf("chiSq = %f\n", chiSq);
-    printf("\n\n");
-  };
   return chiSq;
 };
 
 
-Int_t Yiqun::FitEvent(Int_t nTows, Int_t &nClusts, Int_t &nRealClusts, Double_t &chiSqG, Bool_t &junkyEvent)
+Int_t Yiqun::FitEvent(Int_t nTows, Int_t &nClusts, Int_t &nRealClusts, Bool_t &junkyEvent)
 {
   
 	// possible alternative clusters for 1-photon fit: for catagory 0
@@ -656,6 +507,14 @@ Int_t Yiqun::FitEvent(Int_t nTows, Int_t &nClusts, Int_t &nRealClusts, Double_t 
 	arrTow.UnSort();
 	arrTow.Sort();
 	nClusts = pTowerUtil->FindTowerCluster(&arrTow, clust);
+			       
+  std::list<HitCluster*> pClusters;
+  for (int i(0); i < nClusts; ++i) {
+    pClusters.push_back(&clust[i]);
+  }  // for	
+	std::list<HitCluster*> myClusters;
+	copy_if(pClusters.begin(), pClusters.end(), std::back_inserter(myClusters),
+	        IsGoodCluster(minRealClusterEne, maxHitsInRealCluster));
 
 	// 2003-09-12
 	//
@@ -712,6 +571,15 @@ Int_t Yiqun::FitEvent(Int_t nTows, Int_t &nClusts, Int_t &nRealClusts, Double_t 
 	// at the end of the above code, "ifront" counts the number of clusters above "minRealClusterEne"
 	//
 	nRealClusts = ifront ;
+
+	if (nRealClusts != int(myClusters.size())) {
+	  std::cerr << "Ya blew it!" << std::endl;
+	  exit(-1);
+	} else if (nRealClusts != nClusts) {
+	  std::cerr << "huzzah! Steve's algorithm gives " << nRealClusts <<
+	    ", mine gives " << myClusters.size() << " (out of " << nClusts <<
+	    " total clusters)" << std::endl;
+	}  // if
 	// do mement analysis before catagozie!
 	//
 	//cout<<"test nRealClusts="<<nRealClusts<<endl;
@@ -1021,7 +889,6 @@ Int_t Yiqun::FitEvent(Int_t nTows, Int_t &nClusts, Int_t &nRealClusts, Double_t 
 	    // myFitter can only do up to "MAX_NUMB_PHOTONS"-photon fit
 	    //
 	    std::cout << "Can not fit " << nPh << " (more than " << FitTower::MAX_NUMB_PHOTONS << " photons!" << "\n";
-	    chiSqG = -1;
 	    return nPh;
 	  }
 	
@@ -1051,7 +918,7 @@ Int_t Yiqun::FitEvent(Int_t nTows, Int_t &nClusts, Int_t &nRealClusts, Double_t 
 	//
 	if(nRealClusts > 1 ) 
 	  {
-	    chiSqG = GlobalFit(nPh, nRealClusts, clust) / ndfg ;
+	    double chiSqG = GlobalFit(nPh, nRealClusts, clust) / ndfg ;
 	    Int_t iph=0;
 	    for(Int_t icl=0;icl<nRealClusts;icl++)
 	      {
@@ -1069,13 +936,13 @@ Int_t Yiqun::FitEvent(Int_t nTows, Int_t &nClusts, Int_t &nRealClusts, Double_t 
 	  }
 	else if( nRealClusts == 1 ) 
 	  {
-	    chiSqG = clust[0].chiSquare ;
+	    double chiSqG = clust[0].chiSquare ;
 	  }
 	else 
 	  {
 	    // temp revove comment
 	    //std::cout << "Something wrong! Should NOT have " << nRealClusts << " real clusters! Error!" << "\n";
-	    chiSqG = -1 ;
+	    double chiSqG = -1 ;
 	  };
 	
 	return nPh;
@@ -1122,7 +989,6 @@ void Yiqun::Y(TowerList* pEm)
   towers = pEm;   
   NPh=0;
   NTower=0;
-  ChiSqG=10000.;
   NClusts=0;
   NRealClusts=0;
 
@@ -1152,11 +1018,6 @@ void Yiqun::Y(TowerList* pEm)
       tow->SetContext(tow_Arr,EW,NSTB);
     }
 
-  PRINT_FIT_1_RESULT=false;
-  PRINT_FIT_2_RESULT=false;
-  PRINT_FIT_ALL_RESULT=false;
-  PRINT_FIT_PARA=false;
-
   // choice of Chi-square function
   // 1:  Steve's
   // 2:  Larisa's
@@ -1165,9 +1026,6 @@ void Yiqun::Y(TowerList* pEm)
   // clusters with just 1 photon
   //
 
-  posDif_1PC=0.5;
-  
-  eneRat_1PC=0.15;
   posDif_2PC=0.2;
   eneRat_2PC=0.05;
   dggPara[0]=18.0;
@@ -1200,8 +1058,6 @@ void Yiqun::Y(TowerList* pEm)
     };
   NClusts=0;
   NRealClusts=0;
-  ChiSqG=0.;
-  JunkyEvent=false;
   fitter=0;
 
   fitter = new FitTower(p_geom,EW,NSTB);
@@ -1209,134 +1065,15 @@ void Yiqun::Y(TowerList* pEm)
   fitter->SetTWidthCM(*(p_geom->FpdTowWid(EW,NSTB)));
   if(p_geom->FMSGeom)fitter->SetXYTWidthCM(p_geom->FpdTowWid(EW,NSTB));
   
- NPh = FitEvent(NTower, NClusts, NRealClusts, ChiSqG, JunkyEvent);
+  Bool_t badEvent(true);
+  NPh = FitEvent(NTower, NClusts, NRealClusts, badEvent);
 }
-
-void Yiqun::PrintClu()
-{
-  printf("PrintClu()----------- %d photons   %d clusters\n ",NPh,NClusts); 
-  for(Int_t i=0;i<NPh;i++)
-    {
-      printf("photons[%d]:\n",i);
-      photons[i].Print();
-    };
-  for(Int_t i=0;i<NClusts;i++)
-    {
-      printf("clust[%d]:\n",i);
-      clust[i].Print();
-      if(clust[i].nPhoton>1)
-	{
-	  Float_t m12=(mom(&clust[i].photon[0])+mom(&clust[i].photon[1])).Mag();
-	  printf("Mass ph0-ph1=%f\n",m12);
-	}
-    }
-}
-
-TVector3 Yiqun::ph_coord_lab(PhotonHitFPD* phot)
-{
-  TVector3 xyz;
-  xyz[2]=*(p_geom->ZFPD(EW,NSTB));
-  xyz[0]=phot->xPos;
-  xyz[1]=phot->yPos;
-  if(NSTB==1 || (EW==2 && NSTB==3))
-    {
-      xyz[0]=(*(p_geom->xOffset(EW,NSTB)))-xyz[0];
-    }
-  else
-    {
-      xyz[0]=(*(p_geom->xOffset(EW,NSTB)))+xyz[0];
-    };
-  xyz[1]=*(p_geom->yOffset(EW,NSTB))-xyz[1];
-  return xyz;
-};
-TVector3 Yiqun::ph_coord_lab(Int_t ph_num)
-{
-  if(ph_num>= NPh)
-    {
-      printf("request more photons than are defined \n");
-      TVector3 tmp(0,0,0);
-      return tmp;
-    };
-  TVector3 xyz;
-  xyz[2]=*(p_geom->ZFPD(EW,NSTB));
-  xyz[0]=photons[ph_num].xPos;
-  xyz[1]=photons[ph_num].yPos;
-  if(NSTB==1 || (EW==2 && NSTB==3))
-    {
-      xyz[0]=(*(p_geom->xOffset(EW,NSTB)))-xyz[0];
-    }
-  else
-    {
-      xyz[0]=(*(p_geom->xOffset(EW,NSTB)))+xyz[0];
-    };
-  xyz[1]=*(p_geom->yOffset(EW,NSTB))-xyz[1];
-  return xyz;
-};
-
-TLorentzVector  Yiqun::mom(Int_t ph_num)
-{
-  if(ph_num>= NPh)
-    {
-      printf("request more photons than are defined \n");
-      TLorentzVector tmp(0.,0.,0.,0.);
-      return tmp;
-    };  
-  TVector3 vvec=ph_coord_lab(ph_num);
-  Double_t dist=vvec.Mag();
-  TVector3 uvec(0.,0.,0.);
-  if(dist!=0)uvec=(1./dist)*vvec;
-  Float_t phEnergy=photons[ph_num].energy;
-      if(NSTB<3)
-	{
-	  phEnergy=phEnergy*Yiqun::GetEDepCorrection()->Eval(20)/Yiqun::GetEDepCorrection()->Eval(phEnergy);
-	}
-      else
-	{
-	  phEnergy=phEnergy*Yiqun::GetEDepCorrection()->Eval(30.)/Yiqun::GetEDepCorrection()->Eval(phEnergy);
-	};
-  TVector3  mom3;
-  mom3=phEnergy*uvec;
-  TLorentzVector mom4(mom3,phEnergy);
-  return mom4;
-};
-TLorentzVector  Yiqun::mom(PhotonHitFPD* phot)
-{
-  TVector3 vvec=ph_coord_lab(phot);
-  Double_t dist=vvec.Mag();
-  TVector3 uvec(0.,0.,0.);
-  if(dist!=0)uvec=(1./dist)*vvec;
-  Float_t phEnergy=phot->energy;
-  TVector3  mom3;
-  mom3=phEnergy*uvec;
-  TLorentzVector mom4(mom3,phEnergy);
-  return mom4;
-};
-void Yiqun::Print()
-{
-  std::cout << "posDif_1PC = " << posDif_1PC << "\n";
-  std::cout << "eneRat_1PC = " << eneRat_1PC << "\n";
-  
-  std::cout << "posDif_2PC = " << posDif_2PC << "\n";
-  std::cout << "eneRat_2PC = " << eneRat_2PC << "\n";
-  for(Int_t ii=0; ii<6; ii++) 
-    {
-      std::cout << "dggPara[" << ii << "] = " << dggPara[ii] << "\n";
-    }
-  std::cout << "thetaPara = " << thetaPara << "\n";
-  
-  std::cout << "posDif_Gl = " << posDif_Gl << "\n";
-  std::cout << "eneRat_Gl = " << eneRat_Gl << "\n";
-  
-  std::cout << "maxGood1PhChi2NDF = " << maxGood1PhChi2NDF << "\n";
-  std::cout << "minHTEneOverPhoton = " << minHTEneOverPhoton << "\n";
-  std::cout << "maxHTEneOverPhoton = " << maxHTEneOverPhoton << "\n";
-  std::cout << "maxRatioSpill = " << maxRatioSpill << "\n";
-  std::cout << "MaxChi2Catag2 = " << MaxChi2Catag2 << "\n";
-  std::cout << "minRealClusterEne = " << minRealClusterEne << "\n";
-};
 
 Yiqun::~Yiqun()
 {
+  fitter->GetFunctShowShape()->Draw("colz");
+  gPad->SetLogz(true);
+  gPad->Print("showerShape.eps");
   if(fitter!=0)delete fitter;
 
   if(pTowerUtil)delete pTowerUtil;
