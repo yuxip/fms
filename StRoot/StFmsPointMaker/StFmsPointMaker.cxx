@@ -28,8 +28,8 @@ using namespace PSUGlobals;
 
 ClassImp(StFmsPointMaker)
 
-StFmsPointMaker::StFmsPointMaker(const char* name = "StFmsPointMaker", StFmsHitMaker* fmsHitMaker = 0 )
-: StMaker(name), mFmsHitMaker(fmsHitMaker) { mFmsClColl = 0; }
+StFmsPointMaker::StFmsPointMaker(const char* name = "StFmsPointMaker")
+: StMaker(name) { mFmsClColl = 0; }
 
 StFmsPointMaker::~StFmsPointMaker() {
 	
@@ -76,10 +76,6 @@ void StFmsPointMaker::Clear( const char* opt ) {
 Int_t StFmsPointMaker::Init() {
 	
 	LOG_INFO << "StFmsPointMaker::Init() " << endm;
-	if(!mFmsHitMaker){
-		LOG_ERROR << " StFmsHitMaker is null " <<endm;
-		return kStErr;
-	}
 	//mFmsClColl  = new StFmsClusterCollection();		
 	//Get run# from StFmsHitMaker and access status files
 	fmsgeom = 0;

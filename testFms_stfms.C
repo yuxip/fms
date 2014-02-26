@@ -78,7 +78,7 @@ void testFms_stfms( Int_t ibegin = 1, Int_t iend = 100, const char* file = "fms7
 	//fmshitMk->SetDEBUG();
 	
 	
-	StFmsPointMaker* fmsptMk = new StFmsPointMaker("StFmsPointMaker",fmshitMk);
+	StFmsPointMaker* fmsptMk = new StFmsPointMaker("StFmsPointMaker");
 	if(qa){
 		StFmsQAHistoMaker* fmsQa = new StFmsQAHistoMaker();
 		fmsQa->SetOutputFile(qafile);

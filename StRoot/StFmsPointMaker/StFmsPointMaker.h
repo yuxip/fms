@@ -26,7 +26,7 @@ class StFmsPointCollection;
 class StFmsPointMaker : public StMaker {
 
 public:
-	StFmsPointMaker(const char* name, StFmsHitMaker* fmsHitMaker);
+	StFmsPointMaker(const char* name);
 	~StFmsPointMaker();
 	
 	void  Clear(const char* opt="");
@@ -44,7 +44,6 @@ private:
 
   StFmsDbMaker* mFmsDbMaker;
 	std::vector<TMatrix> mEnergyMatrices;
-	StFmsHitMaker* mFmsHitMaker;		//! --provide access to energy matrices and/or hit list
 	StFmsClusterCollection* mFmsClColl;	//! --clusters (and points within cluster) to be added to TDataSet
 	//StFmsPointCollection*   mFmsPtsColl;	//! --all the points (photons) extracted from clusters
 	Geom* fmsgeom;
