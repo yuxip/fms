@@ -15,6 +15,29 @@ ClassImp(TowerUtil);
 
 namespace {
 /*
+ Cluster-finding constants used within this file.
+ Some are only used once, but it is easier to keep track of their values, and
+ more self-documenting, if they are all named, and set in the same location.
+ */
+// Total # of towers (North-South, or Top-Bottom)
+// North and South
+const Int_t NS_ETA_NUM = 7;
+const Int_t NS_PHI_NUM = 7;
+// Top and Bottom
+const Int_t TB_ETA_NUM = 5;
+const Int_t TB_PHI_NUM = 5;
+// maximum number of clusters that will can be handled
+const Int_t MAX_NUMER_CLUSTERS = 6;
+const Int_t nNSTow = NS_ETA_NUM * NS_PHI_NUM;
+const Int_t nTBTow = TB_ETA_NUM * TB_PHI_NUM ;
+const Float_t maxDistanceFromPeak = 0.3;
+const Int_t minTowerCatag02 = 5;
+const Float_t cutEcSigma[2][2] = {{2.1, 7.0}, {2.1, 2.0}};
+const Float_t minEcSigma2Ph = 35.;
+const Float_t maxEcSigma1Ph = 10.;
+const Float_t minTowerEnergy = 0.01;
+const Float_t minRatioPeakTower = 1.6;
+/*
  Test for a tower that can form a cluster peak.
  
  Returns true if a tower can be a peak tower, given a global population of
@@ -43,18 +66,6 @@ Bool_t couldBePeakTower(TowerFPD* tower, TObjArray* nonPeakTowers,
 TowerUtil::TowerUtil() {
   arrValley=NULL;
   neighbor=NULL;
-  nNSTow = NS_ETA_NUM * NS_PHI_NUM ;
-  nTBTow = TB_ETA_NUM * TB_PHI_NUM ;
-  maxDistanceFromPeak=0.3;
-  minTowerCatag02=5;
-  cutEcSigma[0][0]=2.1;
-  cutEcSigma[0][1]=7.0;
-  cutEcSigma[1][0]=2.1;
-  cutEcSigma[1][1]=2.0;
-  minEcSigma2Ph=35.;
-  maxEcSigma1Ph=10.;
-  minTowerEnergy=0.01;
-  minRatioPeakTower=1.6;
   SetMomentEcutoff();
 };
 
@@ -365,7 +376,6 @@ Int_t TowerUtil::FindTowerCluster(TObjArray *arrTow, HitCluster *clust) {
         continue;
       // loop over all towers in this cluster
       TowerFPD *towInClust;
-      if
       for(Int_t jt=0; jt<(clust[ic].tow)->GetEntriesFast(); jt++) {
 	      // check if "nbT" is neigboring any tower in this cluster
 	      towInClust = (TowerFPD *) (clust[ic].tow)->At(jt) ;
