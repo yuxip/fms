@@ -3,6 +3,7 @@
 #include <iostream>
 #include <math.h>
 
+#include <TCollection.h>
 #include "TText.h"
 #include "TCutG.h"
 #include "TCanvas.h"
@@ -38,7 +39,7 @@ const Float_t maxEcSigma1Ph = 10.;
 const Float_t minTowerEnergy = 0.01;
 const Float_t minRatioPeakTower = 1.6;
 /*
- Test for a tower that can form a cluster peak.
+ Test for a tower that can be a cluster peak.
  
  Returns true if a tower can be a peak tower, given a global population of
  known non-peak towers and a minimum ratio between the energy of peak towers and
@@ -60,6 +61,23 @@ Bool_t couldBePeakTower(TowerFPD* tower, TObjArray* nonPeakTowers,
     }  // if
   } // end of for loop over non-peak towers
   return couldBePeak;
+}
+
+/**
+ Populate an STL container of pointers from a ROOT collection.
+ 
+ Returns the size of the filled container.
+ */
+template<typename StlContainer>
+typename StlContainer::size_type fillStlContainerFromRootCollection(
+    const TCollection& collection, StlContainer* container) {
+  TIter next(&collection);
+  typedef typename StlContainer::value_type Pointer;
+  Pointer element(NULL);
+  while((element = static_cast<Pointer>(next()))) {
+    container->push_back(element);
+  }  // while
+  return container->size();
 }
 }  // unnamed namespace
 
