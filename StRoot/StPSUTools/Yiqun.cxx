@@ -1215,7 +1215,7 @@ void Yiqun::Y(TMatrix* pEm)
   JunkyEvent=false;
   fitter=0;
 
-  fitter = new FitTower(pEm,p_geom,EW,NSTB);
+  fitter = new FitTower(p_geom,EW,NSTB);
 
   fitter->SetTWidthCM(*(p_geom->FpdTowWid(EW,NSTB)));
   if(p_geom->FMSGeom)fitter->SetXYTWidthCM(p_geom->FpdTowWid(EW,NSTB));
