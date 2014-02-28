@@ -115,8 +115,10 @@ Int_t StFmsPointMaker::Make() {
 	LOG_INFO << "StFmsPointMaker::Make() " << endm;
 	mFmsClColl  = new StFmsClusterCollection();
 //	mFmsPtsColl = new StFmsPointCollection();
-	
-  initialiseEnergyMatrices();
+  if (!initialiseEnergyMatrices()) {
+    LOG_ERROR << "StFmsPointMaker::Make() - failed to initialise energy " <<
+      "matrices for the event" << endm;
+  }  // if
   if(FindPoint()==kStOk){
 		 LOG_INFO << "Cluster finder returns successfully" <<endm;
 		 return kStOk;
@@ -271,60 +273,39 @@ Int_t StFmsPointMaker::FindPoint() {
 }
 
 Bool_t StFmsPointMaker::initialiseEnergyMatrices() {
-  const StTriggerData* triggerData = 
-      static_cast<const StTriggerData*>(StMuDst::event()->triggerData());
-  // Loop over QT crate, slot and channel in the trigger data
-  // and fill FMS energy matrices for this event.
-  for (unsigned short crt = 1; crt <= 4; crt++){
-    for (unsigned short slot = 1; slot <= 16; slot++){
-      for (unsigned short ch = 0; ch < 32; ch++){
-        unsigned short adc=triggerData->fmsADC(crt, slot - 1, ch);
-        unsigned short tdc=triggerData->fmsTDC(crt, slot - 1, ch);
-        // Determine the detector ID, row and channel
-        Int_t detector(0);
-        Int_t channel(0);
-        mFmsDbMaker->getReverseMap(crt, slot, ch, &detector, &channel);
-        Int_t row = mFmsDbMaker->getRowNumber(detector, channel);
-        Int_t column = mFmsDbMaker->getColumnNumber(detector, channel);
-        Int_t nstb = 0;
-        switch (detector) {
-          case 9:  // south large
-            nstb = 2;
-            break;
-          case 8:  // north large
-            nstb = 1;
-            break;
-          case 11:  // south small
-            nstb = 4;
-            break;
-          case 10:  // north small
-            nstb = 3;
-            break;
-          default:
-            nstb = 0;
-            break;
-        }  // switch	
-        Float_t energy = 0.f;
-        if (detector > 0 || channel > 0) {
-          Float_t g1 = mFmsDbMaker->getGain(detector, channel);
-          Float_t g2 = mFmsDbMaker->getGainCorrection(detector, channel);
-          energy = adc * g1 * g2;
-        }  // if
-        if (nstb == 1 || nstb == 2) {
-          // because channel geometry in the database assigns row1 as the bottom row
-          row = 35 - row;
-        } else if (nstb == 3 || nstb == 4) {
-          row = 25 - row;
-        }  // if
-        Int_t ew  = 2;  // east=1, west=2
-        if (!Legal(ew, nstb, row - 1, column - 1)) {
-          continue;
-        }  // if
-        if (adc > 0) {
-          mEnergyMatrices.at(nstb - 1)[row - 1][column - 1] = energy;
-        }  // if
-      }  // for
-    }  // for
+  StEvent* event = static_cast<StEvent*>(GetDataSet("StEvent"));
+  StFmsCollection* fmsCollection = event->fmsCollection();
+  if (!fmsCollection) {
+    LOG_ERROR << "StFmsPointMaker::initialiseEnergyMatrices() did not find "
+      << "an StFmsCollection in StEvent" << endm;
+      return false;
+  } else {
+    LOG_INFO << "StFmsPointMaker::initialiseEnergyMatrices() found " <<
+      "StFmsCollection in StEvent" << endm;
+  }  // if
+  const StSPtrVecFmsHit& hits = fmsCollection->hits();
+  for (StSPtrVecFmsHitConstIterator i = hits.begin(); i != hits.end(); ++i) {
+    const StFmsHit* hit = *i;
+    Int_t row = mFmsDbMaker->getRowNumber(hit->detectorId(), hit->channel());
+    Int_t column = mFmsDbMaker->getColumnNumber(hit->detectorId(),
+                                                hit->channel());
+    Int_t nstb = 0;
+    if (hit->detectorId() > 7 && hit->detectorId() < 12) {
+      nstb = hit->detectorId() - 7;
+    }  // if
+    if (nstb == 1 || nstb == 2) {
+      // because channel geometry in the database assigns row1 as the bottom row
+      row = 35 - row;
+    } else if (nstb == 3 || nstb == 4) {
+      row = 25 - row;
+    }  // if
+    Int_t ew  = 2;  // east=1, west=2
+    if (!Legal(ew, nstb, row - 1, column - 1)) {
+      continue;
+    }  // if
+    if (hit->adc() > 0) {
+      mEnergyMatrices.at(nstb - 1)[row - 1][column - 1] = hit->energy();
+    }  // if
   }  // for
 }
 
