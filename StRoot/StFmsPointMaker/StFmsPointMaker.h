@@ -39,11 +39,12 @@ public:
 private:
 
 	Int_t FindPoint();			//  --interface to the actual photon reconstruction
-	Bool_t initialiseEnergyMatrices();
   Bool_t Legal(Int_t iew, Int_t nstb, Int_t row0, Int_t col0);
 
   StFmsDbMaker* mFmsDbMaker;
-	std::vector<TMatrix> mEnergyMatrices;
+	typedef std::vector<PSUGlobals::TowerFPD> TowerList;
+	std::vector<TowerList> mTowers;  // One for each of four subdetectors
+	Bool_t populateTowerLists();
 	StFmsClusterCollection* mFmsClColl;	//! --clusters (and points within cluster) to be added to TDataSet
 	//StFmsPointCollection*   mFmsPtsColl;	//! --all the points (photons) extracted from clusters
 	Geom* fmsgeom;

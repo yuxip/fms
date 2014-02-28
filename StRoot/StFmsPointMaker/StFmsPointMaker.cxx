@@ -64,10 +64,6 @@ void StFmsPointMaker::Clear( const char* opt ) {
 		mFmsPtsColl = 0;
         }
 */
-  std::vector<TMatrix>::iterator iter;
-  for (iter = mEnergyMatrices.begin(); iter != mEnergyMatrices.end(); ++iter) {
-    *iter = 0.f;
-  }  // for
 	LOG_INFO <<"after StFmsPointMaker::Clear()" <<endm;
 	StMaker::Clear();	
 
@@ -92,16 +88,6 @@ Int_t StFmsPointMaker::InitRun(Int_t runNumber){ //gStFmsDbMaker is filled after
 	if (!mFmsDbMaker) {
 	  return kStErr;
 	}  // if
-	// Create energy matrices of the correct (row, column) dimensions for each
-	// FMS subdetector, and initialise all elements to zero.
-	mEnergyMatrices.assign(4, TMatrix());
-	for(Int_t i = 0; i < 4; i++){
-    Int_t detectorId = i + 8;  // FMS detector ID in range [8, 11]
-    Int_t nRows = mFmsDbMaker->nRow(detectorId);
-    Int_t nCols = mFmsDbMaker->nColumn(detectorId);
-    mEnergyMatrices.at(i).ResizeTo(nRows, nCols);
-    mEnergyMatrices.at(i) = 0.f;
-  }  // for
 }
 
 Int_t StFmsPointMaker::Finish() {
@@ -115,9 +101,9 @@ Int_t StFmsPointMaker::Make() {
 	LOG_INFO << "StFmsPointMaker::Make() " << endm;
 	mFmsClColl  = new StFmsClusterCollection();
 //	mFmsPtsColl = new StFmsPointCollection();
-  if (!initialiseEnergyMatrices()) {
-    LOG_ERROR << "StFmsPointMaker::Make() - failed to initialise energy " <<
-      "matrices for the event" << endm;
+  if (!populateTowerLists()) {
+    LOG_ERROR << "StFmsPointMaker::Make() - failed to initialise tower " <<
+      "lists for the event" << endm;
   }  // if
   if(FindPoint()==kStOk){
 		 LOG_INFO << "Cluster finder returns successfully" <<endm;
@@ -133,12 +119,15 @@ Int_t StFmsPointMaker::FindPoint() {
 	
 	Yiqun* p_rec[4];
 	for(Int_t instb = 0; instb < 4; instb++){
-		
-		Float_t Esum = mEnergyMatrices.at(instb).Sum();
+		TowerList& towers = mTowers.at(instb);
+		Float_t Esum = 0.f;
+		for (TowerList::const_iterator i = towers.begin(); i != towers.end(); ++i) {
+		  Esum += i->energy;
+		}  // for
 		if(Esum==0||Esum>500) continue; //to remove LED trails, for pp500 GeV
 
 		//call the cluster finder for each nstb
-		p_rec[instb] = new Yiqun(&mEnergyMatrices.at(instb),fmsgeom,2,instb+1);
+		p_rec[instb] = new Yiqun(&towers,fmsgeom,2,instb+1);
 		
 		//Saved cluser info into StFmsCluster
 		Int_t iPh = 0;	//sequence # in Yiqun::photons[];
@@ -272,17 +261,20 @@ Int_t StFmsPointMaker::FindPoint() {
 	return kStOk;
 }
 
-Bool_t StFmsPointMaker::initialiseEnergyMatrices() {
+Bool_t StFmsPointMaker::populateTowerLists() {
   StEvent* event = static_cast<StEvent*>(GetDataSet("StEvent"));
+  if (!event) {
+    LOG_ERROR << "StFmsPointMaker::populateTowerLists() did not find "
+      << "an StEvent" << endm;
+      return false;
+  }  // if
   StFmsCollection* fmsCollection = event->fmsCollection();
   if (!fmsCollection) {
-    LOG_ERROR << "StFmsPointMaker::initialiseEnergyMatrices() did not find "
+    LOG_ERROR << "StFmsPointMaker::populateTowerLists() did not find "
       << "an StFmsCollection in StEvent" << endm;
       return false;
-  } else {
-    LOG_INFO << "StFmsPointMaker::initialiseEnergyMatrices() found " <<
-      "StFmsCollection in StEvent" << endm;
   }  // if
+  mTowers.assign(4, TowerList());
   const StSPtrVecFmsHit& hits = fmsCollection->hits();
   for (StSPtrVecFmsHitConstIterator i = hits.begin(); i != hits.end(); ++i) {
     const StFmsHit* hit = *i;
@@ -304,7 +296,8 @@ Bool_t StFmsPointMaker::initialiseEnergyMatrices() {
       continue;
     }  // if
     if (hit->adc() > 0) {
-      mEnergyMatrices.at(nstb - 1)[row - 1][column - 1] = hit->energy();
+      mTowers.at(nstb - 1).push_back(
+        PSUGlobals::TowerFPD(hit->energy(), column, row, -1));
     }  // if
   }  // for
   return true;

@@ -6,7 +6,6 @@
 #include "TLorentzVector.h"
 #include "TObjArray.h"
 #include "TF2.h"
-#include "TMatrix.h"
 #include "TVector3.h"
 #include "FitTower.h"
 #include "TowerUtil.h"
@@ -35,8 +34,9 @@ class Yiqun: public TObject
   Int_t FitEvent(Int_t nTows, Int_t &nClusts, Int_t &nRealClusts,  Double_t &chiSqG, Bool_t &junkyEvent);
   Double_t EnergyInClusterByPhoton(Double_t widthLG, HitCluster*, PhotonHitFPD*);
   Double_t EnergyInTowerByPhoton(Double_t, TowerFPD* , PhotonHitFPD* );
-  Yiqun(TMatrix* pEm,Geom* pgeom,Int_t iew ,Int_t nstb);
-  void Y(TMatrix*);
+  typedef std::vector<TowerFPD> TowerList;
+  Yiqun(TowerList* pEm,Geom* pgeom,Int_t iew ,Int_t nstb);
+  void Y(TowerList*);
   ~Yiqun();
   TVector3 ph_coord_lab(PhotonHitFPD* phot);
   TVector3 ph_coord_lab(Int_t);
@@ -47,7 +47,7 @@ class Yiqun: public TObject
   Int_t NSTB;
   void Print();
   Int_t NTower;
-  TowerFPD towers[578];
+  TowerList* towers;
   TObjArray* tow_Arr;
   FitTower* fitter;
   HitCluster clust[MAX_NUMER_CLUSTERS];

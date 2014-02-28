@@ -642,7 +642,7 @@ Int_t Yiqun::FitEvent(Int_t nTows, Int_t &nClusts, Int_t &nRealClusts, Double_t 
 	// re-add the TowerFPD objects to "arrTow" for each event!
 	//
 	for(Int_t itow=0; itow<nTows; itow++) {
-	  arrTow.AddAt(&towers[itow], itow);
+	  arrTow.AddAt(&(towers->at(itow)), itow);
 	}
 
 	// find clusters
@@ -1110,15 +1110,16 @@ Double_t Yiqun::EnergyInTowerByPhoton(Double_t widthLG, TowerFPD *p_tower, Photo
 
 	return eSS;
 };
-Yiqun::Yiqun(TMatrix* pEm,Geom* pgeom,Int_t iew,Int_t nstb)
+Yiqun::Yiqun(TowerList* pEm,Geom* pgeom,Int_t iew,Int_t nstb)
 {
   p_geom=pgeom;
   EW=iew;
   NSTB=nstb;
   Y(pEm);
 };
-void Yiqun::Y(TMatrix* pEm)
+void Yiqun::Y(TowerList* pEm)
 {   
+  towers = pEm;   
   NPh=0;
   NTower=0;
   ChiSqG=10000.;
@@ -1130,7 +1131,7 @@ void Yiqun::Y(TMatrix* pEm)
   tow_Arr=0;
   widLG[0]=widLG[1]=(p_geom->FpdTowWid(EW,NSTB))[0];
   if(p_geom->FMSGeom)widLG[1]=(p_geom->FpdTowWid(EW,NSTB))[1];
-  NTower=pEm->GetNoElements();
+  NTower=pEm->size();
 
   if(NTower>578)
     {
@@ -1138,26 +1139,12 @@ void Yiqun::Y(TMatrix* pEm)
       exit(-1);
     };
 
-  nrows=pEm->GetNrows();
-  ncols=pEm->GetNcols();
-
   Int_t cnt=-1;
   tow_Arr=new TObjArray(NTower);
 
-  for(Int_t ir=0;ir<nrows;ir++)
-    {
-      for(Int_t ic=0;ic<ncols;ic++)
-	{
-	  cnt++;  
-	  towers[cnt].energy  = (*pEm)(ir,ic);
-	  towers[cnt].col     = ic+1 ;
-	  towers[cnt].row     = ir+1 ;
-	  towers[cnt].cluster = -1 ; 
-	  
-	  if(towers[cnt].energy>.001)tow_Arr->Add(&towers[cnt]);
-		
-	}
-    }
+  for (TowerList::iterator i = pEm->begin(); i != pEm->end(); ++i) {
+	  if(i->energy>.001)tow_Arr->Add(&(*i));
+	}  // for
     TIter next(tow_Arr);
     while(TowerFPD* tow=(TowerFPD*) next()){
       tow->SetContext(tow_Arr,EW,NSTB);
