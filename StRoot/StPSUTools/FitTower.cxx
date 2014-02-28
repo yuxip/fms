@@ -16,12 +16,10 @@ TF2* FitTower::GetFunctShowShape() {
   return &showerShapeFitFunction;
 }
 
-FitTower::FitTower(TMatrix* pEm,Geom* pgeom,Int_t iew,Int_t nstb)
+FitTower::FitTower(Geom* pgeom,Int_t iew,Int_t nstb)
 {
   SetStep();
   pTowerUtil=new TowerUtil();
-  fCol = pEm->GetNcols() ;
-  fRow = pEm->GetNrows() ;
   fTWidthCM=*(pgeom->FpdTowWid(iew,nstb));
   Double_t para[numbPara];
   para[0] = fTWidthCM ;

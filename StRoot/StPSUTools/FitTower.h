@@ -4,7 +4,6 @@
 #include <iostream>
 #include  "TObject.h"
 #include "Geom.h"
-#include "TMatrix.h"
 #include "TMinuit.h"
 #include "TF2.h"
 #include "TowerUtil.h"
@@ -25,7 +24,7 @@ class FitTower : public TObject
  public:
   
   TMinuit*    fMn;    // Minuit fitter ma
-  FitTower(TMatrix* ptm, Geom* pgeom,Int_t iew,Int_t nstb);
+  FitTower(Geom* pgeom,Int_t iew,Int_t nstb);
   /*
     constructor removed by SH  8/2009
   FitTower(const Int_t dim[2], const Double_t wd, TF2 *ssFunct);
@@ -44,8 +43,6 @@ class FitTower : public TObject
 		    Double_t &fval, Double_t *par, Int_t iflag);
   static void Fcn2(Int_t & nparam, Double_t *grad, 
 		   Double_t &fval, Double_t *param, Int_t iflag);
-  void SetRow(const Int_t row) {fRow=row;};
-  void SetCol(const Int_t col) {fCol=col;};
   void SetTWidthCM(Float_t tw) 
     {
       fTWidthCM = tw;
@@ -60,8 +57,6 @@ class FitTower : public TObject
   void SetFCN(void (*fcn)(Int_t &, Double_t *, Double_t &, Double_t *, Int_t));
   void SetNumberPhoton(const Int_t nP);
 
-  void GetRow(Int_t &row) {row=fRow;};
-  void GetCol(Int_t &col) {col=fCol;};
   void GetParameter(Double_t *ap){/* not implemeted*/};
   void GetTWidthCM(Double_t &tw) {tw=fTWidthCM;};
   TF2* GetFunctShowShape();
@@ -74,8 +69,6 @@ class FitTower : public TObject
   ClassDef(FitTower,4);
   void SetStep();
   
-  Int_t       fCol;           // number of columns for lead glass array
-  Int_t       fRow;           // number of rows for lead glass array
   Double_t    fTWidthCM;      // width of one lead glass module
   Double_t    fTXWidthCM;      // width of one lead glass module in X
   Double_t    fTYWidthCM;      // width of one lead glass module in Y
