@@ -307,6 +307,7 @@ Bool_t StFmsPointMaker::initialiseEnergyMatrices() {
       mEnergyMatrices.at(nstb - 1)[row - 1][column - 1] = hit->energy();
     }  // if
   }  // for
+  return true;
 }
 
 Bool_t StFmsPointMaker::Legal(Int_t iew,Int_t nstb,Int_t row0,Int_t col0){
