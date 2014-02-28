@@ -206,7 +206,7 @@ int StFmsHitMaker::Make(){
 		}
 	}
 */
-	if(flag>0 && flag<=2) {
+	if(stEvent) {
 		//Adding StFmsCollection to StEvent
 		LOG_DEBUG<<"StFmsHitMaker::Make Adding StFmsCollection as FMSCOLLECTION"<<endm;
 		stEvent->setFmsCollection(mFmsCollection);
