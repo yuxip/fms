@@ -1143,8 +1143,10 @@ void Yiqun::Y(TowerList* pEm)
   tow_Arr=new TObjArray(NTower);
 
   for (TowerList::iterator i = pEm->begin(); i != pEm->end(); ++i) {
-	  if(i->energy>.001)tow_Arr->Add(&(*i));
-	}  // for
+    if (i->energy > 0.001) {
+      tow_Arr->Add(&(*i));
+    }  // if
+  }  // for
     TIter next(tow_Arr);
     while(TowerFPD* tow=(TowerFPD*) next()){
       tow->SetContext(tow_Arr,EW,NSTB);

@@ -117,7 +117,6 @@ Int_t StFmsPointMaker::FindPoint() {
 	
 	LOG_INFO << " StFmsPointMaker::FindPoint() " << endm;
 	
-	Yiqun* p_rec[4];
 	for(Int_t instb = 0; instb < 4; instb++){
 		TowerList& towers = mTowers.at(instb);
 		Float_t Esum = 0.f;
@@ -125,31 +124,28 @@ Int_t StFmsPointMaker::FindPoint() {
 		  Esum += i->energy;
 		}  // for
 		if(Esum==0||Esum>500) continue; //to remove LED trails, for pp500 GeV
-
-		//call the cluster finder for each nstb
-		p_rec[instb] = new Yiqun(&towers,fmsgeom,2,instb+1);
-		
+    Yiqun clustering(&towers, fmsgeom, 2, instb + 1);
 		//Saved cluser info into StFmsCluster
 		Int_t iPh = 0;	//sequence # in Yiqun::photons[];
-		for(Int_t ncl = 0; ncl<p_rec[instb]->NRealClusts; ncl++){
+		for(Int_t ncl = 0; ncl<clustering.NRealClusts; ncl++){
 
 			StFmsCluster* cluster = new StFmsCluster();
 			
-			Int_t cluid = 305 + 20*(p_rec[instb]->NSTB-1) + iPh; //cluster id = id of the 1st photon, not necessarily the highE photon
+			Int_t cluid = 305 + 20*(clustering.NSTB-1) + iPh; //cluster id = id of the 1st photon, not necessarily the highE photon
 			
-			cluster->SetNstb(p_rec[instb]->NSTB);
+			cluster->SetNstb(clustering.NSTB);
 			cluster->SetClusterId(cluid);
-			cluster->SetCatag(p_rec[instb]->clust[ncl].catag);
-			cluster->SetNumbTower(p_rec[instb]->clust[ncl].numbTower);
-			cluster->SetNphoton(p_rec[instb]->clust[ncl].nPhoton);
-			cluster->SetClusterEnergy(p_rec[instb]->clust[ncl].energy);
-			cluster->SetX0(p_rec[instb]->clust[ncl].x0);	//in units of tower width
-			cluster->SetY0(p_rec[instb]->clust[ncl].y0);	//in units of tower width
-			cluster->SetSigmaMax(p_rec[instb]->clust[ncl].sigmaMax);
-			cluster->SetSigmaMin(p_rec[instb]->clust[ncl].sigmaMin);
-		//	cluster->SetChi2NdfPh1(p_rec[instb]->clust[ncl].Chi2NdfPh1);
+			cluster->SetCatag(clustering.clust[ncl].catag);
+			cluster->SetNumbTower(clustering.clust[ncl].numbTower);
+			cluster->SetNphoton(clustering.clust[ncl].nPhoton);
+			cluster->SetClusterEnergy(clustering.clust[ncl].energy);
+			cluster->SetX0(clustering.clust[ncl].x0);	//in units of tower width
+			cluster->SetY0(clustering.clust[ncl].y0);	//in units of tower width
+			cluster->SetSigmaMax(clustering.clust[ncl].sigmaMax);
+			cluster->SetSigmaMin(clustering.clust[ncl].sigmaMin);
+		//	cluster->SetChi2NdfPh1(clustering.clust[ncl].Chi2NdfPh1);
 		//	--no such funtion in SH's package --Yuxi
-		//	cluster->SetChi2NdfPh2(p_rec[instb]->clust[ncl].Chi2NdfPh2);
+		//	cluster->SetChi2NdfPh2(clustering.clust[ncl].Chi2NdfPh2);
 
 			//calculate cluster four momentum
 			Geom* p_geom = fmsgeom;
@@ -158,19 +154,19 @@ Int_t StFmsPointMaker::FindPoint() {
 				return kStErr;
 			}
 			Float_t widLG[2];
-			widLG[0] = (p_geom->FpdTowWid(2,p_rec[instb]->NSTB))[0];//lead glass x width
-			widLG[1] = (p_geom->FpdTowWid(2,p_rec[instb]->NSTB))[1];//lead glass y width
+			widLG[0] = (p_geom->FpdTowWid(2, clustering.NSTB))[0];//lead glass x width
+			widLG[1] = (p_geom->FpdTowWid(2, clustering.NSTB))[1];//lead glass y width
 			TVector3 xyz;
-			xyz[2] = *(p_geom->ZFPD(2,p_rec[instb]->NSTB));
+			xyz[2] = *(p_geom->ZFPD(2, clustering.NSTB));
 			xyz[0] = cluster->GetX0()*widLG[0];
 			xyz[1] = cluster->GetY0()*widLG[1];
-			if((p_rec[instb]->NSTB)==1||(p_rec[instb]->NSTB)==3){ //north, negative x axis
-				xyz[0] = (*(p_geom->xOffset(2,p_rec[instb]->NSTB))) - xyz[0];
+			if ((clustering.NSTB) == 1 || (clustering.NSTB) == 3) { //north, negative x axis
+        xyz[0] = (*(p_geom->xOffset(2, clustering.NSTB))) - xyz[0];
 			}
 			else{
-				xyz[0] = (*(p_geom->xOffset(2,p_rec[instb]->NSTB))) + xyz[0]; //south, positive x axis
+        xyz[0] = (*(p_geom->xOffset(2, clustering.NSTB))) + xyz[0]; //south, positive x axis
 			}
-			xyz[1] = (*(p_geom->yOffset(2,p_rec[instb]->NSTB))) - xyz[1];
+      xyz[1] = (*(p_geom->yOffset(2, clustering.NSTB))) - xyz[1];
 			Double_t dist = xyz.Mag();
 			TVector3 uvec(0.,0.,0.);
 			if(dist!=0)uvec=(1./dist)*xyz;
@@ -184,27 +180,27 @@ Int_t StFmsPointMaker::FindPoint() {
 			for(Int_t np = 0; np < cluster->GetNphoton(); np++){
 				
 				StFmsPoint* clpoint = new StFmsPoint();
-				clpoint->SetEnergy(p_rec[instb]->clust[ncl].photon[np].energy);
-				clpoint->SetXpos(p_rec[instb]->clust[ncl].photon[np].xPos);//in cm
-				clpoint->SetYpos(p_rec[instb]->clust[ncl].photon[np].yPos);//in cm
+				clpoint->SetEnergy(clustering.clust[ncl].photon[np].energy);
+				clpoint->SetXpos(clustering.clust[ncl].photon[np].xPos);//in cm
+				clpoint->SetYpos(clustering.clust[ncl].photon[np].yPos);//in cm
 				
-				Int_t phid = 305 + 20*(p_rec[instb]->NSTB-1) + iPh;
+				Int_t phid = 305 + 20*(clustering.NSTB - 1) + iPh;
 				clpoint->SetPhotonId(phid);
 				iPh++;
 			
 				//calculate photon 4 momentum;
 				TVector3 xyzph;
-				xyzph[2] = *(p_geom->ZFPD(2,p_rec[instb]->NSTB));
+				xyzph[2] = *(p_geom->ZFPD(2, clustering.NSTB));
 				xyzph[0] = clpoint->GetXpos();	//in cm, towWidth*x0(fit)
 				xyzph[1] = clpoint->GetYpos();  
 				
-				if((p_rec[instb]->NSTB)==1||(p_rec[instb]->NSTB)==3){ //north, negative x axis
-                                	xyzph[0] = (*(p_geom->xOffset(2,p_rec[instb]->NSTB))) - xyzph[0];
-                        	}
+        if ((clustering.NSTB) == 1 || (clustering.NSTB) == 3) { //north, negative x axis
+          xyzph[0] = (*(p_geom->xOffset(2, clustering.NSTB))) - xyzph[0];
+        }
 				else{
-					xyzph[0] = (*(p_geom->xOffset(2,p_rec[instb]->NSTB))) + xyzph[0];
+					xyzph[0] = (*(p_geom->xOffset(2, clustering.NSTB))) + xyzph[0];
 				}
-				xyzph[1] = (*(p_geom->yOffset(2,p_rec[instb]->NSTB))) - xyzph[1];
+				xyzph[1] = (*(p_geom->yOffset(2, clustering.NSTB))) - xyzph[1];
 					
 				clpoint->SetPointXYZLab(xyzph);
 				Double_t distph = xyzph.Mag();
@@ -229,10 +225,10 @@ Int_t StFmsPointMaker::FindPoint() {
 			}
 			
 			//save the tower hit info.
-			TIter next(p_rec[instb]->clust[ncl].tow);
+			TIter next(clustering.clust[ncl].tow);
 			while(TowerFPD* tow = (TowerFPD*)next()){
 				if(tow->adc_over_ped>=1){			//minADC=1
-					Int_t snstb = p_rec[instb]->NSTB; 	//starts from 1
+					Int_t snstb = clustering.NSTB; 	//starts from 1
 					Int_t srow = (tow->row) - 1;		//srow starts from 0
 					Int_t scol = (tow->col) - 1;		//scol starts from 0
 					UInt_t adc = (UInt_t)(tow->adc_over_ped);
