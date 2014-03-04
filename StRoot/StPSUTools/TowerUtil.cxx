@@ -33,6 +33,7 @@ const Float_t minRatioPeakTower = 1.6;
 
 typedef TowerUtil::TowerList TowerList;
 typedef TowerList::iterator TowerIter;
+typedef TowerList::reverse_iterator TowerRIter;
 
 /*
  Test for a tower that can be a cluster peak.
@@ -138,7 +139,6 @@ unsigned TowerUtil::associateTowersWithClusters(TowerList& neighbor,
   TowerFPD *nbT;
   TowerFPD *pkT;
   TowerList associated;
-  typedef TowerList::reverse_iterator TowerRIter;
   for (TowerRIter i = neighbor.rbegin(); i != neighbor.rend(); ++i) {
     nbT = *i;
     Int_t numbTowBefore = neighbor.size();
@@ -257,7 +257,6 @@ unsigned TowerUtil::associateResidualTowersWithClusters(TowerList& neighbor,
   TowerFPD *pkT;
   TowerList associated;
   std::cout << "tpbdebug handling " << neighbor.size() << " residual towers" << std::endl;
-  typedef TowerList::reverse_iterator TowerRIter;
   for (TowerRIter i = neighbor.rbegin(); i != neighbor.rend(); ++i) {
     nbT = *i;
     Int_t numbTowBefore = neighbor.size();
@@ -397,30 +396,26 @@ Int_t TowerUtil::FindTowerCluster(TObjArray *inputTow, HitCluster *clust) {
       neighbor.insert(neighbor.end(), arrTow.begin(), neighborEnd);
       arrTow.erase(arrTow.begin(), neighborEnd);
     }  // when "high" is a "peak"
-    // 2003-09-27
-    // Do the follow, no matter "high" is a "peak" or "neighbor"!
-    // To close the logic loop hole that a tower which is seperated (by towers of the same energy) from
-    //   the "neighbor" towers becomes a peak, just because it happens to be in front of those towers
-    //   of the same energy (since the sorting can not distinguish that).
-    // We need to again loop over "arrTow", move any tower (that is neighboring any of the "neighbor"
-    //   towers and also has lower (or equal) energy than that "neighbor" tower) to "neighbor"
-    // Every time we remove a tower from "arrTow" (except we just simply go over all items in TObjArray
-    //   sequentially without worrying the relative order), we need to compress "arrTow"!
-    //   Since we assume that it has no emty slot!
-    TowerIter aboveThreshold = std::find_if(arrTow.begin(), arrTow.end(),
-                                            TowerEnergyIsAboveThreshold());
-    unsigned initialSize = arrTow.size();
-    TowerList above;
-    std::copy(aboveThreshold, arrTow.end(), std::back_inserter(above));
-    above.reverse();
-    for (TowerIter i = above.begin(); i != above.end(); ++i) {
-      if (!couldBePeakTower(*i, &neighbor)) {
-        neighbor.push_back(*i);
-        arrTow.remove(*i);
+    // A tower separated from neighbors only by towers of the same energy will
+    // become a peak by the above logic. To close this loophole, loop again
+    // over towers and move any with energy <= any of its neighbors to the
+    // neighbor list.
+    // Note use of a *reverse* iterator so we take towers in order of decreasing
+    // energy, as they are sorted in ascending energy
+    // How to do "erase-and-continue" with reverse iterators wasn't immediately
+    // obvious to me, so here is the solution I found:
+    // http://stackoverflow.com/questions/8621426/how-do-you-erase-and-continue-using-a-stdreverse-iterator
+    TowerRIter towerIter = arrTow.rbegin();
+    while (towerIter != arrTow.rend()) {
+      // Need to remove list items whilst iterating, so be careful to increment
+      // the iterator before erasing items to avoid iterator invalidation
+      if (!couldBePeakTower(*towerIter, &neighbor)) {
+        neighbor.push_back(*(towerIter++));
+        towerIter = TowerRIter(arrTow.erase(towerIter.base()));
+      } else {
+        ++towerIter;
       }  // if
-    }  // for
-    std::cout << "tpbdebug removed " << initialSize - arrTow.size() <<
-      " adjacent towers that could not be peak towers" << std::endl;
+    }  // while
     // increment "nClusts" when we find a "peak"
     if (isPeak) {
       nClusts++ ;
