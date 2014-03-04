@@ -366,7 +366,7 @@ Int_t TowerUtil::FindTowerCluster(TObjArray *inputTow, HitCluster *clust) {
   // The algoriths is such, first get the highest tower (which is ALWAYS the last one),
   // and it and all its neighbors to the next cluster. Then repeat the process over the
   // remaining towers.
-  while(!arrTow.empty()) {
+  while(!arrTow.empty() && nClusts < maxNClusters) {
     // By design, this tower is the highest tower in "arrTow", but it could be lower
     // than a tower in "neighbor"
     TowerFPD* high = arrTow.back();
@@ -386,6 +386,7 @@ Int_t TowerUtil::FindTowerCluster(TObjArray *inputTow, HitCluster *clust) {
       // Add "high" to cluster and move towers neighboring "high" to "neighbor"
       high->cluster = nClusts;
       (clust[nClusts].tow)->Add(high);
+      nClusts++ ;
       // Partition the remaining towers so that neighbours of the high tower are
       // placed at the beginning, and non-neighbours placed at the end. Use
       // stable_partition so we don't alter the energy ordering.
@@ -416,14 +417,6 @@ Int_t TowerUtil::FindTowerCluster(TObjArray *inputTow, HitCluster *clust) {
         ++towerIter;
       }  // if
     }  // while
-    // increment "nClusts" when we find a "peak"
-    if (isPeak) {
-      nClusts++ ;
-      // when reaching maximum number of clusters, break out the loop!
-      if (nClusts >= maxNClusters) {
-        break;
-      }  // if
-    }  // if
   }  // End of for loop over "arrTow"
   // now that we know all the peaks, let's decide the affiliation of
   // those remote neighbor-towers in "neighbor" TObjArray
