@@ -87,6 +87,15 @@ struct AscendingTowerEnergySorter {
 };
 
 /**
+ Comparison function to sort towers in order of descending energy.
+ */
+struct DescendingTowerEnergySorter {
+  bool operator()(const TowerFPD* a, const TowerFPD* b) const {
+    return a->energy > b->energy;
+  }
+};
+
+/**
  Predicate for testing if a test tower is a neighbour of a reference tower.
  
  If the test tower
@@ -356,10 +365,7 @@ Int_t TowerUtil::FindTowerCluster(TObjArray *inputTow, HitCluster *clust) {
   // the "valley" TObjArray
   arrValley = new TObjArray(16);
   arrValley->Clear();
-  // We assume that "TObjArray *inputTow" is already sorted, however, to be safe,
-  // sort tower by energy, if not done already
-  arrTow.sort(AscendingTowerEnergySorter());
-  TowerFPD *high;
+  arrTow.sort(DescendingTowerEnergySorter());
   // "TObjArray::Sort()" sorts the array from small to big ( [0]<=[1]<=...<=[48] )
   // need to take care of that
   // have to go last object first!
@@ -369,8 +375,8 @@ Int_t TowerUtil::FindTowerCluster(TObjArray *inputTow, HitCluster *clust) {
   while(!arrTow.empty() && nClusts < maxNClusters) {
     // By design, this tower is the highest tower in "arrTow", but it could be lower
     // than a tower in "neighbor"
-    TowerFPD* high = arrTow.back();
-    arrTow.pop_back();
+    TowerFPD* high = arrTow.front();
+    arrTow.pop_front();
 		// 2003-08-15
 		// Fix a logical loop hole in deciding if a tower is
 		//    a peak; Need to first compare the highest tower
@@ -378,11 +384,7 @@ Int_t TowerUtil::FindTowerCluster(TObjArray *inputTow, HitCluster *clust) {
 		//    and if it is lower than any of those, it is
 		//    a neighbor. Move it to "neighbor" and continue to
 		//    the next tower in "arrTow".
-    TowerFPD *resTow;
-    Bool_t isPeak = couldBePeakTower(high, &neighbor);
-    if (!isPeak) {
-      neighbor.push_back(high);
-    } else {
+    if (couldBePeakTower(high, &neighbor)) {
       // Add "high" to cluster and move towers neighboring "high" to "neighbor"
       high->cluster = nClusts;
       (clust[nClusts].tow)->Add(high);
@@ -396,23 +398,20 @@ Int_t TowerUtil::FindTowerCluster(TObjArray *inputTow, HitCluster *clust) {
       // Copy neighbors to the neighbor list, erase them from the tower list
       neighbor.insert(neighbor.end(), arrTow.begin(), neighborEnd);
       arrTow.erase(arrTow.begin(), neighborEnd);
+    } else {  // Not a peak, add it to the neighbor collection
+      neighbor.push_back(high);
     }  // when "high" is a "peak"
     // A tower separated from neighbors only by towers of the same energy will
     // become a peak by the above logic. To close this loophole, loop again
     // over towers and move any with energy <= any of its neighbors to the
     // neighbor list.
-    // Note use of a *reverse* iterator so we take towers in order of decreasing
-    // energy, as they are sorted in ascending energy
-    // How to do "erase-and-continue" with reverse iterators wasn't immediately
-    // obvious to me, so here is the solution I found:
-    // http://stackoverflow.com/questions/8621426/how-do-you-erase-and-continue-using-a-stdreverse-iterator
-    TowerRIter towerIter = arrTow.rbegin();
-    while (towerIter != arrTow.rend()) {
+    TowerIter towerIter = arrTow.begin();
+    while (towerIter != arrTow.end()) {
       // Need to remove list items whilst iterating, so be careful to increment
       // the iterator before erasing items to avoid iterator invalidation
       if (!couldBePeakTower(*towerIter, &neighbor)) {
-        neighbor.push_back(*(towerIter++));
-        towerIter = TowerRIter(arrTow.erase(towerIter.base()));
+        neighbor.push_back(*towerIter);
+        arrTow.erase(towerIter++);  // Increment will evaluate before erase()
       } else {
         ++towerIter;
       }  // if
