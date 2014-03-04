@@ -371,6 +371,7 @@ Int_t TowerUtil::FindTowerCluster(TObjArray *inputTow, HitCluster *clust) {
     // By design, this tower is the highest tower in "arrTow", but it could be lower
     // than a tower in "neighbor"
     TowerFPD* high = arrTow.back();
+    arrTow.pop_back();
 		// 2003-08-15
 		// Fix a logical loop hole in deciding if a tower is
 		//    a peak; Need to first compare the highest tower
@@ -380,40 +381,22 @@ Int_t TowerUtil::FindTowerCluster(TObjArray *inputTow, HitCluster *clust) {
 		//    the next tower in "arrTow".
     TowerFPD *resTow;
     Bool_t isPeak = couldBePeakTower(high, &neighbor);
-    // if "high" is not a peak, move it to "neighbor"
     if (!isPeak) {
-      std::cout << "tpbdebug At arrTow size " << arrTow.size() << " got is not peak" << std::endl;
-      arrTow.remove(high);
       neighbor.push_back(high);
     } else {
-      std::cout << "tpbdebug At arrTow size " << arrTow.size() << " got IS peak" << std::endl;
-      // else if "high" is a peak
-      // remove the high tower from the original TObjArray, and add it to the next cluster
-      arrTow.remove(high);
-      std::cout << "tpbdebug Adding tower with E = " << high->energy << " to cluster " << nClusts << std::endl;
+      // Add "high" to cluster and move towers neighboring "high" to "neighbor"
       high->cluster = nClusts;
       (clust[nClusts].tow)->Add(high);
-      // loop over rest of original TObjArray, and move any towers neighboring "high"
-      // to "neighbor"
-      // Find the first tower above the minimum energy threshold, as we will want
-      // to exclude these in many cases (we may want to create two separate lists,
-      // with above- and below-threshold towers, but let's try to mimic Steve's
-      // implementation for now).
-      TowerIter aboveThreshold = std::find_if(arrTow.begin(), arrTow.end(),
-                                              TowerEnergyIsAboveThreshold());
-      // Partition the remaining hits so that neighbours of the high tower are
-      // placed at the end, and non-neighbours placed at the start. Use
+      // Partition the remaining towers so that neighbours of the high tower are
+      // placed at the beginning, and non-neighbours placed at the end. Use
       // stable_partition so we don't alter the energy ordering.
-      TowerIter newEnd = std::stable_partition(aboveThreshold, arrTow.end(),
-          std::not1(std::bind2nd(TowerIsNeighbor(), high)));
-      // Now copy the neighbors to the neighbor list, and erase them from the
-      // master tower list
-      unsigned initialSize = arrTow.size();
-      neighbor.insert(neighbor.end(), newEnd, arrTow.end());
-      arrTow.erase(newEnd, arrTow.end());
-      arrTow.sort(AscendingTowerEnergySorter());
-      std::cout << "tpbdebug removed " << initialSize - arrTow.size() << " neighbours" << std::endl;
-    } // when "high" is a "peak"
+      TowerIter neighborEnd =
+        std::stable_partition(arrTow.begin(), arrTow.end(),
+                              std::bind2nd(TowerIsNeighbor(), high));
+      // Copy neighbors to the neighbor list, erase them from the tower list
+      neighbor.insert(neighbor.end(), arrTow.begin(), neighborEnd);
+      arrTow.erase(arrTow.begin(), neighborEnd);
+    }  // when "high" is a "peak"
     // 2003-09-27
     // Do the follow, no matter "high" is a "peak" or "neighbor"!
     // To close the logic loop hole that a tower which is seperated (by towers of the same energy) from
