@@ -1,4 +1,8 @@
 #include "StFmsQAHistoMaker.h"
+
+#include <sstream>
+#include <string>
+
 #include "StFmsPointMaker/StFmsClusterCollection.h"
 #include "StFmsPointMaker/StFmsClHitCollection.h"
 #include "StFmsPointMaker/StFmsPointCollection.h"
@@ -133,6 +137,16 @@ Int_t StFmsQAHistoMaker::Init() {
 		hfmscluEvsphi = new TH2F("hfmscluEvsphi","FMS cluster energy vs phi",100,-TMath::Pi(),TMath::Pi(),250,0,250);	
 		hfmsphoEvseta = new TH2F("hfmsphoEvseta","FMS photon energy vs eta",100,2.5,4.5,250,0,250);
 		hfmsphoEvsphi = new TH2F("hfmsphoEvsphi","FMS photon energy vs phi",100,-TMath::Pi(),TMath::Pi(),250,0,250);	
+    for (int nstb(1); nstb < 5; ++nstb) {
+      std::ostringstream oss;
+      oss << "hfmsy0x0_" << nstb;
+      TH2F* hist = new TH2F(oss.str().c_str(), ";local row;local column",
+                            18, 0, 18, 36, 0, 36);
+      hfmsy0x0.insert(std::make_pair(nstb, hist));
+      oss.str("");
+      oss << "Row vs. column, NSTB = " << nstb;
+      hfmsy0x0[nstb]->SetTitle(oss.str().c_str());
+    }  // for
 	}
 	if(mEmcQA){
 	//	hemcNhitvsevt = new TH2F("hemcNhitvsevt","EMC #towers vs event number",2e3,0,2e6,5520,0,5520);
@@ -229,42 +243,38 @@ Int_t StFmsQAHistoMaker::Make() {
 		Int_t nphotons = 0;
 		Int_t nhits = 0;
 		for(StFmsClusterConstIterator iclu = fmsclusters->clusters().begin(); iclu != fmsclusters->clusters().end(); iclu++){
-		
 			StFmsPointCollection* fmspoints = (*iclu)->GetPointCollection();
 			nphotons += fmspoints->NumberOfPoints();
-		
 			nhits += (*iclu)->GetNTower();
 			Float_t clusterE = (*iclu)->GetEnergy();
-			hfmscluEvsevt->Fill(ievt,clusterE);
-			Float_t clusterEta = ((*iclu)->GetFourMomentum()).Eta();
-			Float_t clusterPhi = ((*iclu)->GetFourMomentum()).Phi();
-			hfmscluEvseta->Fill(clusterEta,clusterE);
-			hfmscluEvsphi->Fill(clusterPhi,clusterE);
-	
-			//loop over hits
-			for(StFmsClHitConstIterator ihit = (*iclu)->GetClHitCollection()->hits().begin(); ihit != (*iclu)->GetClHitCollection()->hits().end(); ihit++){
-				Float_t hitE = (*ihit)->GetEnergy();
-				hfmshitEvsevt->Fill(ievt,hitE);
-			}
-			
-			for(StFmsPointConstIterator ipts = fmspoints->points().begin(); ipts != fmspoints->points().end(); ipts++){
-			
-				//(*ipts)->Print();
-				Float_t photonE = (*ipts)->GetEnergy();
-				hfmsphoEvsevt->Fill(ievt,photonE);
-				Float_t photonEta = ((*ipts)->fourMomentum()).Eta();
-				Float_t photonPhi = ((*ipts)->fourMomentum()).Phi();
-				hfmsphoEvseta->Fill(photonEta,photonE);
-				hfmsphoEvsphi->Fill(photonPhi,photonE);
-	
-			}
-		
+      hfmscluEvsevt->Fill(ievt,clusterE);
+      Float_t clusterEta = ((*iclu)->GetFourMomentum()).Eta();
+      Float_t clusterPhi = ((*iclu)->GetFourMomentum()).Phi();
+      hfmscluEvseta->Fill(clusterEta,clusterE);
+      hfmscluEvsphi->Fill(clusterPhi,clusterE);
+      const int nstb = (*iclu)->GetNstb();
+      if (hfmsy0x0.find(nstb) != hfmsy0x0.end()) {
+  			if ((*iclu)->GetX0() > 0. && (*iclu)->GetY0() > 0.) {
+          hfmsy0x0[nstb]->Fill((*iclu)->GetX0(), (*iclu)->GetY0());
+        }  // if
+      }  // if
+      //loop over hits
+      for(StFmsClHitConstIterator ihit = (*iclu)->GetClHitCollection()->hits().begin(); ihit != (*iclu)->GetClHitCollection()->hits().end(); ihit++){
+        Float_t hitE = (*ihit)->GetEnergy();
+        hfmshitEvsevt->Fill(ievt,hitE);
+      }
+      for(StFmsPointConstIterator ipts = fmspoints->points().begin(); ipts != fmspoints->points().end(); ipts++){
+        //(*ipts)->Print();
+        Float_t photonE = (*ipts)->GetEnergy();
+        hfmsphoEvsevt->Fill(ievt,photonE);
+        Float_t photonEta = ((*ipts)->fourMomentum()).Eta();
+        Float_t photonPhi = ((*ipts)->fourMomentum()).Phi();
+        hfmsphoEvseta->Fill(photonEta,photonE);
+        hfmsphoEvsphi->Fill(photonPhi,photonE);
+      }
 		}
-		
 		hfmsNhitvsevt->Fill(ievt,nhits);
 		hfmsNphovsevt->Fill(ievt,nphotons);
-	
-
 	}//mFmsQA
 //	LOG_INFO << "begin reading EMC" << endm;
 	if(mEmcQA){

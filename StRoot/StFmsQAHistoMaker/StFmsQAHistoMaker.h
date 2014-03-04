@@ -3,6 +3,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include <map>
+
 // ROOT
 class TFile;
 class TH1F;
@@ -69,6 +71,7 @@ private:
 	TH2F* hfmscluEvsphi;
 	TH2F* hfmsphoEvseta;
 	TH2F* hfmsphoEvsphi;
+  std::map<int, TH2F*> hfmsy0x0;
 	
 	
 	//EmcQA
