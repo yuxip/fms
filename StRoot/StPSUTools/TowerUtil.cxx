@@ -107,6 +107,26 @@ struct TowerEnergyIsAboveThreshold {
     return !(tower->energy < minTowerEnergy);
   }
 };
+
+/*
+ Filter out towers below the minimum energy threshold.
+ 
+ Returns a pointer list of below-threshold towers.
+ Erases the below-threshold towers from the input list.
+ The order of towers after filtering is not guaranteed.
+ */
+TowerList filterTowersBelowEnergyThreshold(TowerList* towers) {
+  // Move towers above threshold to the front, those below to the end
+  // newEnd marks the end of the above-threshold towers and the beginning of the
+  // below-threshold towers
+  TowerIter newEnd = std::partition(towers->begin(), towers->end(),
+                                    TowerEnergyIsAboveThreshold());
+  // Store the below-threshold towers in a new list
+  TowerList belowThreshold(newEnd, towers->end());
+  // Remove the below-threshold towers from the input list
+  towers->erase(newEnd, towers->end());
+  return belowThreshold;
+}
 }  // unnamed namespace
 
 unsigned TowerUtil::associateTowersWithClusters(TowerList& neighbor,
@@ -122,11 +142,6 @@ unsigned TowerUtil::associateTowersWithClusters(TowerList& neighbor,
   for (TowerRIter i = neighbor.rbegin(); i != neighbor.rend(); ++i) {
     nbT = *i;
     Int_t numbTowBefore = neighbor.size();
-    // towers in "neighbor" should NEVER be lower than "minTowerEnergy"
-    if( nbT->energy < minTowerEnergy ) {
-      cout << "Something is wrong! A tower in \"neighbor\" has energy " << nbT->energy;
-      cout << ". Lower than " << minTowerEnergy << ".\n" << endl;
-    }
     // which cluster should this tower belong?
     Int_t whichCluster;
     // the smallest distance to the peaks
@@ -246,11 +261,6 @@ unsigned TowerUtil::associateResidualTowersWithClusters(TowerList& neighbor,
   for (TowerRIter i = neighbor.rbegin(); i != neighbor.rend(); ++i) {
     nbT = *i;
     Int_t numbTowBefore = neighbor.size();
-    // towers in "neighbor" should NEVER be lower than "minTowerEnergy"
-    if (nbT->energy < minTowerEnergy) {
-      cout << "Something is wrong! A tower in \"neighbor\" has energy " << nbT->energy;
-      cout << ". Lower than " << minTowerEnergy << ".\n" << endl;
-    }  // if
     // which cluster should this tower belong?
     Int_t whichCluster;
     // the smallest distance to the peaks
@@ -340,6 +350,8 @@ TowerUtil::~TowerUtil() {
 Int_t TowerUtil::FindTowerCluster(TObjArray *inputTow, HitCluster *clust) {
   TowerList arrTow;
   fillStlContainerFromRootCollection(*inputTow, &arrTow);
+  // Remove towers below energy threshold, but save them for later use
+  TowerList belowThreshold = filterTowersBelowEnergyThreshold(&arrTow);
   // the neighbor TObjArray
   TowerList neighbor;
   // the "valley" TObjArray
@@ -359,10 +371,6 @@ Int_t TowerUtil::FindTowerCluster(TObjArray *inputTow, HitCluster *clust) {
     // By design, this tower is the highest tower in "arrTow", but it could be lower
     // than a tower in "neighbor"
     TowerFPD* high = arrTow.back();
-    // when tower energy is less than minTowerEnergy, break out the loop!
-    if(high->energy < minTowerEnergy) {
-      break;
-    }  // if
 		// 2003-08-15
 		// Fix a logical loop hole in deciding if a tower is
 		//    a peak; Need to first compare the highest tower
@@ -544,7 +552,7 @@ Int_t TowerUtil::FindTowerCluster(TObjArray *inputTow, HitCluster *clust) {
   // those towers serve the purpose of preventing the creation of bogus peak
   //   (peak where there is no energy deposited at the tower)
   TowerList toRemove;
-  for (TowerIter i = arrTow.begin(); i != arrTow.end(); ++i) {
+  for (TowerIter i = belowThreshold.begin(); i != belowThreshold.end(); ++i) {
     nbT = *i;
     // which cluster should this tower belong?
     Int_t whichCluster = 0;
