@@ -112,7 +112,6 @@ struct TowerEnergyIsAboveThreshold {
 unsigned TowerUtil::associateTowersWithClusters(TowerList& neighbor,
                                                 HitCluster *clust,
                                                 TObjArray* arrValley) {
-  Int_t jjn = neighbor.size() - 1 ;
   const Float_t ExtremelyFaraway = 99999 ;
   // distance to peak of cluster
   Float_t distToClust[maxNClusters] ;
@@ -214,29 +213,16 @@ unsigned TowerUtil::associateTowersWithClusters(TowerList& neighbor,
         nbT->cluster = whichCluster ;
         associated.push_back(nbT);
         (clust[whichCluster].tow)->Add(nbT);
-        std::cout << "tpbdebug associate neighbour " << jjn << " with cluster " << whichCluster << std::endl;
       }
       else if( nPeakSameDist[numbValleyTower] > 1 ) {
         associated.push_back(nbT);
         arrValley->Add(nbT);
-        std::cout << "tpbdebug add neighbour " << jjn << " to valley array" << std::endl;
       }
       else {
         cout << "Something wrong in your logic! nPeakSameDist = " << nPeakSameDist << "! Error!" << endl;
       }
     } else {
       cout << "tpbdebug didn't find cluster with dist < ExtremelyFaraway" << endl;
-    }
-    // move forward on to the next tower
-    jjn-- ;
-    if( jjn == -1 ) {  // Means we've been through the entire list again
-      // Counts number of towers in "neighbor". If the next iteration does not move any tower to a cluster
-      //    (same number of towers), we have an infinite loop. Break out and print out error message!
-      jjn = neighbor.size() - 1;
-      if( numbTowBefore > 0 && (jjn + 1) == numbTowBefore ) {
-        std::cout << "tpbdebug <deprecated> breaking out of neighbour association with " << neighbor.size() << " remaining" << std::endl;
-//  	    break;
-	    }  // if
     }
   } // loop over TObjArray "neighbor"
   for (TowerIter i = associated.begin(); i != associated.end(); ++i) {
