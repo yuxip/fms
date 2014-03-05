@@ -145,6 +145,28 @@ enum ETowerClusterDistance {
   kPeakTower,  // Distance from tower to peak tower in cluster
   kClusterCenter  // Distance from tower to calculated center of cluster
 };
+
+/**
+ Sort the towers in an array of clusters in order of ascending energy.
+ 
+ \todo Replace cluster list with an STL list, which will make sorting and
+       reversing much simpler than with a ROOT container
+ */
+void sortTowersEnergyAscending(PSUGlobals::HitCluster* cluster, int nClusters) {
+  for (Int_t i(0); i < nClusters; ++i) {
+    (cluster[i].tow)->UnSort();
+    (cluster[i].tow)->Sort();  // Sorts by *descending* energy
+    // Do an exchange of towers: 0<-->N-1, 1<-->N-2... to get ascending
+    Int_t n = (cluster[i].tow)->GetEntriesFast();
+    for(Int_t j(0); j < n / 2; ++j) {
+      TowerFPD* t1 = static_cast<TowerFPD*>((cluster[i].tow)->RemoveAt(j));
+      TowerFPD* t2 = static_cast<TowerFPD*>(
+        (cluster[i].tow)->RemoveAt(n - 1 - j));
+      (cluster[i].tow)->AddAt(t1, n - 1 - j);
+      (cluster[i].tow)->AddAt(t2, j);
+    }  // for
+  }  // for
+}
 }  // unnamed namespace
 
 namespace PSUGlobals {
@@ -499,25 +521,7 @@ Int_t TowerUtil::FindTowerCluster(TObjArray *inputTow, HitCluster *clust) {
   do {
     nAssociations = associateResidualTowersWithClusters(neighbor, clust);
   } while (nAssociations > 0);
-  /** \todo Replace cluster list with an STL list, which will make sorting and
-            reversing much simpler than with a ROOT container */
-  // Sort towers by energy (descending, higher energy towers first)
-  for(Int_t jc=0; jc<nClusts; jc++) {
-    (clust[jc].tow)->UnSort();
-    (clust[jc].tow)->Sort();
-    // TObjArray sort ascending! Not what I want!
-    // Do an exchange of towers: 0<-->nTT-1, 1<-->nTT-2, etc.
-    TowerFPD *tmp1;
-    TowerFPD *tmp2;
-    Int_t nTT;
-    nTT = (clust[jc].tow)->GetEntriesFast();
-    for(Int_t itt=0; itt<nTT/2; itt++) {
-      tmp1 = (TowerFPD *) (clust[jc].tow)->RemoveAt(itt) ; 
-      tmp2 = (TowerFPD *) (clust[jc].tow)->RemoveAt(nTT-1-itt) ;
-      (clust[jc].tow)->AddAt(tmp1, nTT-1-itt);
-      (clust[jc].tow)->AddAt(tmp2, itt);
-    }
-  }
+  sortTowersEnergyAscending(clust, nClusts);
   // Recalculate various moment of clusters
   for(Int_t i(0); i < nClusts; ++i) {
     CalClusterMoment(&clust[i]);
