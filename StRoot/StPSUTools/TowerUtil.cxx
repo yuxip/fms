@@ -147,6 +147,11 @@ TowerList filterTowersBelowEnergyThreshold(TowerList* towers) {
 }  // unnamed namespace
 
 namespace PSUGlobals {
+/* There are different ways of calculating a tower-to-cluster distance */
+enum ETowerClusterDistance {
+  kPeakTower,  // Distance from tower to peak tower in cluster
+  kClusterCenter  // Distance from tower to calculated center of cluster
+};
 /*
  Association information between a tower and clusters.
  
@@ -169,16 +174,34 @@ class TowerClusterAssociation : public TObject {
   /* Returns the list of potential associate clusters */
   std::list<HitCluster*>* clusters() { return &mClusters; }
   /*
-   Calculate the separation between this tower and a cluster.
+   Calculate the separation between this tower and another.
    
    The separation is in local row-column coordinates i.e. the distance is in
    number of towers, not in cm.
    */
-  double separation(HitCluster* cluster) {
-    // The peak tower in a cluster is always the first
-    TowerFPD* peak = static_cast<TowerFPD*>(cluster->tow->First());
-    return sqrt(pow(peak->col - mTower->col, 2.) +
-                pow(peak->row - mTower->row, 2.));
+  double separation(TowerFPD* tower) {
+    return sqrt(pow(tower->col - mTower->col, 2.) +
+                pow(tower->row - mTower->row, 2.));
+  }
+  /*
+   Calculate the separation between this tower and a cluster.
+
+   Distances are calculated as follows:
+    - distance=kPeakTower: distance from tower to cluster peak tower
+    - distance=kClusterCenter: distance from tower to cluster center, based on
+                               cluster moment calculation
+   The separation is in local row-column coordinates i.e. the distance is in
+   number of towers, not in cm.
+   */
+  double separation(HitCluster* cluster, const ETowerClusterDistance distance) {
+    if (kPeakTower == distance) {
+      TowerFPD* peak = static_cast<TowerFPD*>(cluster->tow->First());
+      return separation(peak);
+    } else {
+      // Use calculated cluster center (x0, y0)
+      return sqrt(pow(cluster->x0 - (mTower->col - 0.5), 2.) +
+                  pow(cluster->y0 - (mTower->row - 0.5), 2.));
+    }  // if
   }
   /*
    Returns true if this tower can be associated with a cluster
@@ -228,22 +251,24 @@ class TowerClusterAssociation : public TObject {
      cluster(s), add it to the list but keep the existing ones
    i.e. at any time there can only be clusters of the same (minimal) separation
    from the tower, but there can be multiple clusters of identical separation.
+
+   See separation(HitCluster*) for the meaning of the distance argument.
    
    Return true if the new cluster is added, false if not.
    */
-  bool add(HitCluster* cluster, int clusterIndex) {
+  bool add(HitCluster* cluster, const ETowerClusterDistance distance) {
     bool inserted(false);
     if (canAssociate(cluster)) {
       if (mClusters.empty()) {
         // There is nothing in the list yet, add the cluster, simples!
         mClusters.push_back(cluster);
-        mTower->cluster = clusterIndex;
+        mTower->cluster = cluster->index;
         inserted = true;
       } else {
         // Cluster(s) are already present, so only add the new one if it is
         // not further away. If it is closer, remove the existing cluster.
-        double distNew = separation(cluster);
-        double distOld = separation(mClusters.front());
+        double distNew = separation(cluster, distance);
+        double distOld = separation(mClusters.front(), distance);
         /** \todo I don't like using simple float comparison here, look into a
                   more robust method */
         // If the new cluster is closer, remove the old ones
@@ -253,7 +278,7 @@ class TowerClusterAssociation : public TObject {
         // Add the new cluster if it is not further away than existing ones
         if (distNew <= distOld) {
           mClusters.push_back(cluster);
-          mTower->cluster = clusterIndex;
+          mTower->cluster = cluster->index;
           inserted = true;
         }  // if
       }  // if
@@ -307,42 +332,28 @@ class TowerClusterAssociation : public TObject {
 unsigned TowerUtil::associateTowersWithClusters(TowerList& neighbor,
                                                 HitCluster *clust,
                                                 TObjArray* arrValley) {
-  // distance to peak of cluster
-  Float_t distToClust[maxNClusters] ;
-  TowerList associated;
-  for (TowerRIter i = neighbor.rbegin(); i != neighbor.rend(); ++i) {
-    TowerFPD* nbT = *i;
-    // which cluster should this tower belong?
-    Int_t whichCluster(-1);
-    // The smallest distance to a peak tower
-    std::auto_ptr<TowerClusterAssociation> assoc(
-      new TowerClusterAssociation(nbT));
-    for (Int_t ic=0; ic<nClusts; ic++) {
-      assoc->add(&clust[ic], ic);
-    } // loop over all clusters
+  TowerList associated;  // Store neighbors we associate
+  // Towers are sorted in ascending energy, so use reverse iterator to go from
+  // highest to lowest energy
+  TowerRIter tower;
+  for (tower = neighbor.rbegin(); tower != neighbor.rend(); ++tower) {
+    // Populate association information of this tower with each cluster
+    std::auto_ptr<TowerClusterAssociation> association(
+      new TowerClusterAssociation(*tower));
+    for (Int_t i(0); i < nClusts; ++i) {
+      association->add(&clust[i], kPeakTower);
+    }  // loop over all clusters
     // Attempt to move the tower to the appropriate cluster
-    // If there is only one cluster at the minimal distance, associate it with
-    // that cluster.
-    // If there are multiple clusters at the same distance we need to make a
-    // more sophisticated association. This will be done later, so save the
-    // necessary information now.
-    // Loop over all clusters, and count the number of "peaks" that have the
-    // same, minimal, distance to the neighbor. If this is one, we can
-    // unambiguously assign the tower to that cluster now. If it is more than
-    // one, we save some information and will assign it later. We will refer
-    // to these ambiguous towers as "valley" towers here.
-    if (assoc->mClusters.size() == 1) {
-      // Only one "peak" is closest to "nbT". "nbT" belongs to this "peak"!
-      associated.push_back(nbT);
-      assoc->mClusters.front()->tow->Add(nbT);
-    } else if (assoc->mClusters.size() > 1) {
-      // Add this tower to the "valley" array so we can associate it with a
-      // cluster later
-      associated.push_back(nbT);
-      arrValley->Add(assoc.release());
-    } else {
-      cout << "tpbdebug didn't find cluster with dist < ExtremelyFaraway" << endl;
-    }  // if (minDist < ExtremelyFaraway)
+    if (association->clusters()->size() == 1) {
+      // Only one peak is closest to the tower; the tower belongs to this peak
+      association->clusters()->front()->tow->Add(*tower);
+      associated.push_back(*tower);
+    } else if (association->clusters()->size() > 1) {
+      // Multiple potential clusters, need to do something more sophisticated
+      // Add this association to the "valley" array so we can use it later
+      arrValley->Add(association.release());
+      associated.push_back(*tower);
+    }  // if
   } // loop over TObjArray "neighbor"
   // Remove associated neighbors from the neighbor list
   for (TowerIter i = associated.begin(); i != associated.end(); ++i) {
@@ -352,84 +363,24 @@ unsigned TowerUtil::associateTowersWithClusters(TowerList& neighbor,
 }
 
 unsigned TowerUtil::associateResidualTowersWithClusters(TowerList& neighbor,
-                                                        HitCluster *clust) {
-  Int_t jjn = neighbor.size() - 1 ;
-  // distance to peak of cluster
-  Float_t distToClust[maxNClusters] ;
-  TowerFPD *nbT;
-  TowerFPD *pkT;
+                                                        HitCluster* clust) {
   TowerList associated;
-  std::cout << "tpbdebug handling " << neighbor.size() << " residual towers" << std::endl;
-  for (TowerRIter i = neighbor.rbegin(); i != neighbor.rend(); ++i) {
-    nbT = *i;
-    Int_t numbTowBefore = neighbor.size();
-    // which cluster should this tower belong?
-    Int_t whichCluster;
-    // the smallest distance to the peaks
-    // 2003-09-30
-    // now the smallest distance to clusters
-    Float_t minDist;
-    minDist = ExtremelyFaraway ;
-    for(Int_t ic=0; ic<nClusts; ic++) {
-	  // first set the distance to the peak of a cluster to be unreasonably high
-  	  distToClust[ic] = ExtremelyFaraway ;
-      // peak-tower is always the first one in cluster's array
-      pkT = (TowerFPD *) (clust[ic].tow)->First();
-      // do not consider if the peak is lower than the "neighbor" tower
-      if( pkT->energy < nbT->energy )
-        continue;
-      // loop over all towers in this cluster
-      TowerFPD *towInClust;
-      for(Int_t jt=0; jt<(clust[ic].tow)->GetEntriesFast(); jt++) {
-	      // check if "nbT" is neigboring any tower in this cluster
-	      towInClust = (TowerFPD *) (clust[ic].tow)->At(jt) ;
-	      if( nbT->IsNeighbor( towInClust ) ) {
-          // make sure that "nbT" is not more than "minRatioPeakTower" times of "towInClust"
-          if( nbT->energy > (minRatioPeakTower * towInClust->energy) ) 
-            continue;
-          // calculate distance to the "peak" of the cluster
-          Float_t delc, delr;
-          CalClusterMoment(&clust[ic]);
-          delc = clust[ic].x0 - (nbT->col - 0.5) ;
-          delr = clust[ic].y0 - (nbT->row - 0.5) ;
-          distToClust[ic] = sqrt( delc * delc + delr * delr ) ;
-          // once if the tower is found to be a neighbor of (and does not have higher enough energy than) one tower
-          //   in the cluster, it is not necessary to contine
-          break;
-		    }
-	    } // loop over all towers in a cluster
-      // check if the distance to the peak of this cluster is smaller
-      if( distToClust[ic] < minDist ) {
-        minDist = distToClust[ic] ;
-        whichCluster = ic ;
-      }
-    } // loop over all clusters
-    // move the tower to the appropriate cluster
-    if( minDist < ExtremelyFaraway ) {
-  	  nbT->cluster = whichCluster ;
-      associated.push_back(nbT);
-	    (clust[whichCluster].tow)->Add(nbT);
-	    std::cout << "tpbdebug associating residual neighbor " << jjn << " with cluster " << whichCluster << std::endl;
-	  }
-    // move forward on to the next tower
-    jjn-- ;
-    if( jjn == -1 ) {
-      // Counts number of towers in "neighbor". If the next iteration does not move any tower to a cluster
-      //    (same number of towers), we have an infinite loop. Break out and print out error message!
-      Int_t numbTowBefore;
-      numbTowBefore = neighbor.size();
-      jjn = neighbor.size() - 1;
-  	  if( numbTowBefore > 0 && (jjn + 1) == numbTowBefore ) {
-	      cout << "Infinite loop! The following towers are not claimed by any cluster!" << endl;
-	      for (TowerIter i = neighbor.begin(); i != neighbor.end(); ++i) {
-	        cout << "\t";
-	        (*i)->Print();
-	      }  // for
-	      cout << "\n  Algorithm could not deal with the case when \"neighbor\" is higher than the ";
-	      cout << "closest \"peak\", but towers surrounding it all belongs to that cluster!\n" << endl;
-	      cout << "Check the event! No (or bad) pedestal subtraction!?? \n" << endl;
-	    }
-  	}
+  TowerRIter tower;
+  for (tower = neighbor.rbegin(); tower != neighbor.rend(); ++tower) {
+    // Populate tower-cluster association information
+    TowerClusterAssociation association(*tower);
+    for (Int_t i(0); i < nClusts; ++i) {
+      // There are already some towers in the cluster so we can use a computed
+      // cluster center to give a better estimate of tower-cluster separation
+      CalClusterMoment(&clust[i]);
+      association.add(&clust[i], kClusterCenter);
+    }  // loop over all clusters
+    if (!association.clusters()->empty()) {
+      HitCluster* cluster = association.clusters()->front();
+      (*tower)->cluster = cluster->index;
+      cluster->tow->Add(*tower);
+      associated.push_back(*tower);
+    }  // if
   } // loop over TObjArray "neighbor"
   for (TowerIter i = associated.begin(); i != associated.end(); ++i) {
     neighbor.remove(*i);
