@@ -35,6 +35,7 @@ class HitCluster : public TObject {
   Int_t          catag  ;               // catagory of cluster (1: 1-photon,  2: 2-photon,  0: could be either 1- or 2-photon)
   Int_t          numbTower;             // number of non_zero towers in the cluster
   Int_t          nPhoton;               // number of photons contained in this cluster: ( nPhoton <= MAX_PHOTON_PER_CLUSTER ! )
+  Int_t          index;                 // cluster number in an event, counts from 0
   Float_t        energy ;               // total energy  contained in this cluster (0th moment)
   
   Float_t        x0     ;               // mean x ("center of gravity") in local grid coordinate (1st moment)
