@@ -476,16 +476,6 @@ Int_t TowerUtil::FindTowerCluster(TObjArray *inputTow, HitCluster *clust) {
   do {
     nAssociations = associateTowersWithClusters(neighbor, clust, arrValley);
   } while(nAssociations > 0);
-  // distance to peak of cluster
-  Float_t distToClust[maxNClusters] ;
-  TowerFPD *nbT;
-  TowerFPD *pkT;
-  // All towers in "neighbor" must belong to a cluster.
-  // Loop over them, check if it is bordering a cluster.
-  //   If yes, move it to the nearest cluster, and move on to the next tower.
-  //   If no, move on to the next tower.
-  //   When reach the end of the array, start from the beginning.
-  Int_t jjn = neighbor.size() - 1;
   // Calculate the moments of clusters. We need to do this before calling
   // TowerClusterAssociation::nearestCluster, which uses the cluster moment
   // to determine tower-cluster separations for the valley towers.
@@ -503,7 +493,7 @@ Int_t TowerUtil::FindTowerCluster(TObjArray *inputTow, HitCluster *clust) {
       cluster->tow->Add(assoc->tower());
     } else {
       cout << "Something is wrong! The following \"Valley\" tower does not belong to any cluster! Error!" << endl;
-      nbT->Print();
+      assoc->tower()->Print();
       cout << "!!!!!!!!\n" << endl;
     }  // if (cluster)
   }  // end of for loop over valley towers
@@ -539,47 +529,24 @@ Int_t TowerUtil::FindTowerCluster(TObjArray *inputTow, HitCluster *clust) {
     clust[ic].nPhoton =  0 ;
     clust[ic].catag   = -1 ;
   }
-  // 2003-09-14
   // now add those "zero" towers to the clusters
   // those towers serve the purpose of preventing the creation of bogus peak
-  //   (peak where there is no energy deposited at the tower)
+  // (peak where there is no energy deposited at the tower)
   TowerList toRemove;
-  for (TowerIter i = belowThreshold.begin(); i != belowThreshold.end(); ++i) {
-    nbT = *i;
-    // which cluster should this tower belong?
-    Int_t whichCluster = 0;
-    // the smallest distance to the peaks
-    Float_t minDist;
-    minDist = ExtremelyFaraway ;
+  TowerIter tower;
+  for (tower = belowThreshold.begin(); tower != belowThreshold.end(); ++tower) {
+    TowerClusterAssociation association(*tower);
     // loop over all clusters
-    for(Int_t ijc=0; ijc<nClusts; ijc++) {
-      Float_t dist, delc, delr;
-      // peak-tower is always the first one in cluster's array
-      pkT = (TowerFPD *) (clust[ijc].tow)->First();
-      // distance to this peak
-      delc = nbT->col - pkT->col;
-      delr = nbT->row - pkT->row;
-      // 2003-10-11
-      // distance to "center" of cluster is used
-      // 			delc = clust[ijc].x0 - (nbT->col - 0.5) ;
-      // 			delr = clust[ijc].y0 - (nbT->row - 0.5) ;
-      dist = sqrt( delc*delc + delr*delr ) ;
-      // since the higher-peak cluster is considered first, when "dist" is the same, favor the
-      // higher-peak cluster (naturally)
-      if( dist < minDist ) {
-        minDist = dist ;
-        whichCluster = ijc;
-      }
-    }
-    // if the distance is smaller than "maxDistanceFromPeak"
-    //    move the tower to the appropriate cluster
-    // Do not want to add too many "zero" towers to a cluster!
-    if( minDist < maxDistanceFromPeak ) {
-      nbT->cluster = whichCluster ;
-      toRemove.push_back(nbT);
-      (clust[whichCluster].tow)->Add(nbT);
-    }
-  }
+    for(Int_t i(0); i < nClusts; ++i) {
+      association.add(&clust[i], kPeakTower);
+    }  // for
+    HitCluster* cluster = association.nearestCluster();
+    if (cluster) {
+      (*tower)->cluster = cluster->index;
+      toRemove.push_back(*tower);
+      cluster->tow->Add(*tower);
+    }  // if
+  }  // for
   for (TowerIter i = toRemove.begin(); i != toRemove.end(); ++i) {
     arrTow.remove(*i);
   }  // for
