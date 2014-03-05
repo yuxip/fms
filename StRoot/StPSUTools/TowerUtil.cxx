@@ -534,7 +534,8 @@ Int_t TowerUtil::FindTowerCluster(TObjArray *inputTow, HitCluster *clust) {
       association.add(&clust[i], kPeakTower);
     }  // for
     HitCluster* cluster = association.nearestCluster();
-    if (cluster) {
+    if (cluster &&
+        association.separation(cluster, kClusterCenter) < maxDistanceFromPeak) {
       (*tower)->cluster = cluster->index;
       toRemove.push_back(*tower);
       cluster->tow->Add(*tower);
