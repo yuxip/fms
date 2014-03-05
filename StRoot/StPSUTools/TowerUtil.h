@@ -32,6 +32,9 @@ class TowerUtil {
                                        TObjArray* valleys);
   unsigned associateResidualTowersWithClusters(TowerList& neighbors,
                                                HitCluster* clusters);
+  unsigned associateValleyTowersWithClusters(TowerList& neighbors,
+                                             HitCluster* clusters,
+                                             TObjArray* valleys);
   ClassDef(TowerUtil,3);
 };
 }  // namespace PSUGlobals

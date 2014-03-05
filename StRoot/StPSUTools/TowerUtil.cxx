@@ -413,6 +413,29 @@ unsigned TowerUtil::associateResidualTowersWithClusters(TowerList& neighbor,
   return associated.size();
 }
 
+unsigned TowerUtil::associateValleyTowersWithClusters(TowerList& neighbors,
+                                                      HitCluster* clusters,
+                                                      TObjArray* valleys) {
+  unsigned size = neighbors.size();
+  for (Int_t i(0); i < valleys->GetEntriesFast(); ++i) {
+    TowerClusterAssociation* association =
+      static_cast<TowerClusterAssociation*>(valleys->At(i));
+    HitCluster* cluster = association->nearestCluster();
+    if (cluster) {
+      // Move the tower to the appropriate cluster
+      association->tower()->cluster = cluster->index;
+      neighbors.remove(association->tower());
+      cluster->tow->Add(association->tower());
+    } else {
+      std::cout << "Something is wrong! The following \"Valley\" tower does "
+        << "not belong to any cluster! Error!" << std::endl;
+      association->tower()->Print();
+      std::cout << "!!!!!!!!\n" << std::endl;
+    }  // if (cluster)
+  }  // end of for loop over valley towers
+  return size - neighbors.size();
+}
+
 TowerUtil::TowerUtil() : nClusts(0) {
   SetMomentEcutoff();
 }
@@ -502,21 +525,9 @@ Int_t TowerUtil::FindTowerCluster(TObjArray *inputTow, HitCluster *clust) {
   for (Int_t i(0); i < nClusts; ++i) {
     CalClusterMoment(&clust[i]);
   }  // for
-  for (Int_t iVal(0); iVal < valleys.GetEntriesFast(); ++iVal) {
-    TowerClusterAssociation* assoc = static_cast<TowerClusterAssociation*>(
-      valleys.At(iVal));
-    HitCluster* cluster = assoc->nearestCluster();
-    // Move the tower to the appropriate cluster
-    if (cluster) {
-      assoc->tower()->cluster = cluster->index;  // Store cluster index in tower
-      neighbor.remove(assoc->tower());
-      cluster->tow->Add(assoc->tower());
-    } else {
-      std::cout << "Something is wrong! The following \"Valley\" tower does not belong to any cluster! Error!" << std::endl;
-      assoc->tower()->Print();
-      std::cout << "!!!!!!!!\n" << std::endl;
-    }  // if (cluster)
-  }  // end of for loop over valley towers
+  // Ambiguous "valley" towers that were equally spaced between clusters can
+  // now be associated
+  associateValleyTowersWithClusters(neighbor, clust, &valleys);
   // If there are still towers left in "neighbor", distribute them to clusters
   do {
     nAssociations = associateResidualTowersWithClusters(neighbor, clust);
