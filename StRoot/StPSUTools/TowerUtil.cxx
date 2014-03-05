@@ -30,6 +30,8 @@ const Float_t minEcSigma2Ph = 35.;
 const Float_t maxEcSigma1Ph = 10.;
 const Float_t minTowerEnergy = 0.01;
 const Float_t minRatioPeakTower = 1.6;
+// Extreme distance between towers (no distance can be this large!)
+const Float_t ExtremelyFaraway = 99999 ;
 
 typedef TowerUtil::TowerList TowerList;
 typedef TowerList::iterator TowerIter;
@@ -142,113 +144,91 @@ TowerList filterTowersBelowEnergyThreshold(TowerList* towers) {
 unsigned TowerUtil::associateTowersWithClusters(TowerList& neighbor,
                                                 HitCluster *clust,
                                                 TObjArray* arrValley) {
-  const Float_t ExtremelyFaraway = 99999 ;
   // distance to peak of cluster
   Float_t distToClust[maxNClusters] ;
-  TowerFPD *nbT;
-  TowerFPD *pkT;
   TowerList associated;
   for (TowerRIter i = neighbor.rbegin(); i != neighbor.rend(); ++i) {
-    nbT = *i;
-    Int_t numbTowBefore = neighbor.size();
+    TowerFPD* nbT = *i;
     // which cluster should this tower belong?
-    Int_t whichCluster;
-    // the smallest distance to the peaks
-    // 2003-09-30
-    // now the smallest distance to clusters
-    Float_t minDist;
-    minDist = ExtremelyFaraway ;
-    for(Int_t ic=0; ic<nClusts; ic++) {
+    Int_t whichCluster(-1);
+    // The smallest distance to a peak tower
+    Float_t minDist = ExtremelyFaraway ;
+    for (Int_t ic=0; ic<nClusts; ic++) {
       // first set the distance to the peak of a cluster to be unreasonably high
       distToClust[ic] = ExtremelyFaraway ;
       // peak-tower is always the first one in cluster's array
-      pkT = (TowerFPD *) (clust[ic].tow)->First();
-      // do not consider if the peak is lower than the "neighbor" tower
-      // 2003-08-15
-      // Because of digitization, it is possible that the "neighbor" tower
-      // has the exact energy as the peak tower!!!
-      // Change the condition from "if( pkT->energy <= nbT->energy )"
-      // to "if( pkT->energy < nbT->energy )", so that this "neighbor" tower
-      // would not be hung dry!
-      // 2003-09-27
-      // On rare occasions, this requirement that a "neighbor" must not be higher than
-      //    the "peak" could leave the "neighbor" hang on dry (infinite loop). It happens
-      //    (run 4126039, EN, for example. Pedestals subtraction not properly done?!) when
-      //    "neighbor" is higher than the closest "peak", but towers surrounding it all belongs
-      //    to that cluster.
-      // The requirement is reasonable. So we have to find a way to break out of the infinite
-      //    loop and print out an error message. (Counts the number of towers remaining in
-      //    "neighbor". If it is the same as the last iteration, we have an infinite loop!)
-      if( pkT->energy < nbT->energy )
+      TowerFPD* pkT = static_cast<TowerFPD*>((clust[ic].tow)->First());
+      // Make sure the neighbor has lower energy than the peak, but be careful;
+      // because of digitization, it is possible that the "neighbor" tower
+      // has the exact same energy as the peak tower, not just less.
+      if (pkT->energy < nbT->energy) {
         continue;
-      // loop over all towers in this cluster
-      TowerFPD *towInClust;
+      }  // if
+      // Loop over all towers in this cluster to see if the neighbor tower is
+      // adjacent to any of them.
       for(Int_t jt=0; jt<(clust[ic].tow)->GetEntriesFast(); jt++) {
-        // check if "nbT" is neigboring any tower in this cluster
-        towInClust = (TowerFPD *) (clust[ic].tow)->At(jt) ;
-        if( nbT->IsNeighbor( towInClust ) ) {
-          // make sure that "nbT" is not more than "minRatioPeakTower" times of "towInClust"
-          if( nbT->energy > (minRatioPeakTower * towInClust->energy) ) 
-            continue;
-          // calculate distance to the "peak" of the cluster
-          Float_t delc, delr;
-          // 2003-10-03
-          // Revert to using distance to "peak" tower.
-          // 2003-09-30
-          // Calculate cluster moment (only need center position) while adding
-          //    "neighbor" towers to clusters. Use the center of cluster to
-          //    ecide the distance from a "neighbor" tower to a cluster (previously
-          //    use the "peak" tower position). This way, a tower just in between
-          //    of two "peaks" will probably go to the cluster of lower "peak".
-          //    Thus, the fitting program will less likely to try to find a 2nd
-          //    peak in the direction of another (lower) cluster.
-          // 					CalClusterMoment(&clust[ic]);
-          //  					delc = clust[ic].x0 - (nbT->col - 0.5) ;
-          // 					delr = clust[ic].y0 - (nbT->row - 0.5) ;
-          delc = pkT->col - nbT->col ;
-          delr = pkT->row - nbT->row ;
-          distToClust[ic] = sqrt( delc * delc + delr * delr ) ;
-          // once if the tower is found to be a neighbor of (and does not have higher enough energy than) one tower
-          //   in the cluster, it is not necessary to contine
+        TowerFPD* towInClust = static_cast<TowerFPD*>((clust[ic].tow)->At(jt));
+        // Place an energy selection when determining adjacent towers, as a
+        // neighbor cannot exceed an adjacent tower by a factor more than
+        // minRatioPeakTower, otherwise it will be considered a peak itself.
+        if (nbT->IsNeighbor(towInClust) &&
+            nbT->energy < minRatioPeakTower * towInClust->energy) {
+          // Calculate distance to the "peak" of the cluster
+          // Distance = sqrt(row-separation^2 + column-separation^2)
+          distToClust[ic] = sqrt(pow(pkT->col - nbT->col, 2.) +
+                                 pow(pkT->row - nbT->row, 2.));
+          // Once a tower is found to be a neighbor of any tower in a cluster
+          // it is not necessary to contine
           break;
-        }
-      } // loop over all towers in a cluster
-    	// check if the distance to the peak of this cluster is smaller
-    	if( distToClust[ic] < minDist ) {
+        }  // if
+      }  // for loop over all towers in a cluster
+    	// Check if the distance to the peak of this cluster is smaller
+    	if (distToClust[ic] < minDist) {
   	    minDist = distToClust[ic] ;
 	      whichCluster = ic ;
-	    }
+	    }  // if
     } // loop over all clusters
-    // move the tower to the appropriate cluster
-    if( minDist < ExtremelyFaraway ) {
-      // loop over all clusters, and count the number of "peaks" that have the same distance to "nbT"
-      Int_t numbValleyTower;
-      numbValleyTower = arrValley->GetEntriesFast();
-      nPeakSameDist[numbValleyTower] = 0 ;
-      for(Int_t llc=0; llc<nClusts; llc++) {
-        if( distToClust[llc] == minDist ) {
-          int npeaks = nPeakSameDist[numbValleyTower];
-          peaksToValley[numbValleyTower][npeaks] = llc ;
-          nPeakSameDist[numbValleyTower] ++ ;
-        }
-      }
-      if( nPeakSameDist[numbValleyTower] == 1 ) {
+    // Attempt to move the tower to the appropriate cluster
+    // If there is only one cluster at the minimal distance, associate it with
+    // that cluster.
+    // If there are multiple clusters at the same distance we need to make a
+    // more sophisticated association. This will be done later, so save the
+    // necessary information now.
+    if (minDist < ExtremelyFaraway) {
+      // Loop over all clusters, and count the number of "peaks" that have the
+      // same, minimal, distance to the neighbor. If this is one, we can
+      // unambiguously assign the tower to that cluster now. If it is more than
+      // one, we save some information and will assign it later. We will refer
+      // to these ambiguous towers as "valley" towers here.
+      Int_t valleyIndex = arrValley->GetEntriesFast();
+      nPeakSameDist[valleyIndex] = 0;  // Number of peaks at minimal dist
+      for (Int_t clusterIndex = 0; clusterIndex < nClusts; clusterIndex++) {
+        if (distToClust[clusterIndex] == minDist) {
+          int peakIndex = nPeakSameDist[valleyIndex];
+          // The cluster index for the mth peak at this separation from the
+          // nth valley tower
+          peaksToValley[valleyIndex][peakIndex] = clusterIndex;
+          nPeakSameDist[valleyIndex]++;
+        }  // if
+      }  // for
+      if (nPeakSameDist[valleyIndex] == 1) {
         // Only one "peak" is closest to "nbT". "nbT" belongs to this "peak"!
-        nbT->cluster = whichCluster ;
+        nbT->cluster = whichCluster;
         associated.push_back(nbT);
         (clust[whichCluster].tow)->Add(nbT);
-      }
-      else if( nPeakSameDist[numbValleyTower] > 1 ) {
+      } else if(nPeakSameDist[valleyIndex] > 1) {
+        // Add this tower to the "valley" array so we can associate it with a
+        // cluster later
         associated.push_back(nbT);
         arrValley->Add(nbT);
-      }
-      else {
+      } else {
         cout << "Something wrong in your logic! nPeakSameDist = " << nPeakSameDist << "! Error!" << endl;
-      }
+      }  // if
     } else {
       cout << "tpbdebug didn't find cluster with dist < ExtremelyFaraway" << endl;
-    }
+    }  // if (minDist < ExtremelyFaraway)
   } // loop over TObjArray "neighbor"
+  // Remove associated neighbors from the neighbor list
   for (TowerIter i = associated.begin(); i != associated.end(); ++i) {
     neighbor.remove(*i);
   }  // for
@@ -259,7 +239,6 @@ unsigned TowerUtil::associateResidualTowersWithClusters(TowerList& neighbor,
                                                 HitCluster *clust,
                                                 TObjArray* arrValley) {
   Int_t jjn = neighbor.size() - 1 ;
-  const Float_t ExtremelyFaraway = 99999 ;
   // distance to peak of cluster
   Float_t distToClust[maxNClusters] ;
   TowerFPD *nbT;
@@ -417,28 +396,28 @@ Int_t TowerUtil::FindTowerCluster(TObjArray *inputTow, HitCluster *clust) {
       }  // if
     }  // while
   }  // End of for loop over "arrTow"
-  // now that we know all the peaks, let's decide the affiliation of
-  // those remote neighbor-towers in "neighbor" TObjArray
-  // First, we need to sort the "neighbor" TObjArray, because we want to consider the "neighbor" towers
-  //    from higher towers to lower towers
+  // We have now found all peaks. Now decide the affiliation of neighbor towers
+  // i.e. which peak each neighbor is associated with in a cluster.
+  // First, we need to sort the "neighbor" TObjArray, because we want to
+  // consider the "neighbor" towers from higher towers to lower towers
   neighbor.sort(AscendingTowerEnergySorter());
-  std::cout << "tpbdebug " << neighbor.size() << " neighbours need to be affiliated with clusters" << std::endl;
-  // extremely faraway distance (no distance between towers can be this large!)
-  const Float_t ExtremelyFaraway = 99999 ;
-  // distance to peak of cluster
-  Float_t distToClust[maxNClusters] ;
-  TowerFPD *nbT;
-  TowerFPD *pkT;
   // Each loop of association goes through the entire remaining neighbor list
-  // and tries to associate each neighbor with a cluster.
+  // and tries to associate each neighbor with a cluster. If a neighbor is
+  // associated with a cluster add it to that cluster and remove it from the
+  // neighbor list.
   // Keep doing this until we make an entire loop through all neighbors without
-  // successfully associating anything (nSuccessfulAssociations == 0). Then we stop, lest
-  // we end up in an infinite loop when we can't associate all neighbors.
+  // successfully associating anything (nSuccessfulAssociations == 0). Then we
+  // stop, lest we end up in an infinite loop when we can't associate all the
+  // neighbors with a cluster.
   unsigned nSuccessfulAssociations(0);
   do {
     nSuccessfulAssociations =
       associateTowersWithClusters(neighbor, clust, arrValley);
   } while(nSuccessfulAssociations > 0);
+  // distance to peak of cluster
+  Float_t distToClust[maxNClusters] ;
+  TowerFPD *nbT;
+  TowerFPD *pkT;
   // All towers in "neighbor" must belong to a cluster.
   // Loop over them, check if it is bordering a cluster.
   //   If yes, move it to the nearest cluster, and move on to the next tower.
