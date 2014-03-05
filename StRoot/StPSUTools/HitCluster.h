@@ -26,6 +26,12 @@
 #define MAX_PHOTON_PER_CLUSTER 2
 
 namespace PSUGlobals {//$NMSPC
+enum EClusterCategory {
+  kAmbiguousCluster = 0,  // Could be 1- or 2-photon, needs to be fitted
+  k1PhotonCluster = 1,
+  k2PhotonCluster = 2,
+  kInvalidClusterCategory
+};
 class HitCluster : public TObject {
 
  public:

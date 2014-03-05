@@ -578,42 +578,34 @@ void TowerUtil::CalClusterMoment(HitCluster *clust) {
   clust->numbTower = clust->tow->GetEntriesFast() ;
 }
 
-// 2003-08-28
-// a new way of catagorize clusters
-// 2003-09-13
-// new parameters
-// lines of seperation:
-// 1. y=1.825(x-6), below this line, (and x>19) is almost certainly 2-photon (1 exception)
-// 2. y=1.825(x-0), above this, (and x<25) is almost certainly 1-photon (some exceptions, but probably very weak 2nd photon)
-// catagozie cluster (1-photon, 2-photon, or need-to-fit-for-both-and-see)
-Int_t TowerUtil::CatagBySigmXY(HitCluster *clust) {
-  // only need to be called once "ReadParamters()"
-  // if the number of towers in a cluster is less than "minTowerCatag02"
-  //    consider the cluster a catag-1 cluster (with only 1 gamma)
-  if( clust->numbTower < minTowerCatag02 ) {
-    clust->catag = 1 ;
-    return 1;
-  }
-  Float_t sMaxEc = clust->sigmaMax * clust->energy;
-  if( clust->energy < cutEcSigma[0][0] * ( sMaxEc - cutEcSigma[0][1] ) ) {
-    if( sMaxEc > minEcSigma2Ph ) {
-      clust->catag = 2 ;
-      return 2;
-    } else {
-      clust->catag = 0 ;
-      return 0;
-    }
-  } else if( clust->energy > cutEcSigma[1][0] * ( sMaxEc - cutEcSigma[1][1] ) ) {
-    if( sMaxEc < maxEcSigma1Ph ) {
-      clust->catag = 1 ;
-      return 1;
-    } else {
-      clust->catag = 0 ;
-      return 0;
-    }
+/*
+ Categorise a cluster
+ */
+Int_t TowerUtil::CatagBySigmXY(HitCluster* cluster) {
+  // If the number of towers in a cluster is less than "minTowerCatag02"
+  // always consider the cluster a one-photon cluster
+  if (cluster->numbTower < minTowerCatag02) {
+    cluster->catag = k1PhotonCluster;
   } else {
-    clust->catag = 0 ;
-  }
-  return clust->catag ;
+    // Categorise cluster based on its properties
+    Float_t sMaxEc = cluster->sigmaMax * cluster->energy;
+    if (cluster->energy < cutEcSigma[0][0] * (sMaxEc - cutEcSigma[0][1])) {
+      if (sMaxEc > minEcSigma2Ph) {
+        cluster->catag = k2PhotonCluster;
+      } else {
+        cluster->catag = kAmbiguousCluster;
+      }  // if
+    } else if (cluster->energy >
+               cutEcSigma[1][0] * (sMaxEc - cutEcSigma[1][1])) {
+      if (sMaxEc < maxEcSigma1Ph) {
+        cluster->catag = k1PhotonCluster;
+      } else {
+        cluster->catag = kAmbiguousCluster;
+      }  // if
+    } else {
+      cluster->catag = kAmbiguousCluster;
+    }  // if (cluster->energy...)
+  } // if (cluster->numbTower...)
+  return cluster->catag;
 }
 }  // namespace PSUGlobals
