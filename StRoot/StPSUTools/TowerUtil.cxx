@@ -236,8 +236,7 @@ unsigned TowerUtil::associateTowersWithClusters(TowerList& neighbor,
 }
 
 unsigned TowerUtil::associateResidualTowersWithClusters(TowerList& neighbor,
-                                                HitCluster *clust,
-                                                TObjArray* arrValley) {
+                                                        HitCluster *clust) {
   Int_t jjn = neighbor.size() - 1 ;
   // distance to peak of cluster
   Float_t distToClust[maxNClusters] ;
@@ -467,7 +466,7 @@ Int_t TowerUtil::FindTowerCluster(TObjArray *inputTow, HitCluster *clust) {
   // If there are still towers left in "neighbor", distribute them to clusters
   do {
     nSuccessfulAssociations =
-      associateResidualTowersWithClusters(neighbor, clust, arrValley);
+      associateResidualTowersWithClusters(neighbor, clust);
   } while(nSuccessfulAssociations > 0);
   // 2003-08-26
   // Sort towers by energy (descending, higher energy towers first)
