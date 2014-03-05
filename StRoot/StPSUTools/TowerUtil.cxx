@@ -436,6 +436,29 @@ unsigned TowerUtil::associateValleyTowersWithClusters(TowerList& neighbors,
   return size - neighbors.size();
 }
 
+/*
+ Add "zero" energy towers to the clusters
+ These towers serve the purpose of preventing the creation of bogus peaks,
+ where there is no energy deposited at the tower
+ */
+unsigned TowerUtil::associateSubThresholdTowersWithClusters(
+    TowerList& towers, HitCluster* clusters) {
+  TowerIter tower;
+  for (tower = towers.begin(); tower != towers.end(); ++tower) {
+    TowerClusterAssociation association(*tower);
+    // loop over all clusters
+    for(Int_t i(0); i < nClusts; ++i) {
+      association.add(&clusters[i], kPeakTower);
+    }  // for
+    HitCluster* cluster = association.nearestCluster();
+    if (cluster &&
+        association.separation(cluster, kClusterCenter) < maxDistanceFromPeak) {
+      (*tower)->cluster = cluster->index;
+      cluster->tow->Add(*tower);
+    }  // if
+  }  // for
+}
+
 TowerUtil::TowerUtil() : nClusts(0) {
   SetMomentEcutoff();
 }
@@ -450,9 +473,6 @@ Int_t TowerUtil::FindTowerCluster(TObjArray *inputTow, HitCluster *clust) {
   TowerList belowThreshold = filterTowersBelowEnergyThreshold(&arrTow);
   // the neighbor TObjArray
   TowerList neighbor;
-  // the "valley" TObjArray
-  TObjArray valleys(16);
-  valleys.SetOwner(true);
   arrTow.sort(DescendingTowerEnergySorter());
   // "TObjArray::Sort()" sorts the array from small to big ( [0]<=[1]<=...<=[48] )
   // need to take care of that
@@ -515,6 +535,8 @@ Int_t TowerUtil::FindTowerCluster(TObjArray *inputTow, HitCluster *clust) {
   // through all neighbors without successfully associating anything. Then stop,
   // otherwise we end up in an infinite loop when we can't associate all the
   // neighbors with a cluster (which we usually can't).
+  TObjArray valleys(16);
+  valleys.SetOwner(true);
   unsigned nAssociations(0);
   do {
     nAssociations = associateTowersWithClusters(neighbor, clust, &valleys);
@@ -537,25 +559,8 @@ Int_t TowerUtil::FindTowerCluster(TObjArray *inputTow, HitCluster *clust) {
   for(Int_t i(0); i < nClusts; ++i) {
     CalClusterMoment(&clust[i]);
   }  // for
-  // now add those "zero" towers to the clusters
-  // those towers serve the purpose of preventing the creation of bogus peak
-  // (peak where there is no energy deposited at the tower)
-  TowerList toRemove;
-  TowerIter tower;
-  for (tower = belowThreshold.begin(); tower != belowThreshold.end(); ++tower) {
-    TowerClusterAssociation association(*tower);
-    // loop over all clusters
-    for(Int_t i(0); i < nClusts; ++i) {
-      association.add(&clust[i], kPeakTower);
-    }  // for
-    HitCluster* cluster = association.nearestCluster();
-    if (cluster &&
-        association.separation(cluster, kClusterCenter) < maxDistanceFromPeak) {
-      (*tower)->cluster = cluster->index;
-      toRemove.push_back(*tower);
-      cluster->tow->Add(*tower);
-    }  // if
-  }  // for
+  // Finally add "zero" energy towers to the clusters
+  associateSubThresholdTowersWithClusters(belowThreshold, clust);
   return nClusts;
 }
 
