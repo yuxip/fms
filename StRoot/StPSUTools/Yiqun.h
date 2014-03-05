@@ -9,6 +9,8 @@
 #include "TVector3.h"
 #include "FitTower.h"
 #include "TowerUtil.h"
+#include "HitCluster.h"
+#include "PhotonHitFPD.h"
 
 #include "TMath.h"
 #include "TRandom.h"

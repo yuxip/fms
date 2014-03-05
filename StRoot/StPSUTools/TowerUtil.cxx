@@ -1,23 +1,16 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <iostream>
-#include <math.h>
+#include "TowerUtil.h"
 
 #include <algorithm>
 #include <cmath>
+#include <iostream>
 #include <list>
 #include <memory>
 
 #include <TCollection.h>
-#include "TText.h"
-#include "TCutG.h"
-#include "TCanvas.h"
+#include <TObjArray.h>
 
-#include "TowerUtil.h"
-using namespace std;
-using namespace PSUGlobals;
-
-ClassImp(TowerUtil);
+#include "StPSUTools/TowerFPD.h"
+#include "StPSUTools/HitCluster.h"
 
 namespace {
 /*
@@ -35,9 +28,11 @@ const Float_t minRatioPeakTower = 1.6;
 // Extreme distance between towers (no distance can be this large!)
 const Float_t ExtremelyFaraway = 99999 ;
 
-typedef TowerUtil::TowerList TowerList;
+typedef PSUGlobals::TowerUtil::TowerList TowerList;
 typedef TowerList::iterator TowerIter;
 typedef TowerList::reverse_iterator TowerRIter;
+
+using PSUGlobals::TowerFPD;
 
 /*
  Test for a tower that can be a cluster peak.
@@ -75,11 +70,11 @@ typename StlContainer::size_type fillStlContainerFromRootCollection(
   TIter next(&collection);
   typedef typename StlContainer::value_type Pointer;
   Pointer element(NULL);
-  while((element = static_cast<Pointer>(next()))) {
+  while ((element = static_cast<Pointer>(next()))) {
     container->push_back(element);
   }  // while
   return container->size();
-}
+};
 
 /**
  Comparison function to sort towers in order of ascending energy.
@@ -144,14 +139,15 @@ TowerList filterTowersBelowEnergyThreshold(TowerList* towers) {
   towers->erase(newEnd, towers->end());
   return belowThreshold;
 }
-}  // unnamed namespace
 
-namespace PSUGlobals {
 /* There are different ways of calculating a tower-to-cluster distance */
 enum ETowerClusterDistance {
   kPeakTower,  // Distance from tower to peak tower in cluster
   kClusterCenter  // Distance from tower to calculated center of cluster
 };
+}  // unnamed namespace
+
+namespace PSUGlobals {
 /*
  Association information between a tower and clusters.
  
@@ -299,9 +295,7 @@ class TowerClusterAssociation : public TObject {
     double minDist = ExtremelyFaraway;
     std::list<HitCluster*>::iterator i;
     for (i = mClusters.begin(); i != mClusters.end(); ++i) {
-      // Subtract 0.5 from tower row and column to get "tower center"
-      float distance = sqrt(pow((*i)->x0 - (mTower->col - 0.5), 2.) +
-                            pow((*i)->y0 - (mTower->row - 0.5), 2.));
+      float distance = separation(*i, kClusterCenter);
       // Check if the distance to the "center" of this cluster is smaller
       if (distance < minDist) {
         minDist = distance;
@@ -313,7 +307,6 @@ class TowerClusterAssociation : public TObject {
   TowerFPD* mTower;
   std::list<HitCluster*> mClusters;
 };
-}  // namespace PSUGlobals
 
 /**
  Associate tower with clusters
@@ -331,7 +324,7 @@ class TowerClusterAssociation : public TObject {
  */
 unsigned TowerUtil::associateTowersWithClusters(TowerList& neighbor,
                                                 HitCluster *clust,
-                                                TObjArray* arrValley) {
+                                                TObjArray* valleys) {
   TowerList associated;  // Store neighbors we associate
   // Towers are sorted in ascending energy, so use reverse iterator to go from
   // highest to lowest energy
@@ -351,7 +344,7 @@ unsigned TowerUtil::associateTowersWithClusters(TowerList& neighbor,
     } else if (association->clusters()->size() > 1) {
       // Multiple potential clusters, need to do something more sophisticated
       // Add this association to the "valley" array so we can use it later
-      arrValley->Add(association.release());
+      valleys->Add(association.release());
       associated.push_back(*tower);
     }  // if
   } // loop over TObjArray "neighbor"
@@ -362,6 +355,16 @@ unsigned TowerUtil::associateTowersWithClusters(TowerList& neighbor,
   return associated.size();
 }
 
+/**
+ Associate tower with clusters
+ 
+ These are towers that were left over after the first round of association.
+ The clusters have now had towers associated with them, so the cluster moment
+ can be calculated to give a better measure of the cluster centre. This is then
+ used to calculate the tower-cluster separation.
+ 
+ Return the number of neighbors associated with clusters.
+ */
 unsigned TowerUtil::associateResidualTowersWithClusters(TowerList& neighbor,
                                                         HitCluster* clust) {
   TowerList associated;
@@ -389,15 +392,11 @@ unsigned TowerUtil::associateResidualTowersWithClusters(TowerList& neighbor,
 }
 
 TowerUtil::TowerUtil() : nClusts(0) {
-  arrValley=NULL;
-  neighbor=NULL;
   SetMomentEcutoff();
-};
+}
 
 TowerUtil::~TowerUtil() {
-  if(arrValley)delete arrValley;
-  if(neighbor)delete neighbor;
-};
+}
 
 Int_t TowerUtil::FindTowerCluster(TObjArray *inputTow, HitCluster *clust) {
   TowerList arrTow;
@@ -407,9 +406,8 @@ Int_t TowerUtil::FindTowerCluster(TObjArray *inputTow, HitCluster *clust) {
   // the neighbor TObjArray
   TowerList neighbor;
   // the "valley" TObjArray
-  arrValley = new TObjArray(16);
-  arrValley->SetOwner(true);
-  arrValley->Clear();
+  TObjArray valleys(16);
+  valleys.SetOwner(true);
   arrTow.sort(DescendingTowerEnergySorter());
   // "TObjArray::Sort()" sorts the array from small to big ( [0]<=[1]<=...<=[48] )
   // need to take care of that
@@ -417,7 +415,7 @@ Int_t TowerUtil::FindTowerCluster(TObjArray *inputTow, HitCluster *clust) {
   // The algoriths is such, first get the highest tower (which is ALWAYS the last one),
   // and it and all its neighbors to the next cluster. Then repeat the process over the
   // remaining towers.
-  while(!arrTow.empty() && nClusts < maxNClusters) {
+  while (!arrTow.empty() && nClusts < maxNClusters) {
     // By design, this tower is the highest tower in "arrTow", but it could be lower
     // than a tower in "neighbor"
     TowerFPD* high = arrTow.front();
@@ -474,17 +472,17 @@ Int_t TowerUtil::FindTowerCluster(TObjArray *inputTow, HitCluster *clust) {
   // neighbors with a cluster (which we usually can't).
   unsigned nAssociations(0);
   do {
-    nAssociations = associateTowersWithClusters(neighbor, clust, arrValley);
-  } while(nAssociations > 0);
+    nAssociations = associateTowersWithClusters(neighbor, clust, &valleys);
+  } while (nAssociations > 0);
   // Calculate the moments of clusters. We need to do this before calling
   // TowerClusterAssociation::nearestCluster, which uses the cluster moment
   // to determine tower-cluster separations for the valley towers.
   for (Int_t i(0); i < nClusts; ++i) {
     CalClusterMoment(&clust[i]);
   }  // for
-  for (Int_t iVal(0); iVal < arrValley->GetEntriesFast(); ++iVal) {
+  for (Int_t iVal(0); iVal < valleys.GetEntriesFast(); ++iVal) {
     TowerClusterAssociation* assoc = static_cast<TowerClusterAssociation*>(
-      arrValley->At(iVal));
+      valleys.At(iVal));
     HitCluster* cluster = assoc->nearestCluster();
     // Move the tower to the appropriate cluster
     if (cluster) {
@@ -492,15 +490,15 @@ Int_t TowerUtil::FindTowerCluster(TObjArray *inputTow, HitCluster *clust) {
       neighbor.remove(assoc->tower());
       cluster->tow->Add(assoc->tower());
     } else {
-      cout << "Something is wrong! The following \"Valley\" tower does not belong to any cluster! Error!" << endl;
+      std::cout << "Something is wrong! The following \"Valley\" tower does not belong to any cluster! Error!" << std::endl;
       assoc->tower()->Print();
-      cout << "!!!!!!!!\n" << endl;
+      std::cout << "!!!!!!!!\n" << std::endl;
     }  // if (cluster)
   }  // end of for loop over valley towers
   // If there are still towers left in "neighbor", distribute them to clusters
   do {
     nAssociations = associateResidualTowersWithClusters(neighbor, clust);
-  } while(nAssociations > 0);
+  } while (nAssociations > 0);
   /** \todo Replace cluster list with an STL list, which will make sorting and
             reversing much simpler than with a ROOT container */
   // Sort towers by energy (descending, higher energy towers first)
@@ -520,15 +518,10 @@ Int_t TowerUtil::FindTowerCluster(TObjArray *inputTow, HitCluster *clust) {
       (clust[jc].tow)->AddAt(tmp2, itt);
     }
   }
-  // 2003-08-30
-  // put center of towers at 0.5 lgd, because this is the more natural way.
-  // calculate various moment of clusters
-  for(Int_t ic=0; ic<nClusts; ic++) {
-    CalClusterMoment(&clust[ic]);
-    // set initial nPhoton to 0 & catag to be -1
-    clust[ic].nPhoton =  0 ;
-    clust[ic].catag   = -1 ;
-  }
+  // Recalculate various moment of clusters
+  for(Int_t i(0); i < nClusts; ++i) {
+    CalClusterMoment(&clust[i]);
+  }  // for
   // now add those "zero" towers to the clusters
   // those towers serve the purpose of preventing the creation of bogus peak
   // (peak where there is no energy deposited at the tower)
@@ -547,13 +540,6 @@ Int_t TowerUtil::FindTowerCluster(TObjArray *inputTow, HitCluster *clust) {
       cluster->tow->Add(*tower);
     }  // if
   }  // for
-  for (TowerIter i = toRemove.begin(); i != toRemove.end(); ++i) {
-    arrTow.remove(*i);
-  }  // for
-  neighbor.clear();
-  arrValley->Clear();
-  delete arrValley;
-  arrValley=NULL;
   return nClusts;
 }
 
@@ -603,15 +589,4 @@ Int_t TowerUtil::CatagBySigmXY(HitCluster *clust) {
   }
   return clust->catag ;
 }
-
-void TowerUtil::PrintTowers(const TowerFPD *tows) {
-  for(Int_t j=0; j<nNSTow; j++) {
-    if( j%7 == 0 ) printf("\n");
-    printf("%3d", tows[j].cluster+1);
-  }
-  for(Int_t j=0; j<nNSTow; j++) {
-    if( j%7 == 0 ) printf("\n");
-    printf("%10.4f", tows[j].energy);
-  }
-  printf("\n\n");
-}
+}  // namespace PSUGlobals
