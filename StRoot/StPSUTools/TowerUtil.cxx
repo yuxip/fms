@@ -330,6 +330,57 @@ class TowerClusterAssociation : public TObject {
   std::list<HitCluster*> mClusters;
 };
 
+unsigned TowerUtil::locateClusterSeeds(TowerList& arrTow, TowerList& neighbor,
+                                       HitCluster* clust) {
+  while (!arrTow.empty() && nClusts < maxNClusters) {
+    // By design, this tower is the highest tower in "arrTow", but it could be lower
+    // than a tower in "neighbor"
+    TowerFPD* high = arrTow.front();
+    arrTow.pop_front();
+		// 2003-08-15
+		// Fix a logical loop hole in deciding if a tower is
+		//    a peak; Need to first compare the highest tower
+		//    remained in "arrTow" to all towers in "neighbor" which is its neighbor,
+		//    and if it is lower than any of those, it is
+		//    a neighbor. Move it to "neighbor" and continue to
+		//    the next tower in "arrTow".
+    if (couldBePeakTower(high, &neighbor)) {
+      // Add "high" to cluster and move towers neighboring "high" to "neighbor"
+      high->cluster = nClusts;
+      clust[nClusts].index = nClusts;
+      (clust[nClusts].tow)->Add(high);
+      nClusts++ ;
+      // Partition the remaining towers so that neighbours of the high tower are
+      // placed at the beginning, and non-neighbours placed at the end. Use
+      // stable_partition so we don't alter the energy ordering.
+      TowerIter neighborEnd =
+        std::stable_partition(arrTow.begin(), arrTow.end(),
+                              std::bind2nd(TowerIsNeighbor(), high));
+      // Copy neighbors to the neighbor list, erase them from the tower list
+      neighbor.insert(neighbor.end(), arrTow.begin(), neighborEnd);
+      arrTow.erase(arrTow.begin(), neighborEnd);
+    } else {  // Not a peak, add it to the neighbor collection
+      neighbor.push_back(high);
+    }  // when "high" is a "peak"
+    // A tower separated from neighbors only by towers of the same energy will
+    // become a peak by the above logic. To close this loophole, loop again
+    // over towers and move any with energy <= any of its neighbors to the
+    // neighbor list.
+    TowerIter towerIter = arrTow.begin();
+    while (towerIter != arrTow.end()) {
+      // Need to remove list items whilst iterating, so be careful to increment
+      // the iterator before erasing items to avoid iterator invalidation
+      if (!couldBePeakTower(*towerIter, &neighbor)) {
+        neighbor.push_back(*towerIter);
+        arrTow.erase(towerIter++);  // Increment will evaluate before erase()
+      } else {
+        ++towerIter;
+      }  // if
+    }  // while
+  }  // End of for loop over "arrTow"
+  return nClusts;
+}
+
 /**
  Associate tower with clusters
  
@@ -480,52 +531,7 @@ Int_t TowerUtil::FindTowerCluster(TObjArray *inputTow, HitCluster *clust) {
   // The algoriths is such, first get the highest tower (which is ALWAYS the last one),
   // and it and all its neighbors to the next cluster. Then repeat the process over the
   // remaining towers.
-  while (!arrTow.empty() && nClusts < maxNClusters) {
-    // By design, this tower is the highest tower in "arrTow", but it could be lower
-    // than a tower in "neighbor"
-    TowerFPD* high = arrTow.front();
-    arrTow.pop_front();
-		// 2003-08-15
-		// Fix a logical loop hole in deciding if a tower is
-		//    a peak; Need to first compare the highest tower
-		//    remained in "arrTow" to all towers in "neighbor" which is its neighbor,
-		//    and if it is lower than any of those, it is
-		//    a neighbor. Move it to "neighbor" and continue to
-		//    the next tower in "arrTow".
-    if (couldBePeakTower(high, &neighbor)) {
-      // Add "high" to cluster and move towers neighboring "high" to "neighbor"
-      high->cluster = nClusts;
-      clust[nClusts].index = nClusts;
-      (clust[nClusts].tow)->Add(high);
-      nClusts++ ;
-      // Partition the remaining towers so that neighbours of the high tower are
-      // placed at the beginning, and non-neighbours placed at the end. Use
-      // stable_partition so we don't alter the energy ordering.
-      TowerIter neighborEnd =
-        std::stable_partition(arrTow.begin(), arrTow.end(),
-                              std::bind2nd(TowerIsNeighbor(), high));
-      // Copy neighbors to the neighbor list, erase them from the tower list
-      neighbor.insert(neighbor.end(), arrTow.begin(), neighborEnd);
-      arrTow.erase(arrTow.begin(), neighborEnd);
-    } else {  // Not a peak, add it to the neighbor collection
-      neighbor.push_back(high);
-    }  // when "high" is a "peak"
-    // A tower separated from neighbors only by towers of the same energy will
-    // become a peak by the above logic. To close this loophole, loop again
-    // over towers and move any with energy <= any of its neighbors to the
-    // neighbor list.
-    TowerIter towerIter = arrTow.begin();
-    while (towerIter != arrTow.end()) {
-      // Need to remove list items whilst iterating, so be careful to increment
-      // the iterator before erasing items to avoid iterator invalidation
-      if (!couldBePeakTower(*towerIter, &neighbor)) {
-        neighbor.push_back(*towerIter);
-        arrTow.erase(towerIter++);  // Increment will evaluate before erase()
-      } else {
-        ++towerIter;
-      }  // if
-    }  // while
-  }  // End of for loop over "arrTow"
+  locateClusterSeeds(arrTow, neighbor, clust);
   // We have now found all peaks. Now decide the affiliation of neighbor towers
   // i.e. which peak each neighbor is associated with in a cluster.
   // First, we need to sort the "neighbor" TObjArray, because we want to

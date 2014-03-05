@@ -27,6 +27,8 @@ class TowerUtil {
   Float_t Ecutoff;  
   // number of "peaks" that has the same shortest distance to a "valley" tower
   Int_t nClusts;
+  unsigned locateClusterSeeds(TowerList& towers, TowerList& neighbors,
+                              HitCluster* clusters);
   unsigned associateTowersWithClusters(TowerList& neighbors,
                                        HitCluster* clusters,
                                        TObjArray* valleys);
