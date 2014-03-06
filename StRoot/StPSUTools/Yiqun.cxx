@@ -81,7 +81,13 @@ Float_t Yiqun::FitOnePhoton(HitCluster* p_clust)
 	Double_t chiSq;
 	Int_t iflag = 1;
 	fitter->fMn->Eval(4, gradient, chiSq, param, iflag);
-	return chiSq;
+	p_clust->nPhoton = 1;
+	int ndf = p_clust->tow->GetEntriesFast() - 3;
+  if (ndf <= 0) {
+    ndf = 1;
+  }  // if
+  p_clust->chiSquare = chiSq / ndf;
+	return p_clust->chiSquare;
 }
 
 // 2003-10-10
@@ -462,8 +468,12 @@ Float_t Yiqun::Fit2PhotonClust(HitCluster* p_clust)
   //
   p_clust->nPhoton = 2;
   chiSq = GlobalFit(2, 1, p_clust);
-    
-  return chiSq;
+	int ndf = p_clust->tow->GetEntriesFast() - 6;
+  if (ndf <= 0) {
+    ndf = 1;
+  }  // if
+  p_clust->chiSquare = chiSq / ndf ;
+  return p_clust->chiSquare;
 };
 
 
@@ -600,161 +610,74 @@ Int_t Yiqun::FitEvent(Int_t nTows, Int_t &nClusts, Int_t &nRealClusts, Bool_t &j
 
 	
 	for(Int_t icc=0; icc<nRealClusts; icc++) {
-
 		clustCatag = pTowerUtil->CatagBySigmXY( &clust[icc] );
-
 		// point to the real TObjArray that contains the towers to be fitted
 		// it is the same tower array for the cluster or all alternative clusters
-		//
 		fitter->tow2Fit = clust[icc].tow ;
-
-		// store the goodness of fit
-		//
-		Double_t chiSq1, chiSq2;
-
 		// Number of Degree of Freedom for the fit
-		//
-		Int_t ndf;
-		ndf = clust[icc].tow->GetEntriesFast();
-
-		// for catag-1 cluster, do 1-photon fit
-		if( clustCatag == 1 ) {
-			clust[icc].nPhoton   = 1 ;
-			chiSq1 = FitOnePhoton(&clust[icc]);
-
-			photons[nPh] = clust[icc].photon[0] ;
-
-			ndf -= 3 ;
-			if( ndf<=0 )
-				ndf = 1;
-
-			clust[icc].chiSquare = chiSq1 / ndf ;
-
-			nPh ++ ;
-
-		}
-		//
-		// for catagory-2 cluster, do 2-photon fit!
-		// If the fit is good enough, it is 1-photon. Else also
-		// try 2-photon fit, and find the best fit (including 1-photon fit).
-		//
-		else if( clustCatag == 2 ) {
-			clust[icc].nPhoton   = 2 ;
-			chiSq2 = Fit2PhotonClust(&clust[icc]);
-
-			ndf -= 6 ;
-			if( ndf<=0 ) 
-				ndf = 1;
-
-			clust[icc].chiSquare = chiSq2 / ndf ;
-
-			if( clust[icc].chiSquare > MaxChi2Catag2 ) {
-				junkyEvent = true;
-			}
-
-			// we need to fill in the information anyway
-			//
-			clust[icc].nPhoton   = 2 ;
-			for(Int_t kp=0; kp<2; kp++) 
-			  {
-			    
-			    photons[nPh] = clust[icc].photon[kp] ;
-
-				nPh ++ ;
-			}
-		}
-		//
-		// for catagory-0 cluster, first try 1-photon fit!
-		// If the fit is good enough, it is 1-photon. Else also
-		// try 2-photon fit, and find the best fit (including 1-photon fit).
-		//
-		else if( clustCatag == 0 ) {
-			// 2-photon or 1-photon
-			//
-			Bool_t is2Photon;
-			is2Photon = true;
-
-			altClu = clust[icc] ;
-			altClu.nPhoton   = 1 ;
+		double chiSq1, chiSq2;
+		if (clustCatag == 1) {
+  		// Do 1-photon fit
+			FitOnePhoton(&clust[icc]);
+			photons[nPh++] = clust[icc].photon[0];
+		} else if (clustCatag == 2) {
+      // Do 2-photon fit
+			Fit2PhotonClust(&clust[icc]);
+      junkyEvent = clust[icc].chiSquare > MaxChi2Catag2;
+			for(Int_t kp = 0; kp < 2; kp++) {  // Fill in the information anyway
+        photons[nPh++] = clust[icc].photon[kp] ;
+			}  // for
+		} else if (clustCatag == 0) {
+      // for catagory-0 cluster, first try 1-photon fit!
+      // If the fit is good enough, it is 1-photon. Else also
+      // try 2-photon fit, and find the best fit (including 1-photon fit).
+			Bool_t is2Photon = true;
+			altClu = clust[icc];
 			chiSq1 = FitOnePhoton(&altClu);
-			
-
-			Int_t NDF1, NDF2;
-
-			NDF1= ndf - 3 ;
-			if( NDF1 <= 0 )
-				NDF1 = 1;
-
-			NDF2= ndf - 6 ;
-			if( NDF2 <= 0 )
-				NDF2 = 1;
-
 			// decide if this 1-photon fit is good enough
-			//
-			if( chiSq1 < maxGood1PhChi2NDF * NDF1 ) {
+			if (chiSq1 < maxGood1PhChi2NDF) {
 				is2Photon = false ;
-			}
-			//
-			// else try 2-photon fit
-			//
-			else {
-
-				// 2003-09-15
-				//
-       // New logic for deciding if a 2-photon fit is good!
-       // If one photon peak lies on top of low (compared to photon energy) or even zero tower,
-       //    this photon is definitely bogus. This could happen if a nearby cluster took away
-       //    towers that might make the fit having a large Chi-square (deviation).
-       //
-       // So for 2-photon fit, first check that the fitted photon of lower energy (higher energy
-       //    photon should be fine) is over one of the non-zero tower of the cluster. First of all,
-       //    this ensures that we don't have an "outside of cluster" bogus photon, i.e. a bogus
-       //    photon could be the result of minimizing the chi-square over towers that do not include
-       //    the supposed peak tower. 
-
+			} else {
+  		  // else try 2-photon fit
+        // New logic for deciding if a 2-photon fit is good!
+        // If one photon peak lies on top of low (compared to photon energy) or even zero tower,
+        //    this photon is definitely bogus. This could happen if a nearby cluster took away
+        //    towers that might make the fit having a large Chi-square (deviation).
+        // So for 2-photon fit, first check that the fitted photon of lower energy (higher energy
+        //    photon should be fine) is over one of the non-zero tower of the cluster. First of all,
+        //    this ensures that we don't have an "outside of cluster" bogus photon, i.e. a bogus
+        //    photon could be the result of minimizing the chi-square over towers that do not include
+        //    the supposed peak tower. 
 			  chiSq2 = Fit2PhotonClust(&clust[icc]);
-       // check that the fitted photon of lower energy is contained within one of the non-zero towers
-       //    of the cluster
-       //
-			  Bool_t isBogus2ndPhoton;
-			  isBogus2ndPhoton = true;
+        // check that the fitted photon of lower energy is contained within one of the non-zero towers
+        //    of the cluster
+			  Bool_t isBogus2ndPhoton = true;
+			  // Select the lower-energy of the two photons
 			  Int_t secondPhoton;
-			  if( clust[icc].photon[0].energy < clust[icc].photon[1].energy ) 
-			    {
-			      secondPhoton = 0;
-			    }
-			  else 
-			    {
-			      secondPhoton = 1;
-			    }
-			  
+			  if (clust[icc].photon[0].energy < clust[icc].photon[1].energy) {
+          secondPhoton = 0;
+			  } else {
+          secondPhoton = 1;
+        }  // if
 			  // tower where the fitted photon of lower energy should hit
-			  //
-			  Int_t ix, iy;
-			  ix = 1 + (Int_t) (clust[icc].photon[secondPhoton].xPos / widLG[0]) ;
-			  iy = 1 + (Int_t) (clust[icc].photon[secondPhoton].yPos / widLG[1]) ;
-			  TowerFPD tow2ndPhoton(clust[icc].photon[secondPhoton].energy, ix, iy, icc) ;
-			  
-       // now check whether this tower is one of the non-zero towers of the cluster
-       //
-			  for(Int_t itNZ=0; itNZ<clust[icc].numbTower; itNZ++) {
+			  int ix = 1 + (Int_t) (clust[icc].photon[secondPhoton].xPos / widLG[0]);
+			  int iy = 1 + (Int_t) (clust[icc].photon[secondPhoton].yPos / widLG[1]);
+			  TowerFPD tow2ndPhoton(clust[icc].photon[secondPhoton].energy, ix, iy, icc);
+        // now check whether this tower is one of the non-zero towers of the cluster
+			  for (Int_t itNZ=0; itNZ<clust[icc].numbTower; itNZ++) {
 			    TowerFPD * nZTow = (TowerFPD *) clust[icc].tow->At(itNZ) ;
-			    if( tow2ndPhoton.IsEqual( nZTow ) ) {
+			    if (tow2ndPhoton.IsEqual(nZTow)) {
 			      isBogus2ndPhoton = false;
 			      tow2ndPhoton.energy = nZTow->energy ;
-			      
 			      break;
-			    }
-			  }
-			  
+			    }  // if
+			  }  // for
 			  // and the fitted energy is too large compared to the energy of the tower
-			  //
-			  if( !isBogus2ndPhoton ) {
-			    if( tow2ndPhoton.energy < minHTEneOverPhoton * clust[icc].photon[secondPhoton].energy ) {
+			  if (!isBogus2ndPhoton) {
+			    if(tow2ndPhoton.energy < minHTEneOverPhoton * clust[icc].photon[secondPhoton].energy) {
 			      isBogus2ndPhoton = true;
-			    }
-			  }
-			  
+			    }  // if
+			  }  // if
 	// 2003-09-29
         // Check that the 2nd photon's "High-Tower" enery is too large compared to its fitted energy.
 	//    If so, it is probably splitting one photon into two!
@@ -817,13 +740,7 @@ Int_t Yiqun::FitEvent(Int_t nTows, Int_t &nClusts, Int_t &nRealClusts, Bool_t &j
 				    //
 				    // for catagory 0 cluster and when 1-photon fit is better
 				    //
-				    if( (chiSq1/NDF1) < (chiSq2/NDF2) ) {
-				      is2Photon = false ;
-				    }
-				    else {
-				      is2Photon = true ;
-				    }
-				    
+				    is2Photon = chiSq2 <= chiSq1;
 				  } // isBogus2ndPhoton == true
 				
 			} // try 2-photon fit
@@ -837,7 +754,7 @@ Int_t Yiqun::FitEvent(Int_t nTows, Int_t &nClusts, Int_t &nRealClusts, Bool_t &j
 			    // 1-photon fit
 			    //			
 			    clust[icc].nPhoton   = altClu.nPhoton   = 1 ;
-			    clust[icc].chiSquare = altClu.chiSquare = chiSq1 / NDF1 ;
+			    clust[icc].chiSquare = altClu.chiSquare = chiSq1;
 			    
 			    photons[nPh] = clust[icc].photon[0] =  altClu.photon[0] ;
 			    
@@ -848,7 +765,7 @@ Int_t Yiqun::FitEvent(Int_t nTows, Int_t &nClusts, Int_t &nRealClusts, Bool_t &j
 			    // 2-photon fit is better
 			    //
 			    clust[icc].nPhoton   = 2 ;
-			    clust[icc].chiSquare = chiSq2 / NDF2 ;
+			    clust[icc].chiSquare = chiSq2;
 			    
 			    // check if this cluster has too much stuff in it!
 			    //
