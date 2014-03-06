@@ -15,7 +15,7 @@ class StFmsDbMaker;
 namespace PSUGlobals {//$NMSPC
 class TowerFPD : public TObject {
  public:
-  const StFmsHit* hit;
+  const StFmsHit* hit;  // Not owned by TowerFPD
 	Int_t   col;         // start from 0: count the columns, moving horizontally (STAR x-coord)
 	Int_t   row;         // start from 0: count the rows,    moving vertically   (STAR y-coord)
 	Int_t   cluster;

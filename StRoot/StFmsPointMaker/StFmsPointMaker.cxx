@@ -291,10 +291,13 @@ Bool_t StFmsPointMaker::populateTowerLists() {
     if (!Legal(ew, nstb, row - 1, column - 1)) {
       continue;
     }  // if
-    if (hit->adc() > 0) {
-      mTowers.at(nstb - 1).push_back(PSUGlobals::TowerFPD(hit));
-      // Initialize tower geometry using database information
-      mTowers.at(nstb - 1).back().initialize(mFmsDbMaker);
+    unsigned index = hit->detectorId() - 8;  // FMS IDs range from 8 to 11
+    if (hit->adc() > 0 && index >= 0 && index < mTowers.size()) {
+      PSUGlobals::TowerFPD tower(hit);
+      // Ensure tower information is valid before adding
+      if (tower.initialize(mFmsDbMaker)) {
+        mTowers.at(index).push_back(tower);
+      }  // if
     }  // if
   }  // for
   return true;

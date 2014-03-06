@@ -49,7 +49,7 @@ Bool_t TowerFPD::initialize(StFmsDbMaker* database) {
   } else {  // Invalid detector ID, reset to invalid values
     row = col = -1;
   }  // if
-  return row > 0 && col > 0;
+  return row > -1 && col > -1;
 }
 
 Int_t TowerFPD::Compare(const TObject *obj) const {
