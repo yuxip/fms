@@ -5,6 +5,8 @@
 #include "TMath.h"
 #include "TVector2.h"
 
+#include "StEvent/StFmsHit.h"
+
 #include "TowerFPD.h"
 #include "PhotonHitFPD.h"
 #include "HitCluster.h"
@@ -35,30 +37,6 @@ HitCluster::~HitCluster()
   if(tow)delete tow;
 };
 
-void HitCluster::EDepUpdate()
-{
-  if(IEW != 2 )return;
-  Float_t Eratio=1;
-  if(!IsEUpdated)
-    {
-	    if(NSTB<3)
-	      {
-		Eratio=Yiqun::GetEDepCorrection()->Eval(20)/Yiqun::GetEDepCorrection()->Eval(energy);
-	      }
-	    else
-	      {
-		Eratio=Yiqun::GetEDepCorrection()->Eval(30.)/Yiqun::GetEDepCorrection()->Eval(energy);
-	      };
-	energy=energy*Eratio;
-	TIter next(tow);
-	TowerFPD* hit;
-	while(hit=(TowerFPD*) next())
-	  {
-	    hit->energy=hit->energy*Eratio;
-	  };
-    };
-  IsEUpdated=true;
-}; 
 void HitCluster::Clear(void)
 { 
   catag   = -1 ;
@@ -96,38 +74,6 @@ void HitCluster::Print(void)
   cout << "chiSquare = " << chiSquare << "\n" << endl;
   
 }
-
-
-// 2003-10-13
-// Use matrix algebra to find the axis. Basically, the 2nd moments form a symmetrical 2-D matrix. Diagonize it
-//   and the two eigen-values are maximum moment and minimum moment, while two eigen-vectors are the vectors of
-//   axis. To speed up the process, the solution is explicitly written in "C" (instead of using TMatrix).
-// 
-//
-// do a 1-parameter fix (theta angle in x-y plane) to find the "least-2nd-sigma" axis of the cluster
-//
-void HitCluster::AddCluster(HitCluster* p_bclu)
-{
-  if(p_bclu)
-    {
-      TIter next(p_bclu->tow);
-      TowerFPD* hit;
-      while(hit=(TowerFPD*) next())
-      {
-	tow->Add(hit);
-      };
-      numbTower=tow->GetEntries();
-      catag   = -1 ;
-      numbTower = nPhoton =  0 ;
-      energy  =  0 ;
-      x0 = y0 = sigmaX = sigmaY = sigmaXY = chiSquare = sigmaMin = sigmaMax = -1 ;
-      thetaAxis = -10 ;
-      for(Int_t ip=0; ip<MAX_PHOTON_PER_CLUSTER; ip++) {
-	photon[ip].Clear();
-      }
-      UpdateEnergy();
-    }
-};
 
 void HitCluster::FindClusterAxis(void)
 {
@@ -190,7 +136,7 @@ Double_t HitCluster::GetSigma(Double_t theta){
 		// contribution to sigma
 		//
 		//sigma += oneTower->energy * dis * dis ;
-		float wtmp = log(oneTower->energy + 1-Ecutoff)>0 ? log(oneTower->energy +1.-Ecutoff) : 0;
+		float wtmp = log(oneTower->hit->energy() + 1-Ecutoff)>0 ? log(oneTower->hit->energy() +1.-Ecutoff) : 0;
 		wnew    += wtmp ;
 		sigma += wtmp * dis * dis ;
 	}
@@ -211,9 +157,9 @@ void HitCluster::CalClusterMoment(Float_t Ecoff)
       Float_t xxx, yyy;
       xxx = oneTow->col - 0.5 ;
       yyy = oneTow->row - 0.5 ;
-      mtmp = log(oneTow->energy+1.-Ecoff)>0 ? log(oneTow->energy+1.-Ecoff) : 0;
+      mtmp = log(oneTow->hit->energy()+1.-Ecoff)>0 ? log(oneTow->hit->energy()+1.-Ecoff) : 0;
       w1 += mtmp;
-      w0    += oneTow->energy ;
+      w0    += oneTow->hit->energy() ;
       mx    += mtmp * xxx ;
       my    += mtmp * yyy ;
       sigx  += mtmp * xxx * xxx ;
@@ -239,41 +185,4 @@ void HitCluster::CalClusterMoment(Float_t Ecoff)
       sigmaXY = 0 ;
     }
   
-};
-
-Float_t HitCluster::GetLastEnergySum(Int_t nclu)
-{
-  if(!EnergyUpdated)UpdateEnergy();
-  if(tow==0)return 0;
-  Int_t ntow=tow->GetEntries();
-  if(ntow<=nclu)return energy;
-  Float_t esum=0;
-  for(int j=ntow;j>ntow-nclu;j--)
-    {
-      esum+=((TowerFPD*) tow->At(j-1))->energy;
-    };
-  return esum;
-};
-Bool_t HitCluster::UpdateEnergy()
-{
-  if(tow==0)return false;
-  energy=0;
-  //temporary change sign of energy for sorting
-  TIter next(tow);
-  while(TowerFPD* hit=(TowerFPD*) next())
-    {
-      hit->energy=-fabs(hit->energy);
-    };
-  tow->UnSort();
-  tow->Sort();
-  TIter next2(tow);
-  while(TowerFPD* hit=(TowerFPD*) next2())
-    {
-      hit->energy=fabs(hit->energy);
-      energy+=hit->energy;
-    };
-  EnergyUpdated=true;
-  FindClusterAxis();
-  
-  return true;
 };

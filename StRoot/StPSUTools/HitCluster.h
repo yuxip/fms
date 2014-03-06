@@ -56,13 +56,9 @@ class HitCluster : public TObject {
   
   TObjArray *    tow    ;               //!  TowerFPD objects that make the cluster
   void CalClusterMoment(Float_t Ecoff);
-  Bool_t UpdateEnergy();
-  Bool_t UpdateEnergy(Float_t Ecoff){Ecutoff=Ecoff;UpdateEnergy();};
   HitCluster() ;
-  void AddCluster(HitCluster* p_bclu=0);
   ~HitCluster();
   Bool_t IsEUpdated;
-  void EDepUpdate();
   void Clear(void) ;
   
   HitCluster& operator=(const HitCluster& rhs) 

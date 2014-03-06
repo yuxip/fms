@@ -19,21 +19,23 @@
 #include "TObjArray.h"
 #include "TMinuit.h"
 #include "TVector3.h"
+
+class StFmsHit;
+
 namespace PSUGlobals {//$NMSPC
 class TowerFPD : public TObject {
 
  public:
 
-	Float_t energy;
+  const StFmsHit* hit;
 	Int_t   col;         // start from 0: count the columns, moving horizontally (STAR x-coord)
 	Int_t   row;         // start from 0: count the rows,    moving vertically   (STAR y-coord)
 	Int_t   cluster;
-	Int_t   cluster2;
 	Int_t   adc_over_ped;
 
 	TowerFPD();
 
-	TowerFPD(Float_t ene, Int_t towX, Int_t towY, Int_t clu);
+	TowerFPD(const StFmsHit* fmsHit, Int_t towX, Int_t towY, Int_t clu);
 
 	~TowerFPD() 
 	  {
@@ -50,53 +52,24 @@ class TowerFPD : public TObject {
 
 	Bool_t IsNeighbor(TowerFPD *a);
 
-  // New Structure Aug 2009
-  
-	Bool_t LinkDefined; //true after SetContext called
-	Bool_t CalibSet;//true after SetContext called
-	Bool_t Live; //true if cell has calibration constants
-	Bool_t LocalHighTower();
-	Bool_t IsolatedDeadCell();
-	void ClearClusterInfo(TObjArray* to);
-	Int_t CreateContiguous();
-	Int_t AddToContiguous(Int_t set,Int_t hitcounter=0);
-
-	//Get the NCl'th list (Must be Deleted);
-	TObjArray* CreateClusterList(Int_t NCl);
-	Int_t ClusterCategory(TObjArray*);
-	Bool_t TowerFilter();
-	Bool_t NeighborsAlive(Float_t dcell );
-  
 	Bool_t SetContext(TObjArray* towers,Int_t IEW,Int_t NSTB);
 
 	void Print(void);
 
 	TowerFPD& operator=(const TowerFPD& rhs) {
-
-		// TowerFPD assignment operator
-		//
 		if (this != &rhs) {
-			energy  = rhs.energy  ;
 			col     = rhs.col     ;
 			row     = rhs.row     ;
 			cluster = rhs.cluster ;
 			adc_over_ped = rhs.adc_over_ped;
-			LinkDefined = rhs.LinkDefined;
-			CalibSet = rhs.CalibSet;
-			Live = rhs.Live;
-			if(rhs.TowerSet)TowerSet=new TObjArray(*(rhs.TowerSet));
 		}
 		return *this;
 	};
-	Int_t ClaimedID;
 	TObjArray* Lnk_LRUD;
 	Int_t IEW;
 	Int_t NSTB;
-	TObjArray* TowerSet;
-	
  private:
 	ClassDef (TowerFPD, 7);
-	
 };
 }
 

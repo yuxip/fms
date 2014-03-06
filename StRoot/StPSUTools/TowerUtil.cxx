@@ -9,6 +9,8 @@
 #include <TCollection.h>
 #include <TObjArray.h>
 
+#include "StEvent/StFmsHit.h"
+
 #include "StPSUTools/TowerFPD.h"
 #include "StPSUTools/HitCluster.h"
 
@@ -48,7 +50,7 @@ Bool_t couldBePeakTower(TowerFPD* tower, TowerList* nonPeakTowers) {
   for (TowerIter i = nonPeakTowers->begin(); i != nonPeakTowers->end(); ++i) {
     // Compare this tower's energy with that of its immediate neighbours
     if (tower->IsNeighbor(*i)) {
-      if (tower->energy < minRatioPeakTower * (*i)->energy) {
+      if (tower->hit->energy() < minRatioPeakTower * (*i)->hit->energy()) {
         couldBePeak = false;
         break;
       }  // if
@@ -90,7 +92,7 @@ struct AscendingTowerEnergySorter {
  */
 struct DescendingTowerEnergySorter {
   bool operator()(const TowerFPD* a, const TowerFPD* b) const {
-    return a->energy > b->energy;
+    return a->hit->energy() > b->hit->energy();
   }
 };
 
@@ -105,7 +107,7 @@ struct DescendingTowerEnergySorter {
 struct TowerIsNeighbor
     : public std::binary_function<TowerFPD*, TowerFPD*, bool> {
   bool operator()(TowerFPD* test, TowerFPD* reference) const {
-    if(test->energy < minTowerEnergy) {
+    if(test->hit->energy() < minTowerEnergy) {
       return false;
     }  // if
     return test->IsNeighbor(reference);
@@ -117,7 +119,7 @@ struct TowerIsNeighbor
  */
 struct TowerEnergyIsAboveThreshold {
   bool operator()(const TowerFPD* tower) const {
-    return !(tower->energy < minTowerEnergy);
+    return !(tower->hit->energy() < minTowerEnergy);
   }
 };
 
@@ -240,7 +242,7 @@ class TowerClusterAssociation : public TObject {
     // Make sure that this tower has lower energy than the peak, but be careful;
     // because of digitization, it is possible that the "neighbor" tower
     // has the exact same energy as the peak tower, not just less
-    if (peak->energy < mTower->energy) {
+    if (peak->hit->energy() < mTower->hit->energy()) {
       return false;
     }  // if
     // Loop over all towers in this cluster to see if this tower is
@@ -251,7 +253,7 @@ class TowerClusterAssociation : public TObject {
       // neighbor cannot exceed an adjacent tower by a factor more than
       // minRatioPeakTower, otherwise it will be considered a peak itself.
       if (mTower->IsNeighbor(clusterTower) &&
-          mTower->energy < minRatioPeakTower * clusterTower->energy) {
+          mTower->hit->energy() < minRatioPeakTower * clusterTower->hit->energy()) {
         return true;  // Stop looping once we find any match
       }  // if
     }  // for loop over all towers in a cluster
@@ -606,7 +608,7 @@ Int_t TowerUtil::CatagBySigmXY(HitCluster* cluster) {
       }  // if
     } else {
       cluster->catag = kAmbiguousCluster;
-    }  // if (cluster->energy...)
+    }  // if (cluster->hit->energy()...)
   } // if (cluster->numbTower...)
   return cluster->catag;
 }

@@ -1,4 +1,6 @@
 #include "FitTower.h"
+
+#include "StEvent/StFmsHit.h"
 using namespace PSUGlobals;
 ClassImp(FitTower)
 
@@ -117,7 +119,7 @@ void FitTower::Fcn1(Int_t& npara, Double_t* grad,  Double_t& fval, Double_t* par
   Double_t sumCl = 0;
   
   TIter next(FitTower::tow2Fit);
-  while(oneTow=(TowerFPD*) next())sumCl+=oneTow->energy;
+  while(oneTow=(TowerFPD*) next())sumCl+=oneTow->hit->energy();
   
   // loop over all towers that are involved in the fit
   //
@@ -136,7 +138,7 @@ void FitTower::Fcn1(Int_t& npara, Double_t* grad,  Double_t& fval, Double_t* par
     
     // measured energy
     //
-    eMeas = oneTow->energy;
+    eMeas = oneTow->hit->energy();
     
     // expected energy from Shower-Shape
     //

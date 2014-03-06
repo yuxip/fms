@@ -11,6 +11,8 @@ using namespace PSUGlobals;
 #include <list>
 #include <numeric>
 
+#include "StEvent/StFmsHit.h"
+
 namespace {
 /* Helper function to add numbers of photons using std::accumulate */
 int accumulatePhotons(int nPhotons, const HitCluster& cluster) {
@@ -387,20 +389,21 @@ bool Yiqun::validate2ndPhoton(int clusterIndex, int nRealClusters) {
   int row = 1 + (Int_t)(photon->yPos / widLG[1]);
   // Now check whether this tower is one of the non-zero towers of the cluster
   // The temporary TowerFPD only needs row and column set for the test
-  TowerFPD* tower = searchClusterTowers(TowerFPD(0., column, row, 0), cluster);
+  TowerFPD* tower =
+    searchClusterTowers(TowerFPD(NULL, column, row, 0), cluster);
   // If tower is non-NULL, the photon does hit in a tower in this cluster.
   if (!tower) {
     return false;
   }  // if
   // Now test the photon and tower properties.
   // Check if the fitted energy is too large compared to the energy of the tower
-  if(tower->energy < minHTEneOverPhoton * photon->energy) {
+  if(tower->hit->energy() < minHTEneOverPhoton * photon->energy) {
     return false;
   }  // if
   // Check if the 2nd photon's "High-Tower" enery is too large compared to its
   // fitted energy. If so, it is probably splitting one photon into two
   Double_t eSS = EnergyInTowerByPhoton(widLG[0], tower, photon);
-  if(tower->energy > maxHTEneOverPhoton * eSS) {
+  if(tower->hit->energy() > maxHTEneOverPhoton * eSS) {
     return false;
   }  // if
   // Check that the 2nd photon is not near the edge of another cluster
@@ -652,7 +655,7 @@ void Yiqun::Y(TowerList* pEm) {
   Int_t cnt = -1;
   tow_Arr = new TObjArray(NTower);
   for (TowerList::iterator i = pEm->begin(); i != pEm->end(); ++i) {
-    if (i->energy > 0.001) {
+    if (i->hit->energy() > 0.001) {
       tow_Arr->Add(&(*i));
     }  // if
   }  // for

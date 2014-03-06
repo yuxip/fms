@@ -121,7 +121,7 @@ Int_t StFmsPointMaker::FindPoint() {
 		TowerList& towers = mTowers.at(instb);
 		Float_t Esum = 0.f;
 		for (TowerList::const_iterator i = towers.begin(); i != towers.end(); ++i) {
-		  Esum += i->energy;
+		  Esum += i->hit->energy();
 		}  // for
 		if(Esum==0||Esum>500) continue; //to remove LED trails, for pp500 GeV
     Yiqun clustering(&towers, fmsgeom, 2, instb + 1);
@@ -232,7 +232,7 @@ Int_t StFmsPointMaker::FindPoint() {
 					Int_t srow = (tow->row) - 1;		//srow starts from 0
 					Int_t scol = (tow->col) - 1;		//scol starts from 0
 					UInt_t adc = (UInt_t)(tow->adc_over_ped);
-					Float_t tenergy = tow->energy;
+					Float_t tenergy = tow->hit->energy();
 					UChar_t status = 0; 				//no status code for now --04/01/2013					
 					StFmsClHit* hit = new StFmsClHit(snstb,srow,scol,adc,tenergy,status);	
 					cluster->GetClHitCollection()->AddHit(hit);
@@ -293,7 +293,7 @@ Bool_t StFmsPointMaker::populateTowerLists() {
     }  // if
     if (hit->adc() > 0) {
       mTowers.at(nstb - 1).push_back(
-        PSUGlobals::TowerFPD(hit->energy(), column, row, -1));
+        PSUGlobals::TowerFPD(hit, column, row, -1));
       mTowers.at(nstb - 1).back().adc_over_ped = hit->adc();
     }  // if
   }  // for
