@@ -548,6 +548,7 @@ Int_t Yiqun::FitEvent(Int_t nTows, Int_t &nClusts, Int_t &nRealClusts,
         // 1-photon fit is better
         clust[icc].nPhoton = 1;
         clust[icc].chiSquare = chiSq1;
+        clust[icc].photon[0] = altClu.photon[0];
       }  // if (is2Photon)
     } else {  // Invalid cluster category
       // should not happen!
