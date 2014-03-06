@@ -227,11 +227,11 @@ Int_t StFmsPointMaker::FindPoint() {
 			//save the tower hit info.
 			TIter next(clustering.clust[ncl].tow);
 			while(TowerFPD* tow = (TowerFPD*)next()){
-				if(tow->adc_over_ped>=1){			//minADC=1
+				if (tow->hit->adc() >= 1) {			//minADC=1
 					Int_t snstb = clustering.NSTB; 	//starts from 1
 					Int_t srow = (tow->row) - 1;		//srow starts from 0
 					Int_t scol = (tow->col) - 1;		//scol starts from 0
-					UInt_t adc = (UInt_t)(tow->adc_over_ped);
+					UInt_t adc = tow->hit->adc();
 					Float_t tenergy = tow->hit->energy();
 					UChar_t status = 0; 				//no status code for now --04/01/2013					
 					StFmsClHit* hit = new StFmsClHit(snstb,srow,scol,adc,tenergy,status);	
@@ -294,7 +294,6 @@ Bool_t StFmsPointMaker::populateTowerLists() {
     if (hit->adc() > 0) {
       mTowers.at(nstb - 1).push_back(
         PSUGlobals::TowerFPD(hit, column, row, -1));
-      mTowers.at(nstb - 1).back().adc_over_ped = hit->adc();
     }  // if
   }  // for
   return true;

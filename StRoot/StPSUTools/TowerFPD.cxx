@@ -14,7 +14,6 @@ TowerFPD::TowerFPD()
 {
   hit = NULL;
   col = row =  cluster = -1 ;
-  adc_over_ped=9999;
   Lnk_LRUD=0;
 }
 
@@ -24,7 +23,6 @@ TowerFPD::TowerFPD(const StFmsHit* fmsHit, Int_t towX, Int_t towY, Int_t clu)
   col = towX;
   row = towY;
   cluster = clu;
-  adc_over_ped=9999;
   Lnk_LRUD=0;
 };
 
@@ -33,7 +31,6 @@ TowerFPD& TowerFPD::operator=(const TowerFPD& rhs) {
     col = rhs.col;
     row = rhs.row;
     cluster = rhs.cluster;
-    adc_over_ped = rhs.adc_over_ped;
   }  // if
   return *this;
 }

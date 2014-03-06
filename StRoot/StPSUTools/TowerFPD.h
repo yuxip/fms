@@ -18,7 +18,6 @@ class TowerFPD : public TObject {
 	Int_t   col;         // start from 0: count the columns, moving horizontally (STAR x-coord)
 	Int_t   row;         // start from 0: count the rows,    moving vertically   (STAR y-coord)
 	Int_t   cluster;
-	Int_t   adc_over_ped;
 	TowerFPD();
 	TowerFPD(const StFmsHit* fmsHit, Int_t towX, Int_t towY, Int_t clu);
 	~TowerFPD();
