@@ -5,7 +5,12 @@ using namespace PSUGlobals;
 #include <TCanvas.h>
 #include <algorithm>
 #include <functional>
+#include <numeric>
 namespace {
+/* Helper function to add numbers of photons using std::accumulate */
+int accumulatePhotons(int nPhotons, const HitCluster& cluster) {
+  return nPhotons + cluster.nPhoton;
+}
 // Lack of c++0x in STAR-standard gcc as of writing so we provide our own
 // implementation of copy_if - http://en.cppreference.com/w/cpp/algorithm/copy
 template<class InputIterator, class OutputIterator, class UnaryPredicate>
@@ -594,7 +599,7 @@ Int_t Yiqun::FitEvent(Int_t nTows, Int_t &nClusts, Int_t &nRealClusts, Bool_t &j
 
   // number of photons found by fit
   //
-  Int_t nPh = nClusts = 0 ;
+  nClusts = 0 ;
 
   TObjArray arrTow(nTows);
 
@@ -718,14 +723,10 @@ Int_t Yiqun::FitEvent(Int_t nTows, Int_t &nClusts, Int_t &nRealClusts, Bool_t &j
     if (clustCatag == k1PhotonCluster) {
       // Do 1-photon fit
       FitOnePhoton(&clust[icc]);
-      photons[nPh++] = clust[icc].photon[0];
     } else if (clustCatag == k2PhotonCluster) {
       // Do 2-photon fit
       Fit2PhotonClust(&clust[icc]);
       junkyEvent = clust[icc].chiSquare > MaxChi2Catag2;
-      for(Int_t kp = 0; kp < 2; kp++) {  // Fill in the information anyway
-        photons[nPh++] = clust[icc].photon[kp] ;
-      }  // for
     } else if (clustCatag == kAmbiguousCluster) {
       // for catagory-0 cluster, first try 1-photon fit!
       // If the fit is good enough, it is 1-photon. Else also
@@ -758,16 +759,10 @@ Int_t Yiqun::FitEvent(Int_t nTows, Int_t &nClusts, Int_t &nRealClusts, Bool_t &j
         clust[icc].chiSquare = chiSq2;
         // Flag the event as bad if the fit chi2/ndf is too bad
         junkyEvent = clust[icc].chiSquare > MaxChi2Catag2;
-        for(Int_t kp = 0; kp < 2; kp++) {
-          photons[nPh] = clust[icc].photon[kp] ;
-          nPh++;
-        }  // for
       } else {
         // 1-photon fit is better
         clust[icc].nPhoton = 1;
         clust[icc].chiSquare = chiSq1;
-        photons[nPh] = clust[icc].photon[0] = altClu.photon[0];
-        nPh++;
       }  // if (is2Photon)
     } else {  // Invalid cluster category
       // should not happen!
@@ -782,6 +777,7 @@ Int_t Yiqun::FitEvent(Int_t nTows, Int_t &nClusts, Int_t &nRealClusts, Bool_t &j
   //
   // 2003-09-08
   // if there are more than 1 cluster, do a global fit!
+  Int_t nPh = std::accumulate(clust, clust + nRealClusts, 0, accumulatePhotons);
   if(nPh > FitTower::MAX_NUMB_PHOTONS) {
     // myFitter can only do up to "MAX_NUMB_PHOTONS"-photon fit
     std::cout << "Can not fit " << nPh << " (more than " <<
@@ -800,25 +796,18 @@ Int_t Yiqun::FitEvent(Int_t nTows, Int_t &nClusts, Int_t &nRealClusts, Bool_t &j
   if(ndfg <= 0) {
     ndfg = 1;
   }  // if
-  fitter->tow2Fit = &allTow ;
+  fitter->tow2Fit = &allTow;
   // 2003-10-13
   // only do global fit for 2 or more clusters (2-photon fit for one cluster
   // already has global fit)
   if (nRealClusts > 1) {
     double chiSqG = GlobalFit(nPh, nRealClusts, clust) / ndfg;
-    Int_t iph = 0;
-    for (Int_t icl = 0; icl < nRealClusts; icl++) {
-      for (Int_t iclph = 0; iclph < clust[icl].nPhoton; iclph++) {
-        photons[iph] = clust[icl].photon[iclph];
-        iph++;
-        if (iph > nPh) {
-          printf("ERROR total nPh=%d iph=%d \n", nPh, iph);
-          break;
-        }  // if
-      }  // for
-    }  // for
+    // Check for errors in the global fit - the number of photons returned by
+    // the global fit should equal the sum of photons in the fitted clusters
+    Int_t iph = std::accumulate(clust, clust + nRealClusts, 0,
+                                accumulatePhotons);
     if(iph != nPh) {
-      printf("ERROR total nPh=%d iph=%d \n", nPh, iph);
+      std::cerr << "ERROR total nPh=" << nPh << " iPh=" << iPh << std::endl;
     }  // if
   } else if (nRealClusts == 1) {
       double chiSqG = clust[0].chiSquare ;

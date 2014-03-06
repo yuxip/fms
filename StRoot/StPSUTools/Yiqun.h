@@ -46,7 +46,6 @@ class Yiqun: public TObject
   TObjArray* tow_Arr;
   FitTower* fitter;
   HitCluster clust[MAX_NUMER_CLUSTERS];
-  PhotonHitFPD photons[FitTower::MAX_NUMB_PHOTONS+3]; 
   Int_t NPh; 
   Int_t NClusts;
   Int_t NRealClusts;
