@@ -75,11 +75,11 @@ PhotonHitFPD* findLowestEnergyPhoton(HitCluster* cluster) {
  Matching is done via TowerFPD::IsEqual
  Return a pointer to the matching tower if one is found, NULL otherwise.
  */
-TowerFPD* searchClusterTowers(const TowerFPD& test, const HitCluster& cluster) {
+TowerFPD* searchClusterTowers(int row, int column, const HitCluster& cluster) {
   TowerFPD* match(NULL);
   for (Int_t i(0); i < cluster.numbTower; ++i) {
     TowerFPD* tower = static_cast<TowerFPD*>(cluster.tow->At(i));
-    if (test.IsEqual(tower)) {
+    if (tower->row == row && tower->col == column) {
       match = tower;
       break;
     }  // if
@@ -389,8 +389,7 @@ bool Yiqun::validate2ndPhoton(int clusterIndex, int nRealClusters) {
   int row = 1 + (Int_t)(photon->yPos / widLG[1]);
   // Now check whether this tower is one of the non-zero towers of the cluster
   // The temporary TowerFPD only needs row and column set for the test
-  TowerFPD* tower =
-    searchClusterTowers(TowerFPD(NULL, column, row, 0), cluster);
+  TowerFPD* tower = searchClusterTowers(row, column, cluster);
   // If tower is non-NULL, the photon does hit in a tower in this cluster.
   if (!tower) {
     return false;

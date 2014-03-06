@@ -10,6 +10,7 @@
 #include <TObjArray.h>
 
 class StFmsHit;
+class StFmsDbMaker;
 
 namespace PSUGlobals {//$NMSPC
 class TowerFPD : public TObject {
@@ -19,8 +20,15 @@ class TowerFPD : public TObject {
 	Int_t   row;         // start from 0: count the rows,    moving vertically   (STAR y-coord)
 	Int_t   cluster;
 	TowerFPD();
-	TowerFPD(const StFmsHit* fmsHit, Int_t towX, Int_t towY, Int_t clu);
+	TowerFPD(const StFmsHit* fmsHit);
 	~TowerFPD();
+	/**
+	 Initialize additional tower geometry information from the database.
+	 
+	 Return true upon successful initialization, false if something goes wrong.
+	 Important: an uninitialized tower should NOT be used!
+	 */
+	Bool_t initialize(StFmsDbMaker*);
 	Bool_t IsEqual(const TObject *obj) const;
 	Bool_t IsSortable() const;
 	Int_t Compare(const TObject *obj) const ;
