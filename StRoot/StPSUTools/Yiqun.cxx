@@ -661,7 +661,7 @@ void Yiqun::Y(TowerList* pEm) {
   }  // for
   TIter next(tow_Arr);
   while (TowerFPD* tow = (TowerFPD*)next()){
-    tow->SetContext(tow_Arr, EW, NSTB);
+    tow->SetContext(tow_Arr);
   }  // while
   posDif_2PC=0.2;
   eneRat_2PC=0.05;

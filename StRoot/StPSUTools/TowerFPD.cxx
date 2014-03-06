@@ -15,8 +15,6 @@ TowerFPD::TowerFPD()
   hit = NULL;
   col = row =  cluster = -1 ;
   adc_over_ped=9999;
-  IEW=0;// East/West undefined
-  NSTB=0;// Detector Undefined
   Lnk_LRUD=0;
 }
 
@@ -27,9 +25,6 @@ TowerFPD::TowerFPD(const StFmsHit* fmsHit, Int_t towX, Int_t towY, Int_t clu)
   row = towY;
   cluster = clu;
   adc_over_ped=9999;
- 
-  IEW=0;// East/West undefined
-  NSTB=0;// Detector Undefined
   Lnk_LRUD=0;
 };
 
@@ -65,10 +60,8 @@ Bool_t TowerFPD::IsNeighbor(TowerFPD *a)
   return ( abs(this->col - a->col) + abs(this->row - a->row) == 1 )  ;
 };
 
-Bool_t TowerFPD::SetContext(TObjArray* towers,Int_t iEW,Int_t nSTB)
+Bool_t TowerFPD::SetContext(TObjArray* towers)
 {
-  IEW=iEW;
-  NSTB=nSTB;
   TIter next(towers);
   if(Lnk_LRUD)delete Lnk_LRUD;
   Lnk_LRUD=new TObjArray(4);  

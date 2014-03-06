@@ -26,12 +26,10 @@ class TowerFPD : public TObject {
 	Bool_t IsSortable() const;
 	Int_t Compare(const TObject *obj) const ;
 	Bool_t IsNeighbor(TowerFPD *a);
-	Bool_t SetContext(TObjArray* towers,Int_t IEW,Int_t NSTB);
+	Bool_t SetContext(TObjArray* towers);
 	void Print(void);
 	TowerFPD& operator=(const TowerFPD& rhs);
 	TObjArray* Lnk_LRUD;
-	Int_t IEW;
-	Int_t NSTB;
 	ClassDef (TowerFPD, 7)
 };
 
