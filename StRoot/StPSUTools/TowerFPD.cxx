@@ -33,6 +33,22 @@ TowerFPD::TowerFPD(const StFmsHit* fmsHit, Int_t towX, Int_t towY, Int_t clu)
   Lnk_LRUD=0;
 };
 
+TowerFPD& TowerFPD::operator=(const TowerFPD& rhs) {
+  if (this != &rhs) {
+    col = rhs.col;
+    row = rhs.row;
+    cluster = rhs.cluster;
+    adc_over_ped = rhs.adc_over_ped;
+  }  // if
+  return *this;
+}
+
+TowerFPD::~TowerFPD() {
+  if (Lnk_LRUD) {
+    delete Lnk_LRUD;
+  }  // if
+}
+
 Int_t TowerFPD::Compare(const TObject *obj) const
 {
   if( hit->energy() < ((TowerFPD *) obj)->hit->energy() )
