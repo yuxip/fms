@@ -1,33 +1,30 @@
 #ifndef YIQUN_H
 #define YIQUN_H
-#define MAX_NUMER_CLUSTERS 6
 
-#include "Geom.h"
-#include "TLorentzVector.h"
-#include "TObjArray.h"
-#include "TF2.h"
-#include "TVector3.h"
-#include "FitTower.h"
-#include "TowerUtil.h"
-#include "HitCluster.h"
-#include "PhotonHitFPD.h"
-
-#include "TMath.h"
-#include "TRandom.h"
 #include <iostream>
 
+#include "TF2.h"
+#include "TowerUtil.h"
+#include "TLorentzVector.h"
+#include "TMath.h"
+#include "TObjArray.h"
+#include "TRandom.h"
+#include "TVector3.h"
+
+#include "Geom.h"
+#include "FitTower.h"
+#include "HitCluster.h"
+#include "PhotonHitFPD.h"
+#include "TowerUtil.h"
+
+#define MAX_NUMER_CLUSTERS 6
+
 namespace PSUGlobals {//$NMSPC
-class Yiqun: public TObject
-{
- private:
-  
-  ClassDef(Yiqun,7);
-  
+class Yiqun: public TObject {
  public:
   TowerUtil* pTowerUtil;
   Int_t nrows;
   Int_t ncols;
-  
   Float_t FitOnePhoton(HitCluster*);
   Float_t GlobalFit(const Int_t, const Int_t, HitCluster*);
   Float_t Fit2PhotonClust(HitCluster*);
@@ -49,21 +46,16 @@ class Yiqun: public TObject
   Int_t NPh; 
   Int_t NClusts;
   Int_t NRealClusts;
-
   Float_t posDif_2PC;    // in unit of Lead-glass
   Float_t eneRat_2PC;
   Float_t dggPara[6];
   Float_t thetaPara;
-
   Float_t posDif_Gl;    // in unit of "cm"
   Float_t eneRat_Gl;
-
   Float_t maxGood1PhChi2NDF;
-
   Float_t minHTEneOverPhoton;
   Float_t maxHTEneOverPhoton;
   Float_t maxRatioSpill;
-  
   Float_t MaxChi2Catag2;
   Float_t minRealClusterEne;
   Int_t maxHitsInRealCluster;
@@ -75,6 +67,7 @@ class Yiqun: public TObject
    Response function for nonlinear energy correction, based on cerenkov studies.
    */
   static TF1* GetEDepCorrection();
+  ClassDef(Yiqun,7);
 };
-}
+}  // namespace PSUGlobals
 #endif
