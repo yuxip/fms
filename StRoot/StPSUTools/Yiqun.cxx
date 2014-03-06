@@ -28,6 +28,48 @@ struct IsGoodCluster : public std::unary_function<const HitCluster*, bool> {
   double energy;
   int towers;
 };
+
+/*
+ Returns a pointer to the lowest energy photon in a cluster
+ 
+ Assumes the cluster is either 1- or 2-photon
+ Returns NULL if there is no photon in the cluster
+ */
+PhotonHitFPD* findLowestEnergyPhoton(HitCluster* cluster) {
+  PhotonHitFPD* photon(NULL);
+  switch (cluster->nPhoton) {
+    case 1:
+      photon = &(cluster->photon[0]);
+      break;
+    case 2:
+      if (cluster->photon[0].energy < cluster->photon[1].energy) {
+        photon = &(cluster->photon[0]);
+      } else {
+        photon = &(cluster->photon[1]);
+      }  // if
+    default:
+      break;  // photon remains NULL
+  }  // switch
+  return photon;
+}
+
+/*
+ Search towers in a cluster for one matching a test tower
+ 
+ Matching is done via TowerFPD::IsEqual
+ Return a pointer to the matching tower if one is found, NULL otherwise.
+ */
+TowerFPD* searchClusterTowers(const TowerFPD& test, const HitCluster& cluster) {
+  TowerFPD* match(NULL);
+  for (Int_t i(0); i < cluster.numbTower; ++i) {
+    TowerFPD* tower = static_cast<TowerFPD*>(cluster.tow->At(i));
+    if (test.IsEqual(tower)) {
+      match = tower;
+      break;
+    }  // if
+  }  // for
+  return match;
+}
 }  // unnamed namespace
 #include <list>
 ClassImp(Yiqun)
@@ -651,46 +693,32 @@ Int_t Yiqun::FitEvent(Int_t nTows, Int_t &nClusts, Int_t &nRealClusts, Bool_t &j
 			  chiSq2 = Fit2PhotonClust(&clust[icc]);
         // check that the fitted photon of lower energy is contained within one of the non-zero towers
         //    of the cluster
-			  Bool_t isBogus2ndPhoton = true;
 			  // Select the lower-energy of the two photons
-			  Int_t secondPhoton;
-			  if (clust[icc].photon[0].energy < clust[icc].photon[1].energy) {
-          secondPhoton = 0;
-			  } else {
-          secondPhoton = 1;
-        }  // if
+			  PhotonHitFPD* secondPhoton = findLowestEnergyPhoton(&clust[icc]);
 			  // tower where the fitted photon of lower energy should hit
-			  int ix = 1 + (Int_t) (clust[icc].photon[secondPhoton].xPos / widLG[0]);
-			  int iy = 1 + (Int_t) (clust[icc].photon[secondPhoton].yPos / widLG[1]);
-			  TowerFPD tow2ndPhoton(clust[icc].photon[secondPhoton].energy, ix, iy, icc);
+			  int ix = 1 + (Int_t) (secondPhoton->xPos / widLG[0]);
+			  int iy = 1 + (Int_t) (secondPhoton->yPos / widLG[1]);
         // now check whether this tower is one of the non-zero towers of the cluster
-			  for (Int_t itNZ=0; itNZ<clust[icc].numbTower; itNZ++) {
-			    TowerFPD * nZTow = (TowerFPD *) clust[icc].tow->At(itNZ) ;
-			    if (tow2ndPhoton.IsEqual(nZTow)) {
-			      isBogus2ndPhoton = false;
-			      tow2ndPhoton.energy = nZTow->energy ;
-			      break;
-			    }  // if
-			  }  // for
+			  TowerFPD* tow2ndPhoton = searchClusterTowers(
+  			    TowerFPD(0., ix, iy, icc), clust[icc]);
 			  // and the fitted energy is too large compared to the energy of the tower
-			  if (!isBogus2ndPhoton) {
-			    if(tow2ndPhoton.energy < minHTEneOverPhoton * clust[icc].photon[secondPhoton].energy) {
-			      isBogus2ndPhoton = true;
+			  if (tow2ndPhoton) {
+			    if(tow2ndPhoton->energy < minHTEneOverPhoton * secondPhoton->energy) {
+			      tow2ndPhoton = NULL;  // It's a bogus photon
 			    }  // if
 			  }  // if
 	// 2003-09-29
         // Check that the 2nd photon's "High-Tower" enery is too large compared to its fitted energy.
 	//    If so, it is probably splitting one photon into two!
 	//
-			  if( !isBogus2ndPhoton ) 
+			  if(tow2ndPhoton) 
 			    {
 			      Double_t eSS;
 
-			      eSS = EnergyInTowerByPhoton(widLG[0], &tow2ndPhoton, 
-							  &( clust[icc].photon[secondPhoton] ) );
-			      if( tow2ndPhoton.energy > maxHTEneOverPhoton * eSS ) 
+			      eSS = EnergyInTowerByPhoton(widLG[0], tow2ndPhoton, secondPhoton);
+			      if( tow2ndPhoton->energy > maxHTEneOverPhoton * eSS ) 
 				{
-				  isBogus2ndPhoton = true;
+				  tow2ndPhoton = NULL;
 				}
 			    }
 			  
@@ -701,9 +729,9 @@ Int_t Yiqun::FitEvent(Int_t nTows, Int_t &nClusts, Int_t &nRealClusts, Bool_t &j
 	// If the ratio is too high, this fitted photon is probably a bogus one!
 	//
 
-				if( !isBogus2ndPhoton ) {
+				if(tow2ndPhoton) {
 					Double_t eneWInCluster = EnergyInClusterByPhoton(widLG[0], 
-					       &clust[icc], &( clust[icc].photon[secondPhoton] ));
+					       &clust[icc], secondPhoton);
 
 	// loop over all clusters, but skip its own cluster
 	//
@@ -712,18 +740,17 @@ Int_t Yiqun::FitEvent(Int_t nTows, Int_t &nClusts, Int_t &nRealClusts, Bool_t &j
 					    if( kkc == icc )
 					      continue;
 					    
-					    if( EnergyInClusterByPhoton(widLG[0], &clust[kkc], 
-									&(clust[icc].photon[secondPhoton])) > 
+					    if(EnergyInClusterByPhoton(widLG[0], &clust[kkc], secondPhoton) > 
 						(maxRatioSpill * eneWInCluster) ) 
 					      {
-						isBogus2ndPhoton = true;
+						tow2ndPhoton = NULL;
 						break ;
 					      }
 					  }
 				}
 
 				
-				if( isBogus2ndPhoton ) 
+				if(!tow2ndPhoton) 
 				  {
 				    is2Photon = false ;
 				  }
