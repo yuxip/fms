@@ -70,9 +70,8 @@ PhotonHitFPD* findLowestEnergyPhoton(HitCluster* cluster) {
 }
 
 /*
- Search towers in a cluster for one matching a test tower
+ Search towers in a cluster for one matching a row and column number
  
- Matching is done via TowerFPD::IsEqual
  Return a pointer to the matching tower if one is found, NULL otherwise.
  */
 TowerFPD* searchClusterTowers(int row, int column, const HitCluster& cluster) {
@@ -659,9 +658,6 @@ void Yiqun::Y(TowerList* pEm) {
     }  // if
   }  // for
   TIter next(tow_Arr);
-  while (TowerFPD* tow = (TowerFPD*)next()){
-    tow->SetContext(tow_Arr);
-  }  // while
   posDif_2PC=0.2;
   eneRat_2PC=0.05;
   dggPara[0]=18.0;
