@@ -70,6 +70,7 @@ class Yiqun: public TObject
   Int_t maxHitsInRealCluster;
   Double_t step[3*FitTower::MAX_NUMB_PHOTONS+1];
   Double_t widLG[2];
+  bool validate2ndPhoton(int clusterIndex, int nRealClusters);
   static TF1* EDepCorrection;
   /**
    Response function for nonlinear energy correction, based on cerenkov studies.
