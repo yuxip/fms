@@ -600,34 +600,16 @@ Int_t Yiqun::FitEvent(Int_t nTows, Int_t &nClusts, Int_t &nRealClusts, Bool_t &j
   // number of photons found by fit
   //
   nClusts = 0 ;
-
-  TObjArray arrTow(nTows);
-
-  // at the beginning of each event, first need to clear the TObjArray
-  //
-
-  arrTow.Clear();
   for(Int_t ic=0; ic<MAX_NUMER_CLUSTERS; ic++) {
     if(clust[ic].tow)clust[ic].tow->Clear();
     clust[ic].Clear();
   }
-  // re-add the TowerFPD objects to "arrTow" for each event!
-  //
-  for(Int_t itow=0; itow<nTows; itow++) {
-    arrTow.AddAt(&(towers->at(itow)), itow);
-  }
-
-  // find clusters
-  //
-  // "TObjArray::Sort()" sort array from small to large ( [0]<[1]<...<[48] )
-  //
-  // Need to first mark "TObjArray *arrTow" as unsorted! Then sort!
-  //
-  // calling "TObjArray::GetAbsLast()" will restore "fLast" to a value other than -2 (-2 is setho after "Sort()" is called) ?!
-  //
-  arrTow.UnSort();
-  arrTow.Sort();
-  nClusts = pTowerUtil->FindTowerCluster(&arrTow, clust);
+  TowerUtil::TowerList towerList;
+  std::vector<TowerFPD>::iterator towerIter;
+  for (towerIter = towers->begin(); towerIter != towers->end(); ++towerIter) {
+    towerList.push_back(&(*towerIter));
+  }  // for
+  nClusts = pTowerUtil->FindTowerCluster(&towerList, clust);
              
   std::list<HitCluster*> pClusters;
   for (int i(0); i < nClusts; ++i) {
@@ -807,7 +789,7 @@ Int_t Yiqun::FitEvent(Int_t nTows, Int_t &nClusts, Int_t &nRealClusts, Bool_t &j
     Int_t iph = std::accumulate(clust, clust + nRealClusts, 0,
                                 accumulatePhotons);
     if(iph != nPh) {
-      std::cerr << "ERROR total nPh=" << nPh << " iPh=" << iPh << std::endl;
+      std::cerr << "ERROR total nPh=" << nPh << " iPh=" << iph << std::endl;
     }  // if
   } else if (nRealClusts == 1) {
       double chiSqG = clust[0].chiSquare ;

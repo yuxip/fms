@@ -12,14 +12,14 @@ class HitCluster;
 class TowerFPD;
 class TowerUtil {
  public:
+  typedef std::list<TowerFPD*> TowerList;
   TowerUtil();
   ~TowerUtil();
-  Int_t FindTowerCluster(TObjArray* towers, HitCluster* clusters);
+  Int_t FindTowerCluster(TowerList* towers, HitCluster* clusters);
   void CalClusterMoment(HitCluster* cluster);
   Int_t CatagBySigmXY(HitCluster* cluster);
   void SetMomentEcutoff(Float_t ecoff=0.5) { Ecutoff=ecoff; }
   Float_t GetMomentEcutoff() { return Ecutoff; }
-  typedef std::list<TowerFPD*> TowerList;
  private:
   static const Int_t maxNClusters = 6;
   static const Int_t nNSTow = 49;  //NS_ETA_NUM * NS_PHI_NUM;
@@ -27,17 +27,17 @@ class TowerUtil {
   Float_t Ecutoff;  
   // number of "peaks" that has the same shortest distance to a "valley" tower
   Int_t nClusts;
-  unsigned locateClusterSeeds(TowerList& towers, TowerList& neighbors,
+  unsigned locateClusterSeeds(TowerList* towers, TowerList* neighbors,
                               HitCluster* clusters);
-  unsigned associateTowersWithClusters(TowerList& neighbors,
+  unsigned associateTowersWithClusters(TowerList* neighbors,
                                        HitCluster* clusters,
                                        TObjArray* valleys);
-  unsigned associateValleyTowersWithClusters(TowerList& neighbors,
+  unsigned associateValleyTowersWithClusters(TowerList* neighbors,
                                              HitCluster* clusters,
                                              TObjArray* valleys);
-  unsigned associateResidualTowersWithClusters(TowerList& neighbors,
+  unsigned associateResidualTowersWithClusters(TowerList* neighbors,
                                                HitCluster* clusters);
-  unsigned associateSubThresholdTowersWithClusters(TowerList& towers,
+  unsigned associateSubThresholdTowersWithClusters(TowerList* towers,
                                                    HitCluster* clusters);
   ClassDef(TowerUtil,3);
 };
