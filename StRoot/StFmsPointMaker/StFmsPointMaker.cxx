@@ -294,6 +294,7 @@ Bool_t StFmsPointMaker::populateTowerLists() {
     if (hit->adc() > 0) {
       mTowers.at(nstb - 1).push_back(
         PSUGlobals::TowerFPD(hit->energy(), column, row, -1));
+      mTowers.at(nstb - 1).back().adc_over_ped = hit->adc();
     }  // if
   }  // for
   return true;
