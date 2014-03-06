@@ -708,38 +708,32 @@ Int_t Yiqun::FitEvent(Int_t nTows, Int_t &nClusts, Int_t &nRealClusts, Bool_t &j
   // loop over clusters, catagorize, guess the photon locations for cat 0 or 2 clusters
   // then fit, compare, and choose the best fit
   //
-  Int_t clustCatag;
-
-  // bad events?
-  //
-  junkyEvent = false;
-
-  
+  junkyEvent = false;  // Bad event?
   for(Int_t icc=0; icc<nRealClusts; icc++) {
-    clustCatag = pTowerUtil->CatagBySigmXY( &clust[icc] );
+    Int_t clustCatag = pTowerUtil->CatagBySigmXY(&clust[icc]);
     // point to the real TObjArray that contains the towers to be fitted
     // it is the same tower array for the cluster or all alternative clusters
-    fitter->tow2Fit = clust[icc].tow ;
+    fitter->tow2Fit = clust[icc].tow;
     // Number of Degree of Freedom for the fit
-    double chiSq1, chiSq2;
-    if (clustCatag == 1) {
+    if (clustCatag == k1PhotonCluster) {
       // Do 1-photon fit
       FitOnePhoton(&clust[icc]);
       photons[nPh++] = clust[icc].photon[0];
-    } else if (clustCatag == 2) {
+    } else if (clustCatag == k2PhotonCluster) {
       // Do 2-photon fit
       Fit2PhotonClust(&clust[icc]);
       junkyEvent = clust[icc].chiSquare > MaxChi2Catag2;
       for(Int_t kp = 0; kp < 2; kp++) {  // Fill in the information anyway
         photons[nPh++] = clust[icc].photon[kp] ;
       }  // for
-    } else if (clustCatag == 0) {
+    } else if (clustCatag == kAmbiguousCluster) {
       // for catagory-0 cluster, first try 1-photon fit!
       // If the fit is good enough, it is 1-photon. Else also
       // try 2-photon fit, and find the best fit (including 1-photon fit).
       Bool_t is2Photon = true;
       altClu = clust[icc];
-      chiSq1 = FitOnePhoton(&altClu);
+      double chiSq1 = FitOnePhoton(&altClu);
+      double chiSq2(NAN);  // Only set if do 2-photon fit
       // Decide if this 1-photon fit is good enough
       if (chiSq1 < maxGood1PhChi2NDF) {
         is2Photon = false ;
@@ -757,123 +751,80 @@ Int_t Yiqun::FitEvent(Int_t nTows, Int_t &nClusts, Int_t &nRealClusts, Bool_t &j
           is2Photon = false;
         }  // if (validate2ndPhoton...)
       }  // if (chiSq1...)
-      // now fill in the fit result
-      //
-      
-      if( !is2Photon ) 
-        {
-          
-          // 1-photon fit
-          //      
-          clust[icc].nPhoton   = altClu.nPhoton   = 1 ;
-          clust[icc].chiSquare = altClu.chiSquare = chiSq1;
-          
-          photons[nPh] = clust[icc].photon[0] =  altClu.photon[0] ;
-          
-          nPh ++ ;
-        }
-      else 
-        {
-          // 2-photon fit is better
-          //
-          clust[icc].nPhoton   = 2 ;
-          clust[icc].chiSquare = chiSq2;
-          
-          // check if this cluster has too much stuff in it!
-          //
-          if( clust[icc].chiSquare > MaxChi2Catag2 ) {
-            junkyEvent = true;
-          }
-          
-          
-          for(Int_t kp=0; kp<2; kp++) {
-            
-            photons[nPh] = clust[icc].photon[kp] ;
-            
-            nPh ++ ;
-          }
-      } // else ( 2-photon fit is better)
-      
-    } // catag-0
-    //
-    // should not happen!
-    //
-    else {
-      std::cout << "Your logic of catagory is wrong! Something impossible happens! This a catagory-" << clustCatag;
-      std::cout << " clusters! Don't know how to fit it!\n" << "\n";
-    }
-    
-  } // loop over all real clusters
-
+      // Now fill in the fit result, either 1- or 2-photon
+      if (is2Photon) {
+        // 2-photon fit is better
+        clust[icc].nPhoton = 2;
+        clust[icc].chiSquare = chiSq2;
+        // Flag the event as bad if the fit chi2/ndf is too bad
+        junkyEvent = clust[icc].chiSquare > MaxChi2Catag2;
+        for(Int_t kp = 0; kp < 2; kp++) {
+          photons[nPh] = clust[icc].photon[kp] ;
+          nPh++;
+        }  // for
+      } else {
+        // 1-photon fit is better
+        clust[icc].nPhoton = 1;
+        clust[icc].chiSquare = chiSq1;
+        photons[nPh] = clust[icc].photon[0] = altClu.photon[0];
+        nPh++;
+      }  // if (is2Photon)
+    } else {  // Invalid cluster category
+      // should not happen!
+      std::cerr << "Your logic of catagory is wrong! Something impossible " <<
+        "happens! This a catagory-" << clustCatag;
+      std::cerr << " clusters! Don't know how to fit it!\n" << "\n";
+    }  // if (clustCatag...)
+  }  // Loop over all real clusters
   // 2003-10-04
   // Do a global fit for all events (even for 1 real cluster). Return
   //    Chi2/NDF instead of Chi2 in "FitEvent(...)".
   //
   // 2003-09-08
   // if there are more than 1 cluster, do a global fit!
-  //
-  if( nPh > FitTower::MAX_NUMB_PHOTONS ) 
-    {
-      //
-      // myFitter can only do up to "MAX_NUMB_PHOTONS"-photon fit
-      //
-      std::cout << "Can not fit " << nPh << " (more than " << FitTower::MAX_NUMB_PHOTONS << " photons!" << "\n";
-      return nPh;
-    }
-  
+  if(nPh > FitTower::MAX_NUMB_PHOTONS) {
+    // myFitter can only do up to "MAX_NUMB_PHOTONS"-photon fit
+    std::cout << "Can not fit " << nPh << " (more than " <<
+      FitTower::MAX_NUMB_PHOTONS << " photons!" << "\n";
+    return nPh;
+  }  // if
   // 2003-09-08
   // for global fit, add all towers from all clusters
-  //
   // first clear the TObjArray!
-  //
   TObjArray allTow(nTows);
-  allTow.Clear();
   Int_t ndfg = 0 ;
-  for(Int_t jjc=0; jjc<nRealClusts; jjc++) 
-    {
-      allTow.AddAll(clust[jjc].tow);
-      ndfg += (clust[jjc].tow->GetEntriesFast() - 3 * clust[jjc].nPhoton);
-    }
-  
-  if( ndfg <= 0 ) 
-    {
-      ndfg = 1;
-    }
-  
+  for(Int_t jjc = 0; jjc < nRealClusts; jjc++) {
+    allTow.AddAll(clust[jjc].tow);
+    ndfg += (clust[jjc].tow->GetEntriesFast() - 3 * clust[jjc].nPhoton);
+  }  // for
+  if(ndfg <= 0) {
+    ndfg = 1;
+  }  // if
   fitter->tow2Fit = &allTow ;
-
   // 2003-10-13
-  // only do global fit for 2 or more clusters (2-photon fit for one cluster already has global fit)
-  //
-  if(nRealClusts > 1 ) 
-    {
-      double chiSqG = GlobalFit(nPh, nRealClusts, clust) / ndfg ;
-      Int_t iph=0;
-      for(Int_t icl=0;icl<nRealClusts;icl++)
-        {
-    
-    for(Int_t iclph=0;iclph<clust[icl].nPhoton;iclph++)
-      {
-        
-        photons[iph] = clust[icl].photon[iclph];  
+  // only do global fit for 2 or more clusters (2-photon fit for one cluster
+  // already has global fit)
+  if (nRealClusts > 1) {
+    double chiSqG = GlobalFit(nPh, nRealClusts, clust) / ndfg;
+    Int_t iph = 0;
+    for (Int_t icl = 0; icl < nRealClusts; icl++) {
+      for (Int_t iclph = 0; iclph < clust[icl].nPhoton; iclph++) {
+        photons[iph] = clust[icl].photon[iclph];
         iph++;
-        if(iph>nPh){printf("ERROR total nPh=%d iph=%d \n",nPh,iph);break;};
-      }
-        };
-      if(iph!=nPh){printf("ERROR total nPh=%d iph=%d \n",nPh,iph);};
-
-    }
-  else if( nRealClusts == 1 ) 
-    {
+        if (iph > nPh) {
+          printf("ERROR total nPh=%d iph=%d \n", nPh, iph);
+          break;
+        }  // if
+      }  // for
+    }  // for
+    if(iph != nPh) {
+      printf("ERROR total nPh=%d iph=%d \n", nPh, iph);
+    }  // if
+  } else if (nRealClusts == 1) {
       double chiSqG = clust[0].chiSquare ;
-    }
-  else 
-    {
-      // temp revove comment
-      //std::cout << "Something wrong! Should NOT have " << nRealClusts << " real clusters! Error!" << "\n";
-      double chiSqG = -1 ;
-    };
-  
+  } else {
+    double chiSqG = -1 ;
+  }  // if (nRealClusts > 1)
   return nPh;
 }
 
