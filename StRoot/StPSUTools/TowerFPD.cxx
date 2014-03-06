@@ -1,16 +1,9 @@
-#include <iostream>
-#include <stdlib.h>
-#include <math.h>
-
-
-#include "TowerFPD.h"
+#include "StPSUTools/TowerFPD.h"
 
 #include "StEvent/StFmsHit.h"
 #include "StFmsDbMaker/StFmsDbMaker.h"
 
-using namespace PSUGlobals;
-ClassImp(TowerFPD);
-
+namespace PSUGlobals {
 TowerFPD::TowerFPD()
     : hit(NULL), col(-1), row(-1), cluster(-1), Lnk_LRUD(NULL) { }
 
@@ -72,18 +65,28 @@ Bool_t TowerFPD::IsNeighbor(TowerFPD *a) {
 
 Bool_t TowerFPD::SetContext(TObjArray* towers) {
   TIter next(towers);
-  if(Lnk_LRUD)delete Lnk_LRUD;
-  Lnk_LRUD=new TObjArray(4);  
+  if (Lnk_LRUD) {
+    delete Lnk_LRUD;
+  }  // if
+  Lnk_LRUD = new TObjArray(4);  
   Lnk_LRUD->SetOwner(0);
-  while(TowerFPD* tower=(TowerFPD*) next())
-    {
-      if(IsNeighbor(tower))
-	{
-	  if((tower->col)<col)        {Lnk_LRUD->AddAt(tower,0);}
-	  else if ((tower->col)>col)  {Lnk_LRUD->AddAt(tower,1);}
-	  else if ((tower->row)<row)  {Lnk_LRUD->AddAt(tower,2);}
-	  else if ((tower->row)>row)  {Lnk_LRUD->AddAt(tower,3);}
-	};
-    };
+  TowerFPD* tower(NULL);
+  // Loop over all towers in the list
+  while ((tower = static_cast<TowerFPD*>(next()))) {
+    // Look for neighbor towers. Assign any found to the neighbor list, in a
+    // position that depends their location
+    if (IsNeighbor(tower)) {
+      if (tower->col < col) {  // "Left" neighbor
+        Lnk_LRUD->AddAt(tower, 0);
+      } else if (tower->col > col) {  // "Right" neighbor
+        Lnk_LRUD->AddAt(tower, 1);
+      } else if (tower->row < row) {  // "Below" neighbor
+        Lnk_LRUD->AddAt(tower, 2);
+      } else if (tower->row > row) {  // "Above" neighbor
+        Lnk_LRUD->AddAt(tower, 3);
+      }  // if (tower->col...)
+  	}  // if (IsNeighbor(tower))
+  }  // while
   return true;
-};
+}
+}  // namespace PSUGlobals
