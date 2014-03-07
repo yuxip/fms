@@ -1,17 +1,18 @@
 #include "Yiqun.h"
 
-using namespace std;
-using namespace PSUGlobals;
-
 #include <TCanvas.h>
 #include <TRandom.h>  // For ROOT global random generator, gRandom
 
 #include <algorithm>
 #include <functional>
+#include <iterator>
 #include <list>
 #include <numeric>
 
 #include "StEvent/StFmsHit.h"
+
+using namespace std;
+using namespace PSUGlobals;
 
 namespace {
 /* Helper function to add numbers of photons using std::accumulate */
@@ -19,27 +20,13 @@ int accumulatePhotons(int nPhotons, const HitCluster& cluster) {
   return nPhotons + cluster.nPhoton;
 }
 
-/*
- Lack of c++0x in STAR-standard gcc as of writing so we provide our own
- implementation of copy_if - http://en.cppreference.com/w/cpp/algorithm/copy
- */
-template<class InputIterator, class OutputIterator, class UnaryPredicate>
-OutputIterator copy_if(InputIterator start, InputIterator end, 
-                       OutputIterator outStart, UnaryPredicate predicate) {
-  return std::remove_copy_if(start, end, outStart, std::not1(predicate));
-}
-
-/* Unary predicate for selecting good clusters. */
-struct IsGoodCluster : public std::unary_function<const HitCluster*, bool> {
-  // Initialise with minimum energy and maximum number of towers
-  IsGoodCluster(double minEnergy, int maxTowers)
-    : energy(minEnergy), towers(maxTowers) { }
-  // Returns true if the cluster has both energy > min energy and number of
-  // towers <= maximum number of towers. Returns false otherwise.
-  // Use a pointer argument to avoid reference-to-reference problems when
-  // binding the predicate.
-  bool operator()(const HitCluster* cluster) const {
-    return cluster->energy > energy && cluster->tow->GetEntries() <= towers;
+/* Unary predicate for selecting bad clusters. */
+struct IsBadCluster : public std::unary_function<const HitCluster&, bool> {
+  // Set minimum allowed cluster energy and maximum number of towers
+  IsBadCluster(double minEnergy, int maxTowers)
+      : energy(minEnergy), towers(maxTowers) { }
+  bool operator()(const HitCluster& cluster) const {
+    return cluster.energy <= energy || cluster.tow->GetEntries() > towers;
   }
   double energy;
   int towers;
@@ -154,7 +141,7 @@ Float_t Yiqun::FitOnePhoton(HitCluster* p_clust) {
   p_clust - cluster array
  */
 Float_t Yiqun::GlobalFit(const Int_t nPh, const Int_t nCl,
-                         HitCluster *p_clust) {
+                         ClusterIter first) {
   // By design, we can only fit up to "MAX_NUMB_PHOTONS" (currently 4) photons
   if (nPh > FitTower::MAX_NUMB_PHOTONS || nPh < 2) {
     std::cout << "Global fit! Can not fit " << nPh << " photons! ERROR!" << "\n";
@@ -173,14 +160,19 @@ Float_t Yiqun::GlobalFit(const Int_t nPh, const Int_t nCl,
   Double_t gradient[nParam];
   // Starting position, lower and upper limit of parameters
   Double_t start[nParam], lowLim[nParam], upLim[nParam];
-  // The positions (e.b. clust[ic].photon[jp].xPos) are already in unit of cm
+  // The positions (e.b. cluster->photon[jp].xPos) are already in unit of cm
   // Clusters have already had all their fields properly filled
   // (for example cluster[].photon[0] should NOT be NULL!)
   Int_t totPh = 0;
   // Loop over all clusters
-  for (Int_t ic=0; ic< nCl; ic++) {
+  /** \todo Improve this implementation? This approach is necessary because the
+            original code uses a pointer to a HitCluster in the fitting routines
+            as both a pointer to a single cluster, and an array of clusters .*/
+  ClusterIter end = first;
+  std::advance(end, nCl);
+  for (ClusterIter cluster = first; cluster != end; ++cluster) {
     // Loop over all photons in cluster
-    for (Int_t jp = 0; jp < p_clust[ic].nPhoton; jp++) {
+    for (Int_t jp = 0; jp < cluster->nPhoton; jp++) {
       if (totPh > FitTower::MAX_NUMB_PHOTONS) {
         std::cout << "Total # of photons in " << nCl << " clusters is at least "
           << totPh << "! I can NOT do fit! ERROR!" << "\n";
@@ -188,15 +180,15 @@ Float_t Yiqun::GlobalFit(const Int_t nPh, const Int_t nCl,
       }  // if
       // Note positions are in centimetres, not tower unites
       Int_t kpar = 3 * totPh + 1;
-      start[kpar] = p_clust[ic].photon[jp].xPos;
+      start[kpar] = cluster->photon[jp].xPos;
       lowLim[kpar] = start[kpar] - posDif_Gl;
       upLim[kpar] = start[kpar] + posDif_Gl;
       kpar++;
-      start[kpar] = p_clust[ic].photon[jp].yPos;
+      start[kpar] = cluster->photon[jp].yPos;
       lowLim[kpar] = start[kpar] - posDif_Gl;
       upLim[kpar] = start[kpar] + posDif_Gl;
       kpar++;
-      start[kpar] = p_clust[ic].photon[jp].energy;
+      start[kpar] = cluster->photon[jp].energy;
       lowLim[kpar] = start[kpar] * (1 - eneRat_Gl);
       upLim[kpar] = start[kpar] * (1 + eneRat_Gl);
       totPh++ ;
@@ -226,16 +218,16 @@ Float_t Yiqun::GlobalFit(const Int_t nPh, const Int_t nCl,
   // Put the fit result back in the clusters
   // Loop over all clusters
   Int_t tPh = 0 ;
-  for (Int_t ic = 0; ic < nCl; ic++) {
+  for (ClusterIter cluster = first; cluster != end; ++cluster) {
     // Loop over all photons in cluster
-    for (Int_t jp = 0; jp < p_clust[ic].nPhoton; jp++) {
+    for (Int_t jp = 0; jp < cluster->nPhoton; jp++) {
       Int_t kpar = 3 * tPh + 1 ;
-      p_clust[ic].photon[jp].xPos    = param[kpar] ;
-      p_clust[ic].photon[jp].errXPos = error[kpar] ;
-      p_clust[ic].photon[jp].yPos    = param[kpar+1] ;
-      p_clust[ic].photon[jp].errYPos = error[kpar+1] ;
-      p_clust[ic].photon[jp].energy  = param[kpar+2] ;
-      p_clust[ic].photon[jp].errEne  = error[kpar+2] ;
+      cluster->photon[jp].xPos    = param[kpar] ;
+      cluster->photon[jp].errXPos = error[kpar] ;
+      cluster->photon[jp].yPos    = param[kpar+1] ;
+      cluster->photon[jp].errYPos = error[kpar+1] ;
+      cluster->photon[jp].energy  = param[kpar+2] ;
+      cluster->photon[jp].errEne  = error[kpar+2] ;
       tPh++;
     }  // for loop over photons
   }  // for loop over clusters
@@ -250,7 +242,7 @@ Float_t Yiqun::GlobalFit(const Int_t nPh, const Int_t nCl,
  
  Cluster moments must have been calculated first
  */
-Float_t Yiqun::Fit2PhotonClust(HitCluster* p_clust) {
+Float_t Yiqun::Fit2PhotonClust(ClusterIter p_clust) {
   const Double_t step2[7] = {0, 0.02, 0.02, 0.01, 0.01, 0.01, 0.1} ;
   Double_t ratioSigma = p_clust->sigmaMin / p_clust->sigmaMax ;
   Double_t maxTheta = ratioSigma / thetaPara ;
@@ -379,16 +371,15 @@ Float_t Yiqun::Fit2PhotonClust(HitCluster* p_clust) {
   - clusterIndex: index of cluster to test
   - nRealClusters: total number of clusters in the event
  */
-bool Yiqun::validate2ndPhoton(int clusterIndex, int nRealClusters) {
-  HitCluster& cluster = clust[clusterIndex];  // The cluster of interest
+bool Yiqun::validate2ndPhoton(ClusterIter cluster) {
   // Select the lower-energy of the two photons
-  PhotonHitFPD* photon = findLowestEnergyPhoton(&cluster);
+  PhotonHitFPD* photon = findLowestEnergyPhoton(&(*cluster));
   // Tower row and column where the fitted photon of lower energy should hit
   int column = 1 + (Int_t)(photon->xPos / widLG[0]);
   int row = 1 + (Int_t)(photon->yPos / widLG[1]);
   // Now check whether this tower is one of the non-zero towers of the cluster
   // The temporary TowerFPD only needs row and column set for the test
-  TowerFPD* tower = searchClusterTowers(row, column, cluster);
+  TowerFPD* tower = searchClusterTowers(row, column, *cluster);
   // If tower is non-NULL, the photon does hit in a tower in this cluster.
   if (!tower) {
     return false;
@@ -409,11 +400,11 @@ bool Yiqun::validate2ndPhoton(int clusterIndex, int nRealClusters) {
   // this photon vs. energy deposited in its own cluster
   // If the ratio is too high, this fitted photon is probably a bogus one
   Double_t energyInOwnCluster =
-    EnergyInClusterByPhoton(widLG[0], &cluster, photon);
+    EnergyInClusterByPhoton(widLG[0], &(*cluster), photon);
   // Loop over all clusters except its own
-  for (Int_t i = 0; i < nRealClusters; ++i) {
-    if (i != clusterIndex) {  // Skip the photon's own cluster
-      if (EnergyInClusterByPhoton(widLG[0], &clust[i], photon) > 
+  for (ClusterIter i = mClusters.begin(); i != mClusters.end(); ++i) {
+    if (i != cluster) {  // Skip the photon's own cluster
+      if (EnergyInClusterByPhoton(widLG[0], &(*i), photon) > 
           (maxRatioSpill * energyInOwnCluster)) {
         return false;  // Stop as soon as we fail for one cluster
       }  // if
@@ -427,98 +418,41 @@ Int_t Yiqun::FitEvent(Int_t nTows, Int_t &nClusts, Int_t &nRealClusts,
   // Possible alternative clusters for 1-photon fit: for catagory 0
   HitCluster altClu ;
   nClusts = 0 ;
-  for (Int_t ic = 0; ic < MAX_NUMER_CLUSTERS; ic++) {
-    if (clust[ic].tow) {
-      clust[ic].tow->Clear();
-    }  // if
-    clust[ic].Clear();
-  }  // for
   TowerUtil::TowerList towerList;
   std::vector<TowerFPD>::iterator towerIter;
   for (towerIter = towers->begin(); towerIter != towers->end(); ++towerIter) {
     towerList.push_back(&(*towerIter));
   }  // for
-  nClusts = pTowerUtil->FindTowerCluster(&towerList, clust);
-  std::list<HitCluster*> pClusters;
-  for (int i(0); i < nClusts; ++i) {
-    pClusters.push_back(&clust[i]);
-  }  // for  
-  std::list<HitCluster*> myClusters;
-  copy_if(pClusters.begin(), pClusters.end(), std::back_inserter(myClusters),
-          IsGoodCluster(minRealClusterEne, maxHitsInRealCluster));
+  nClusts = pTowerUtil->FindTowerCluster(&towerList, &mClusters);
   // Cluster energy should be at least 2 GeV (parameter "minRealClusterEne")
-  // Move all clusters above "minRealClusterEne" to front, and
-  // clusters below "minRealClusterEne" to the end. This way, even if a low
-  // energy cluster were before a high energy one, we would not miscount!
-  // "ifront" movers from the 1st clusters, "jend" moves from the last cluster
-  Int_t ifront = 0;
-  Int_t jend = nClusts - 1;
-  while(1) {
-    // Break out the loop when "ifront" meets "jend"
-    if (ifront > jend) {
-      break;
-    }  // if
-    if (clust[ifront].energy >= minRealClusterEne 
-        && clust[ifront].tow->GetEntries()<= maxHitsInRealCluster) {
-      ifront++;
-    } else {
-      // Search from "jend" and forward, until find a clusters that is higher
-      // than "minRealClusterEne"
-      while (jend >= ifront && (clust[jend].energy < minRealClusterEne
-             || clust[jend].tow->GetEntries() > maxHitsInRealCluster)) {
-        jend--;
-      }  // while
-      // Check that "jend" is in front of "iend", we have exhausted the array
-      if (jend < ifront) {
-        break;
-      } else {
-        // Exchange the clusters: "ifront"<-->"jend", then increase "ifront" by
-        // 1 and decrease "jend" by 1;
-        altClu        = clust[ifront] ;
-        clust[ifront] = clust[jend]   ;
-        clust[jend]   = altClu        ;
-        ifront ++;
-        jend   --;
-      }  // if (jend < ifront)
-    }  // if (clust[ifront].energy...)
-  }  // while
-  // At the end of the above code, "ifront" counts the number of clusters above
-  // "minRealClusterEne"
-  nRealClusts = ifront ;
-  if (nRealClusts != int(myClusters.size())) {
-    std::cerr << "Ya blew it!" << std::endl;
-    exit(-1);
-  } else if (nRealClusts != nClusts) {
-    std::cerr << "huzzah! Steve's algorithm gives " << nRealClusts <<
-      ", mine gives " << myClusters.size() << " (out of " << nClusts <<
-      " total clusters)" << std::endl;
-  }  // if
+  mClusters.erase_if(IsBadCluster(minRealClusterEne, maxHitsInRealCluster));
   // Must do moment analysis before catagorization
-  for (Int_t iic = 0; iic < nRealClusts; iic++) {
-    clust[iic].FindClusterAxis(pTowerUtil->GetMomentEcutoff());
+  for (ClusterIter i = mClusters.begin(); i != mClusters.end(); ++i) {
+    i->FindClusterAxis(pTowerUtil->GetMomentEcutoff());
   }  // for
   // Loop over clusters, catagorize, guess the photon locations for cat 0 or 2
   // clusters then fit, compare, and choose the best fit
   junkyEvent = false;  // Bad event?
-  for(Int_t icc=0; icc<nRealClusts; icc++) {
-    Int_t clustCatag = pTowerUtil->CatagBySigmXY(&clust[icc]);
+  for (ClusterIter cluster = mClusters.begin(); cluster != mClusters.end();
+       ++cluster) {
+    Int_t clustCatag = pTowerUtil->CatagBySigmXY(&(*cluster));
     // point to the real TObjArray that contains the towers to be fitted
     // it is the same tower array for the cluster or all alternative clusters
-    fitter->tow2Fit = clust[icc].tow;
+    fitter->tow2Fit = cluster->tow;
     // Number of Degree of Freedom for the fit
     if (clustCatag == k1PhotonCluster) {
       // Do 1-photon fit
-      FitOnePhoton(&clust[icc]);
+      FitOnePhoton(&(*cluster));
     } else if (clustCatag == k2PhotonCluster) {
       // Do 2-photon fit
-      Fit2PhotonClust(&clust[icc]);
-      junkyEvent = clust[icc].chiSquare > MaxChi2Catag2;
+      Fit2PhotonClust(cluster);
+      junkyEvent = cluster->chiSquare > MaxChi2Catag2;
     } else if (clustCatag == kAmbiguousCluster) {
       // for catagory-0 cluster, first try 1-photon fit!
       // If the fit is good enough, it is 1-photon. Else also
       // try 2-photon fit, and find the best fit (including 1-photon fit).
       Bool_t is2Photon = true;
-      altClu = clust[icc];
+      altClu = *cluster;
       double chiSq1 = FitOnePhoton(&altClu);
       double chiSq2(NAN);  // Only set if do 2-photon fit
       // Decide if this 1-photon fit is good enough
@@ -526,9 +460,9 @@ Int_t Yiqun::FitEvent(Int_t nTows, Int_t &nClusts, Int_t &nRealClusts,
         is2Photon = false ;
       } else {
         // The 1-photon fit isn't good enough, so try 2-photon fit
-        chiSq2 = Fit2PhotonClust(&clust[icc]);
+        chiSq2 = Fit2PhotonClust(cluster);
         // Check that the 2-photon fit didn't result in a bogus 2nd photon
-        if (validate2ndPhoton(icc, nRealClusts)) {
+        if (validate2ndPhoton(cluster)) {
           // If the 2nd photon in the 2-photon cluster is real, select 1- or 2-
           // photon based on fit chi2/ndf.
           is2Photon = chiSq2 <= chiSq1;
@@ -541,15 +475,15 @@ Int_t Yiqun::FitEvent(Int_t nTows, Int_t &nClusts, Int_t &nRealClusts,
       // Now fill in the fit result, either 1- or 2-photon
       if (is2Photon) {
         // 2-photon fit is better
-        clust[icc].nPhoton = 2;
-        clust[icc].chiSquare = chiSq2;
+        cluster->nPhoton = 2;
+        cluster->chiSquare = chiSq2;
         // Flag the event as bad if the fit chi2/ndf is too bad
-        junkyEvent = clust[icc].chiSquare > MaxChi2Catag2;
+        junkyEvent = cluster->chiSquare > MaxChi2Catag2;
       } else {
         // 1-photon fit is better
-        clust[icc].nPhoton = 1;
-        clust[icc].chiSquare = chiSq1;
-        clust[icc].photon[0] = altClu.photon[0];
+        cluster->nPhoton = 1;
+        cluster->chiSquare = chiSq1;
+        cluster->photon[0] = altClu.photon[0];
       }  // if (is2Photon)
     } else {  // Invalid cluster category
       // should not happen!
@@ -558,7 +492,8 @@ Int_t Yiqun::FitEvent(Int_t nTows, Int_t &nClusts, Int_t &nRealClusts,
       std::cerr << " clusters! Don't know how to fit it!\n" << "\n";
     }  // if (clustCatag...)
   }  // Loop over all real clusters
-  Int_t nPh = std::accumulate(clust, clust + nRealClusts, 0, accumulatePhotons);
+  Int_t nPh = std::accumulate(mClusters.begin(), mClusters.end(), 0,
+                              accumulatePhotons);
   if(nPh > FitTower::MAX_NUMB_PHOTONS) {
     // myFitter can only do up to "MAX_NUMB_PHOTONS"-photon fit
     std::cout << "Can not fit " << nPh << " (more than " <<
@@ -568,9 +503,10 @@ Int_t Yiqun::FitEvent(Int_t nTows, Int_t &nClusts, Int_t &nRealClusts,
   // For global fit, add all towers from all clusters
   TObjArray allTow(nTows);
   Int_t ndfg = 0 ;
-  for(Int_t jjc = 0; jjc < nRealClusts; jjc++) {
-    allTow.AddAll(clust[jjc].tow);
-    ndfg += (clust[jjc].tow->GetEntriesFast() - 3 * clust[jjc].nPhoton);
+  for (ClusterIter cluster = mClusters.begin(); cluster != mClusters.end();
+       ++cluster) {
+    allTow.AddAll(cluster->tow);
+    ndfg += (cluster->tow->GetEntriesFast() - 3 * cluster->nPhoton);
   }  // for
   if(ndfg <= 0) {
     ndfg = 1;
@@ -578,20 +514,21 @@ Int_t Yiqun::FitEvent(Int_t nTows, Int_t &nClusts, Int_t &nRealClusts,
   fitter->tow2Fit = &allTow;
   // Only do global fit for 2 or more clusters (2-photon fit for one cluster
   // already has global fit)
-  if (nRealClusts > 1) {
-    double chiSqG = GlobalFit(nPh, nRealClusts, clust) / ndfg;
+  if (mClusters.size() > 1) {
+    double chiSqG = GlobalFit(nPh, mClusters.size(), mClusters.begin()) / ndfg;
     // Check for errors in the global fit - the number of photons returned by
     // the global fit should equal the sum of photons in the fitted clusters
-    Int_t iph = std::accumulate(clust, clust + nRealClusts, 0,
+    Int_t iph = std::accumulate(mClusters.begin(), mClusters.end(), 0,
                                 accumulatePhotons);
     if(iph != nPh) {
       std::cerr << "ERROR total nPh=" << nPh << " iPh=" << iph << std::endl;
     }  // if
-  } else if (nRealClusts == 1) {
-      double chiSqG = clust[0].chiSquare ;
+  } else if (mClusters.size() == 1) {
+      double chiSqG = mClusters.front().chiSquare ;
   } else {
     double chiSqG = -1 ;
   }  // if (nRealClusts > 1)
+  nRealClusts = mClusters.size();
   return nPh;
 }
 

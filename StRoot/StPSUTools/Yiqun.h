@@ -3,6 +3,11 @@
 
 #include <iostream>
 
+#ifndef __CINT__
+// http://www.boost.org/doc/libs/1_55_0/libs/ptr_container/doc/ptr_container.html
+#include <boost/ptr_container/ptr_list.hpp>
+#endif  // __CINT__
+
 #include "TF2.h"
 #include "TowerUtil.h"
 #include "TLorentzVector.h"
@@ -25,9 +30,16 @@ class Yiqun: public TObject {
   TowerUtil* pTowerUtil;
   Int_t nrows;
   Int_t ncols;
+#ifndef __CINT__
+  ClusterList mClusters;
   Float_t FitOnePhoton(HitCluster*);
-  Float_t GlobalFit(const Int_t, const Int_t, HitCluster*);
-  Float_t Fit2PhotonClust(HitCluster*);
+  // ClusterList is defined in TowerUtil.h
+  typedef ClusterList::iterator ClusterIter;
+  Float_t GlobalFit(const Int_t, const Int_t, ClusterIter);
+  Float_t Fit2PhotonClust(ClusterIter);
+  bool validate2ndPhoton(ClusterIter cluster);
+  const ClusterList& clusters() const { return mClusters; }
+#endif  // __CINT__
   Int_t FitEvent(Int_t nTows, Int_t &nClusts, Int_t &nRealClusts, Bool_t &junkyEvent);
   Double_t EnergyInClusterByPhoton(Double_t widthLG, HitCluster*, PhotonHitFPD*);
   Double_t EnergyInTowerByPhoton(Double_t, TowerFPD* , PhotonHitFPD* );
@@ -42,7 +54,6 @@ class Yiqun: public TObject {
   TowerList* towers;
   TObjArray* tow_Arr;
   FitTower* fitter;
-  HitCluster clust[MAX_NUMER_CLUSTERS];
   Int_t NPh; 
   Int_t NClusts;
   Int_t NRealClusts;
@@ -61,7 +72,6 @@ class Yiqun: public TObject {
   Int_t maxHitsInRealCluster;
   Double_t step[3*FitTower::MAX_NUMB_PHOTONS+1];
   Double_t widLG[2];
-  bool validate2ndPhoton(int clusterIndex, int nRealClusters);
   static TF1* EDepCorrection;
   /**
    Response function for nonlinear energy correction, based on cerenkov studies.

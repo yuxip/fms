@@ -6,6 +6,8 @@
 #include <list>
 #include <memory>
 
+#include <boost/foreach.hpp>
+
 #include <TCollection.h>
 #include <TObjArray.h>
 
@@ -33,6 +35,7 @@ const Float_t ExtremelyFaraway = 99999 ;
 typedef PSUGlobals::TowerUtil::TowerList TowerList;
 typedef TowerList::iterator TowerIter;
 typedef TowerList::reverse_iterator TowerRIter;
+typedef PSUGlobals::ClusterList::iterator ClusterIter;
 
 using PSUGlobals::TowerFPD;
 
@@ -154,18 +157,18 @@ enum ETowerClusterDistance {
  \todo Replace cluster list with an STL list, which will make sorting and
        reversing much simpler than with a ROOT container
  */
-void sortTowersEnergyAscending(PSUGlobals::HitCluster* cluster, int nClusters) {
-  for (Int_t i(0); i < nClusters; ++i) {
-    (cluster[i].tow)->UnSort();
-    (cluster[i].tow)->Sort();  // Sorts by *descending* energy
+void sortTowersEnergyAscending(PSUGlobals::ClusterList* clusters,
+                               int nClusters) {
+  for (ClusterIter i = clusters->begin(); i != clusters->end(); ++i) {
+    i->tow->UnSort();
+    i->tow->Sort();  // Sorts by *descending* energy
     // Do an exchange of towers: 0<-->N-1, 1<-->N-2... to get ascending
-    Int_t n = (cluster[i].tow)->GetEntriesFast();
+    Int_t n = i->tow->GetEntriesFast();
     for(Int_t j(0); j < n / 2; ++j) {
-      TowerFPD* t1 = static_cast<TowerFPD*>((cluster[i].tow)->RemoveAt(j));
-      TowerFPD* t2 = static_cast<TowerFPD*>(
-        (cluster[i].tow)->RemoveAt(n - 1 - j));
-      (cluster[i].tow)->AddAt(t1, n - 1 - j);
-      (cluster[i].tow)->AddAt(t2, j);
+      TowerFPD* t1 = static_cast<TowerFPD*>(i->tow->RemoveAt(j));
+      TowerFPD* t2 = static_cast<TowerFPD*>(i->tow->RemoveAt(n - 1 - j));
+      i->tow->AddAt(t1, n - 1 - j);
+      i->tow->AddAt(t2, j);
     }  // for
   }  // for
 }
@@ -334,7 +337,7 @@ class TowerClusterAssociation : public TObject {
 };
 
 unsigned TowerUtil::locateClusterSeeds(TowerList* towers, TowerList* neighbors,
-                                       HitCluster* clusters) {
+                                       ClusterList* clusters) {
   while (!towers->empty() && nClusts < maxNClusters) {
     // By design, this tower is the highest tower remaining in towers, but it
     // could be lower than a tower in neighbors
@@ -346,8 +349,9 @@ unsigned TowerUtil::locateClusterSeeds(TowerList* towers, TowerList* neighbors,
     if (couldBePeakTower(high, neighbors)) {
       // Add "high" to cluster and move towers neighboring "high" to "neighbor"
       high->setCluster(nClusts);
-      clusters[nClusts].index = nClusts;
-      (clusters[nClusts].tow)->Add(high);
+      clusters->push_back(new HitCluster);
+      clusters->back().index = nClusts;
+      clusters->back().tow->Add(high);
       nClusts++ ;
       // Add neighbors of the new peak tower to the neighbor list.
       // Partition the remaining towers so that neighbours of the high tower are
@@ -396,7 +400,7 @@ unsigned TowerUtil::locateClusterSeeds(TowerList* towers, TowerList* neighbors,
  valley i.e. the number removed from the neighbor list.
  */
 unsigned TowerUtil::associateTowersWithClusters(TowerList* neighbors,
-                                                HitCluster* clusters,
+                                                ClusterList* clusters,
                                                 TObjArray* valleys) {
   TowerList associated;  // Store neighbors we associate
   // Towers are sorted in ascending energy, so use reverse iterator to go from
@@ -406,9 +410,9 @@ unsigned TowerUtil::associateTowersWithClusters(TowerList* neighbors,
     // Populate association information of this tower with each cluster
     std::auto_ptr<TowerClusterAssociation> association(
       new TowerClusterAssociation(*tower));
-    for (Int_t i(0); i < nClusts; ++i) {
-      association->add(&clusters[i], kPeakTower);
-    }  // loop over all clusters
+    for (ClusterIter i = clusters->begin(); i != clusters->end(); ++i) {
+      association->add(&(*i), kPeakTower);
+    }  // for
     // Attempt to move the tower to the appropriate cluster
     if (association->clusters()->size() == 1) {
       // Only one peak is closest to the tower; the tower belongs to this peak
@@ -439,17 +443,17 @@ unsigned TowerUtil::associateTowersWithClusters(TowerList* neighbors,
  Return the number of neighbors associated with clusters.
  */
 unsigned TowerUtil::associateResidualTowersWithClusters(TowerList* neighbors,
-                                                        HitCluster* clusters) {
+                                                        ClusterList* clusters) {
   TowerList associated;
   TowerRIter tower;
   for (tower = neighbors->rbegin(); tower != neighbors->rend(); ++tower) {
     // Populate tower-cluster association information
     TowerClusterAssociation association(*tower);
-    for (Int_t i(0); i < nClusts; ++i) {
+    for (ClusterIter i = clusters->begin(); i != clusters->end(); ++i) {
       // There are already some towers in the cluster so we can use a computed
       // cluster center to give a better estimate of tower-cluster separation
-      CalClusterMoment(&clusters[i]);
-      association.add(&clusters[i], kClusterCenter);
+      CalClusterMoment(&(*i));
+      association.add(&(*i), kClusterCenter);
     }  // loop over all clusters
     if (!association.clusters()->empty()) {
       HitCluster* cluster = association.clusters()->front();
@@ -476,7 +480,7 @@ unsigned TowerUtil::associateResidualTowersWithClusters(TowerList* neighbors,
  Return the number of valley neighbors moved to clusters.
  */
 unsigned TowerUtil::associateValleyTowersWithClusters(TowerList* neighbors,
-                                                      HitCluster* clusters,
+                                                      ClusterList* clusters,
                                                       TObjArray* valleys) {
   unsigned size = neighbors->size();
   for (Int_t i(0); i < valleys->GetEntriesFast(); ++i) {
@@ -504,13 +508,13 @@ unsigned TowerUtil::associateValleyTowersWithClusters(TowerList* neighbors,
  where there is no energy deposited at the tower
  */
 unsigned TowerUtil::associateSubThresholdTowersWithClusters(
-    TowerList* towers, HitCluster* clusters) {
+    TowerList* towers, ClusterList* clusters) {
   TowerIter tower;
   for (tower = towers->begin(); tower != towers->end(); ++tower) {
     TowerClusterAssociation association(*tower);
     // loop over all clusters
-    for(Int_t i(0); i < nClusts; ++i) {
-      association.add(&clusters[i], kPeakTower);
+    for (ClusterIter i = clusters->begin(); i != clusters->end(); ++i) {
+      association.add(&(*i), kPeakTower);
     }  // for
     HitCluster* cluster = association.nearestCluster();
     if (cluster &&
@@ -529,7 +533,7 @@ TowerUtil::~TowerUtil() {
 }
 
 Int_t TowerUtil::FindTowerCluster(TowerList* towers,
-                                  HitCluster* clusters) {
+                                  ClusterList* clusters) {
   // Remove towers below energy threshold, but save them for later use
   TowerList belowThreshold = filterTowersBelowEnergyThreshold(towers);
   // the neighbor TObjArray
@@ -556,9 +560,9 @@ Int_t TowerUtil::FindTowerCluster(TowerList* towers,
   // Calculate the moments of clusters. We need to do this before calling
   // TowerClusterAssociation::nearestCluster, which uses the cluster moment
   // to determine tower-cluster separations for the valley towers.
-  for (Int_t i(0); i < nClusts; ++i) {
-    CalClusterMoment(&clusters[i]);
-  }  // for
+  BOOST_FOREACH(HitCluster& i, *clusters) {
+    CalClusterMoment(&i);
+  }  // BOOST_FOREACH
   // Ambiguous "valley" towers that were equally spaced between clusters can
   // now be associated
   associateValleyTowersWithClusters(&neighbors, clusters, &valleys);
@@ -568,8 +572,8 @@ Int_t TowerUtil::FindTowerCluster(TowerList* towers,
   } while (nAssociations > 0);
   sortTowersEnergyAscending(clusters, nClusts);
   // Recalculate various moment of clusters
-  for(Int_t i(0); i < nClusts; ++i) {
-    CalClusterMoment(&clusters[i]);
+  for (ClusterIter i = clusters->begin(); i != clusters->end(); ++i) {
+    CalClusterMoment(&(*i));
   }  // for
   // Finally add "zero" energy towers to the clusters
   associateSubThresholdTowersWithClusters(&belowThreshold, clusters);

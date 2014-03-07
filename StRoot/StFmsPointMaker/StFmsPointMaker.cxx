@@ -23,6 +23,13 @@
 #include "StPSUTools/Yiqun.h"
 #include "StPSUTools/TowerFPD.h"
 #include "StPSUTools/Geom.h"
+#include "StPSUTools/HitCluster.h"
+#include "StPSUTools/TowerUtil.h"  // Defines ClusterList
+
+#ifndef __CINT__
+typedef ClusterList::const_iterator ClusterCIter;
+#endif  // __CINT__
+
 using namespace std;
 using namespace PSUGlobals;
 
@@ -127,25 +134,25 @@ Int_t StFmsPointMaker::FindPoint() {
     Yiqun clustering(&towers, fmsgeom, 2, instb + 1);
 		//Saved cluser info into StFmsCluster
 		Int_t iPh = 0;	//sequence # in Yiqun::photons[];
-		for(Int_t ncl = 0; ncl<clustering.NRealClusts; ncl++){
-
+		const ClusterList& clusters = clustering.clusters();
+		for (ClusterCIter ci = clusters.begin(); ci != clusters.end(); ++ci) {
 			StFmsCluster* cluster = new StFmsCluster();
 			
 			Int_t cluid = 305 + 20*(clustering.NSTB-1) + iPh; //cluster id = id of the 1st photon, not necessarily the highE photon
 			
 			cluster->SetNstb(clustering.NSTB);
 			cluster->SetClusterId(cluid);
-			cluster->SetCatag(clustering.clust[ncl].catag);
-			cluster->SetNumbTower(clustering.clust[ncl].numbTower);
-			cluster->SetNphoton(clustering.clust[ncl].nPhoton);
-			cluster->SetClusterEnergy(clustering.clust[ncl].energy);
-			cluster->SetX0(clustering.clust[ncl].x0);	//in units of tower width
-			cluster->SetY0(clustering.clust[ncl].y0);	//in units of tower width
-			cluster->SetSigmaMax(clustering.clust[ncl].sigmaMax);
-			cluster->SetSigmaMin(clustering.clust[ncl].sigmaMin);
-		//	cluster->SetChi2NdfPh1(clustering.clust[ncl].Chi2NdfPh1);
+			cluster->SetCatag(ci->catag);
+			cluster->SetNumbTower(ci->numbTower);
+			cluster->SetNphoton(ci->nPhoton);
+			cluster->SetClusterEnergy(ci->energy);
+			cluster->SetX0(ci->x0);	//in units of tower width
+			cluster->SetY0(ci->y0);	//in units of tower width
+			cluster->SetSigmaMax(ci->sigmaMax);
+			cluster->SetSigmaMin(ci->sigmaMin);
+		//	cluster->SetChi2NdfPh1(ci->Chi2NdfPh1);
 		//	--no such funtion in SH's package --Yuxi
-		//	cluster->SetChi2NdfPh2(clustering.clust[ncl].Chi2NdfPh2);
+		//	cluster->SetChi2NdfPh2(ci->Chi2NdfPh2);
 
 			//calculate cluster four momentum
 			Geom* p_geom = fmsgeom;
@@ -180,9 +187,9 @@ Int_t StFmsPointMaker::FindPoint() {
 			for(Int_t np = 0; np < cluster->GetNphoton(); np++){
 				
 				StFmsPoint* clpoint = new StFmsPoint();
-				clpoint->SetEnergy(clustering.clust[ncl].photon[np].energy);
-				clpoint->SetXpos(clustering.clust[ncl].photon[np].xPos);//in cm
-				clpoint->SetYpos(clustering.clust[ncl].photon[np].yPos);//in cm
+				clpoint->SetEnergy(ci->photon[np].energy);
+				clpoint->SetXpos(ci->photon[np].xPos);//in cm
+				clpoint->SetYpos(ci->photon[np].yPos);//in cm
 				
 				Int_t phid = 305 + 20*(clustering.NSTB - 1) + iPh;
 				clpoint->SetPhotonId(phid);
@@ -225,7 +232,7 @@ Int_t StFmsPointMaker::FindPoint() {
 			}
 			
 			//save the tower hit info.
-			TIter next(clustering.clust[ncl].tow);
+			TIter next(ci->tow);
 			while(TowerFPD* tow = (TowerFPD*)next()){
 				if (tow->hit()->adc() >= 1) {			//minADC=1
 					Int_t snstb = clustering.NSTB; 	//starts from 1

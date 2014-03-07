@@ -3,6 +3,11 @@
 
 #include <list>
 
+#ifndef __CINT__
+// http://www.boost.org/doc/libs/1_55_0/libs/ptr_container/doc/ptr_container.html
+#include <boost/ptr_container/ptr_list.hpp>
+#endif  // __CINT__
+
 #include <Rtypes.h>
 
 class TObjArray;
@@ -10,12 +15,17 @@ class TObjArray;
 namespace PSUGlobals {//$NMSPC
 class HitCluster;
 class TowerFPD;
+#ifndef __CINT__
+typedef boost::ptr_list<HitCluster> ClusterList;
+#endif  // __CINT__
 class TowerUtil {
  public:
   typedef std::list<TowerFPD*> TowerList;
   TowerUtil();
   ~TowerUtil();
-  Int_t FindTowerCluster(TowerList* towers, HitCluster* clusters);
+#ifndef __CINT__
+  Int_t FindTowerCluster(TowerList* towers, ClusterList* clusters);
+#endif  // __CINT__
   void CalClusterMoment(HitCluster* cluster);
   Int_t CatagBySigmXY(HitCluster* cluster);
   void SetMomentEcutoff(Float_t ecoff=0.5) { Ecutoff=ecoff; }
@@ -27,18 +37,20 @@ class TowerUtil {
   Float_t Ecutoff;  
   // number of "peaks" that has the same shortest distance to a "valley" tower
   Int_t nClusts;
+#ifndef __CINT__
   unsigned locateClusterSeeds(TowerList* towers, TowerList* neighbors,
-                              HitCluster* clusters);
+                              ClusterList* clusters);
   unsigned associateTowersWithClusters(TowerList* neighbors,
-                                       HitCluster* clusters,
+                                       ClusterList* clusters,
                                        TObjArray* valleys);
   unsigned associateValleyTowersWithClusters(TowerList* neighbors,
-                                             HitCluster* clusters,
+                                             ClusterList* clusters,
                                              TObjArray* valleys);
   unsigned associateResidualTowersWithClusters(TowerList* neighbors,
-                                               HitCluster* clusters);
+                                               ClusterList* clusters);
   unsigned associateSubThresholdTowersWithClusters(TowerList* towers,
-                                                   HitCluster* clusters);
+                                                   ClusterList* clusters);
+#endif  // __CINT__
   ClassDef(TowerUtil,3);
 };
 }  // namespace PSUGlobals
