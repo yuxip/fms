@@ -58,13 +58,38 @@ class TowerFPD : public TObject {
 	 i.e. NOT diagonally adjacent towers
 	 */
 	Bool_t IsNeighbor(TowerFPD* tower);
-  const StFmsHit* hit;  // Not owned by TowerFPD
-	Int_t   col;  // Column number, starts at 0, moves horizontally (STAR x-coord)
-	Int_t   row;  // Row number, starts at 0, moves vertically (STAR y-coord)
-	Int_t   cluster;  // Index of cluster the tower is associated with
-	ClassDef (TowerFPD, 7)
+	/** Returns the hit information for this tower (NULL if unknown) */
+	const StFmsHit* hit() const;
+	/** Returns the row of this tower (-1 if unknown) */
+	Int_t column() const;
+	/** Returns the column of this tower (-1 if unknown) */
+	Int_t row() const;
+	/** Returns the cluster index of this tower (-1 if unassociated) */
+	Int_t cluster() const;
+	/** Sets the cluster index and returns the new index */
+	Int_t setCluster(Int_t cluster);
+
+ protected:
+  const StFmsHit* mHit;  //!< Hit information, not owned by TowerFPD
+	Int_t mColumn;  ///< Column number, starts at 0, horizontal (STAR x-coord)
+	Int_t mRow;  ///< Row number, starts at 0, vertical (STAR y-coord)
+	Int_t mCluster;  ///< Index of cluster the tower is associated with
+	ClassDef(TowerFPD, 7)
 };
 
 inline Bool_t TowerFPD::IsSortable() const { return kTRUE; }
+
+inline const StFmsHit* TowerFPD::hit() const { return mHit; }
+
+inline Int_t TowerFPD::column() const { return mColumn; }
+
+inline Int_t TowerFPD::row() const { return mRow; }
+
+inline Int_t TowerFPD::cluster() const { return mCluster; }
+
+inline Int_t TowerFPD::setCluster(Int_t cluster) {
+  mCluster = cluster;
+  return cluster;
+}
 }  // namespace PSUGlobals
 #endif

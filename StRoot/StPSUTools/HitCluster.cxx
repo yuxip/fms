@@ -127,7 +127,7 @@ Double_t HitCluster::GetSigma(Double_t theta){
 		// the 2-d vector from the "center" of cluster to tower
 		// "center" are at 0.5, 1.5, etc! Need shift of 0.5
 		//
-		TVector2 v1( oneTower->col - 0.5 - x0, oneTower->row - 0.5 - y0 );
+		TVector2 v1( oneTower->column() - 0.5 - x0, oneTower->row() - 0.5 - y0 );
 		
 		// perpendicular distance to the axis = length of the component of vector "v1" that is norm to "vaxis"
 		//
@@ -136,7 +136,7 @@ Double_t HitCluster::GetSigma(Double_t theta){
 		// contribution to sigma
 		//
 		//sigma += oneTower->energy * dis * dis ;
-		float wtmp = log(oneTower->hit->energy() + 1-Ecutoff)>0 ? log(oneTower->hit->energy() +1.-Ecutoff) : 0;
+		float wtmp = log(oneTower->hit()->energy() + 1-Ecutoff)>0 ? log(oneTower->hit()->energy() +1.-Ecutoff) : 0;
 		wnew    += wtmp ;
 		sigma += wtmp * dis * dis ;
 	}
@@ -155,11 +155,11 @@ void HitCluster::CalClusterMoment(Float_t Ecoff)
   while(oneTow=(TowerFPD*) next())
     {
       Float_t xxx, yyy;
-      xxx = oneTow->col - 0.5 ;
-      yyy = oneTow->row - 0.5 ;
-      mtmp = log(oneTow->hit->energy()+1.-Ecoff)>0 ? log(oneTow->hit->energy()+1.-Ecoff) : 0;
+      xxx = oneTow->column() - 0.5 ;
+      yyy = oneTow->row() - 0.5 ;
+      mtmp = log(oneTow->hit()->energy()+1.-Ecoff)>0 ? log(oneTow->hit()->energy()+1.-Ecoff) : 0;
       w1 += mtmp;
-      w0    += oneTow->hit->energy() ;
+      w0    += oneTow->hit()->energy() ;
       mx    += mtmp * xxx ;
       my    += mtmp * yyy ;
       sigx  += mtmp * xxx * xxx ;

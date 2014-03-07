@@ -121,7 +121,7 @@ Int_t StFmsPointMaker::FindPoint() {
 		TowerList& towers = mTowers.at(instb);
 		Float_t Esum = 0.f;
 		for (TowerList::const_iterator i = towers.begin(); i != towers.end(); ++i) {
-		  Esum += i->hit->energy();
+		  Esum += i->hit()->energy();
 		}  // for
 		if(Esum==0||Esum>500) continue; //to remove LED trails, for pp500 GeV
     Yiqun clustering(&towers, fmsgeom, 2, instb + 1);
@@ -227,12 +227,12 @@ Int_t StFmsPointMaker::FindPoint() {
 			//save the tower hit info.
 			TIter next(clustering.clust[ncl].tow);
 			while(TowerFPD* tow = (TowerFPD*)next()){
-				if (tow->hit->adc() >= 1) {			//minADC=1
+				if (tow->hit()->adc() >= 1) {			//minADC=1
 					Int_t snstb = clustering.NSTB; 	//starts from 1
-					Int_t srow = (tow->row) - 1;		//srow starts from 0
-					Int_t scol = (tow->col) - 1;		//scol starts from 0
-					UInt_t adc = tow->hit->adc();
-					Float_t tenergy = tow->hit->energy();
+					Int_t srow = (tow->row()) - 1;		//srow starts from 0
+					Int_t scol = (tow->column()) - 1;		//scol starts from 0
+					UInt_t adc = tow->hit()->adc();
+					Float_t tenergy = tow->hit()->energy();
 					UChar_t status = 0; 				//no status code for now --04/01/2013					
 					StFmsClHit* hit = new StFmsClHit(snstb,srow,scol,adc,tenergy,status);	
 					cluster->GetClHitCollection()->AddHit(hit);

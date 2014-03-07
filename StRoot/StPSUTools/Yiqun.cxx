@@ -78,7 +78,7 @@ TowerFPD* searchClusterTowers(int row, int column, const HitCluster& cluster) {
   TowerFPD* match(NULL);
   for (Int_t i(0); i < cluster.numbTower; ++i) {
     TowerFPD* tower = static_cast<TowerFPD*>(cluster.tow->At(i));
-    if (tower->row == row && tower->col == column) {
+    if (tower->row() == row && tower->column() == column) {
       match = tower;
       break;
     }  // if
@@ -395,13 +395,13 @@ bool Yiqun::validate2ndPhoton(int clusterIndex, int nRealClusters) {
   }  // if
   // Now test the photon and tower properties.
   // Check if the fitted energy is too large compared to the energy of the tower
-  if(tower->hit->energy() < minHTEneOverPhoton * photon->energy) {
+  if(tower->hit()->energy() < minHTEneOverPhoton * photon->energy) {
     return false;
   }  // if
   // Check if the 2nd photon's "High-Tower" enery is too large compared to its
   // fitted energy. If so, it is probably splitting one photon into two
   Double_t eSS = EnergyInTowerByPhoton(widLG[0], tower, photon);
-  if(tower->hit->energy() > maxHTEneOverPhoton * eSS) {
+  if(tower->hit()->energy() > maxHTEneOverPhoton * eSS) {
     return false;
   }  // if
   // Check that the 2nd photon is not near the edge of another cluster
@@ -616,8 +616,8 @@ Double_t Yiqun::EnergyInClusterByPhoton(Double_t widthLG, HitCluster *p_clust,
  */
 Double_t Yiqun::EnergyInTowerByPhoton(Double_t widthLG, TowerFPD *p_tower,
                                       PhotonHitFPD* p_photon) {
-  Double_t xx = ((Double_t)p_tower->col - 0.5) * widLG[0] - p_photon->xPos;
-  Double_t yy = ((Double_t)p_tower->row - 0.5) * widLG[1] - p_photon->yPos;
+  Double_t xx = ((Double_t)p_tower->column() - 0.5) * widLG[0] - p_photon->xPos;
+  Double_t yy = ((Double_t)p_tower->row() - 0.5) * widLG[1] - p_photon->yPos;
   Double_t eSS = p_photon->energy *
                  fitter->GetFunctShowShape()->Eval( xx, yy, 0 );
   return eSS;
@@ -653,7 +653,7 @@ void Yiqun::Y(TowerList* pEm) {
   Int_t cnt = -1;
   tow_Arr = new TObjArray(NTower);
   for (TowerList::iterator i = pEm->begin(); i != pEm->end(); ++i) {
-    if (i->hit->energy() > 0.001) {
+    if (i->hit()->energy() > 0.001) {
       tow_Arr->Add(&(*i));
     }  // if
   }  // for

@@ -119,7 +119,7 @@ void FitTower::Fcn1(Int_t& npara, Double_t* grad,  Double_t& fval, Double_t* par
   Double_t sumCl = 0;
   
   TIter next(FitTower::tow2Fit);
-  while(oneTow=(TowerFPD*) next())sumCl+=oneTow->hit->energy();
+  while(oneTow=(TowerFPD*) next())sumCl+=oneTow->hit()->energy();
   
   // loop over all towers that are involved in the fit
   //
@@ -133,12 +133,12 @@ void FitTower::Fcn1(Int_t& npara, Double_t* grad,  Double_t& fval, Double_t* par
     //
     //Note from SFH need more clever position for FMS
 
-    xx = ( (Double_t) oneTow->col - 0.5 ) * FitTower::widLG[0] ;
-    yy = ( (Double_t) oneTow->row - 0.5 ) * FitTower::widLG[1] ;
+    xx = ( (Double_t) oneTow->column() - 0.5 ) * FitTower::widLG[0] ;
+    yy = ( (Double_t) oneTow->row() - 0.5 ) * FitTower::widLG[1] ;
     
     // measured energy
     //
-    eMeas = oneTow->hit->energy();
+    eMeas = oneTow->hit()->energy();
     
     // expected energy from Shower-Shape
     //
