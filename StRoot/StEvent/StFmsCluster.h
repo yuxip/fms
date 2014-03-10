@@ -60,7 +60,7 @@ public:
 	void SetClusterId ( Float_t cluid )	{ mCluId = cluid; }
 	void SetFourMomentum ( TLorentzVector p4 ) { mFourMomentum = p4; }
 
-private:
+protected:
 	
 	Int_t		mNstb;			// Nstb starts from 1
 	Int_t		mCatag  ;               // catagory of cluster (1: 1-photon,  2: 2-photon,  0: could be either 1- or 2-photon)

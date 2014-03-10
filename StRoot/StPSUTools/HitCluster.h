@@ -3,6 +3,7 @@
 
 #include <TObject.h>
 
+#include "StEvent/StFmsCluster.h"
 #include "StPSUTools/PhotonHitFPD.h"
 
 class TObjArray;
@@ -34,32 +35,28 @@ enum EClusterCategory {
 
 /**
  A cluster of FMS towers
+ 
+ This is an elaborated version of the simple StFmsCluster class, storing extra
+ information needed during the clustering process.
  */
-class HitCluster : public TObject {
+class HitCluster : public StFmsCluster {
  public:
   HitCluster();
   ~HitCluster();
   void CalClusterMoment(Float_t Ecoff);
-  void Clear();
+  void Clear(const char* optionNotUsed = "");
   void FindClusterAxis(Float_t Ecoff);
+  void copyTo(StFmsCluster*) const;
+// protected:
   static const int mMaxPhotonsPerCluster = 2;
   PhotonHitFPD photon[mMaxPhotonsPerCluster];  ///< Photon-Hits in the cluster
   Bool_t IsEUpdated;
-  Int_t catag;  ///< catagory of cluster (see EClusterCategory)
-  Int_t numbTower;  ///< number of non_zero towers in the cluster
-  Int_t nPhoton;  ///< number of photons contained in this cluster
   Int_t index;  ///< cluster number in an event, counts from 0
-  Float_t energy;  ///< total energy  contained in this cluster (0th moment)
-  Float_t x0;  ///< mean x in local grid coordinate (1st moment)
-  Float_t y0;  ///< mean y in local grid coordinate (1st moment)
   Float_t sigmaX;  ///< 2nd moment in x
   Float_t sigmaY;  ///< 2nd moment in y
   Float_t sigmaXY;  ///< 2nd moment in x-y
   Float_t thetaAxis;  ///< theta angle in x-y plane that define the direction
                       ///< of least-2nd-sigma axis
-  Float_t sigmaMin;  ///< 2nd sigma w.r.t to the least-2nd-sigma axis
-  Float_t sigmaMax;  ///< 2nd sigma w.r.t to the axis orthogonal to the
-                     ///< least-2nd-sigma axis
   Float_t chiSquare;  ///< Chi-square of the fitting
   TObjArray* tow;  //!<  TowerFPD objects that make the cluster
 

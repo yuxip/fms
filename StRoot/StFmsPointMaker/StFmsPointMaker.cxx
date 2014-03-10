@@ -141,19 +141,8 @@ Int_t StFmsPointMaker::FindPoint() {
 			Int_t cluid = 305 + 20*(clustering.NSTB-1) + iPh; //cluster id = id of the 1st photon, not necessarily the highE photon
 			
 			cluster->SetNstb(clustering.NSTB);
-			cluster->SetClusterId(cluid);
-			cluster->SetCatag(ci->catag);
-			cluster->SetNumbTower(ci->numbTower);
-			cluster->SetNphoton(ci->nPhoton);
-			cluster->SetClusterEnergy(ci->energy);
-			cluster->SetX0(ci->x0);	//in units of tower width
-			cluster->SetY0(ci->y0);	//in units of tower width
-			cluster->SetSigmaMax(ci->sigmaMax);
-			cluster->SetSigmaMin(ci->sigmaMin);
-		//	cluster->SetChi2NdfPh1(ci->Chi2NdfPh1);
-		//	--no such funtion in SH's package --Yuxi
-		//	cluster->SetChi2NdfPh2(ci->Chi2NdfPh2);
-
+			
+      ci->copyTo(cluster);
 			//calculate cluster four momentum
 			Geom* p_geom = fmsgeom;
 			if(!p_geom){

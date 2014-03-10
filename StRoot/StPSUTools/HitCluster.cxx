@@ -21,11 +21,8 @@ HitCluster::~HitCluster() {
   }  // if
 }
 
-void HitCluster::Clear() { 
-  catag = -1;
-  numbTower = nPhoton = 0;
-  energy = 0;
-  x0 = y0 = sigmaX = sigmaY = sigmaXY = chiSquare = sigmaMin = sigmaMax = -1;
+void HitCluster::Clear(const char* /* unused option inherited from TObject */) { 
+  sigmaX = sigmaY = sigmaXY = chiSquare = -1;
   thetaAxis = -10;
   for (Int_t i(0); i < mMaxPhotonsPerCluster; ++i) {
     photon[i].Clear();
@@ -55,8 +52,8 @@ void HitCluster::FindClusterAxis() {
 	while (thetaAxis < -(myPi / 2.0)) {
 		thetaAxis += myPi;
 	}  // while
-	sigmaMin = GetSigma(thetaAxis);
-	sigmaMax = GetSigma(thetaAxis - TMath::Pi() / 2.0);
+	mSigmaMin = GetSigma(thetaAxis);
+	mSigmaMax = GetSigma(thetaAxis - TMath::Pi() / 2.0);
 }
 
 // Calculate sigma w.r.t the axis going through the "center" and of an angle
@@ -72,7 +69,7 @@ Double_t HitCluster::GetSigma(Double_t theta) {
 		oneTower = (TowerFPD *) tow->At(it);
 		// the 2-d vector from the "center" of cluster to tower
 		// "center" are at 0.5, 1.5, etc! Need shift of 0.5
-		TVector2 v1(oneTower->column() - 0.5 - x0, oneTower->row() - 0.5 - y0);
+		TVector2 v1(oneTower->column() - 0.5 - mX0, oneTower->row() - 0.5 - mY0);
 		// perpendicular distance to the axis = length of the component of vector
 		// "v1" that is norm to "vaxis"
 		Double_t dis = (v1.Norm(vaxis)).Mod();
@@ -106,19 +103,33 @@ void HitCluster::CalClusterMoment(Float_t Ecoff) {
     sigy += mtmp * yyy * yyy;
     sigXY += mtmp * xxx * yyy;
   }  // while
-  energy = w0;
+  mEnergy = w0;
   if (w1 > 0) {
-    x0 = mx / w1;
-    y0 = my / w1;
-    sigmaX = sqrt(fabs(sigx / w1 - x0 * x0));
-    sigmaY = sqrt(fabs(sigy / w1 - y0 * y0));
-    sigmaXY = sigXY / w1 - x0 * y0;
+    mX0 = mx / w1;
+    mY0 = my / w1;
+    sigmaX = sqrt(fabs(sigx / w1 - mX0 * mX0));
+    sigmaY = sqrt(fabs(sigy / w1 - mY0 * mY0));
+    sigmaXY = sigXY / w1 - mX0 * mY0;
   } else {
-    x0 = 0;
-    y0 = 0;
+    mX0 = 0;
+    mY0 = 0;
     sigmaX = 0;
     sigmaY = 0;
     sigmaXY = 0;
   }  // if
+}
+
+void HitCluster::copyTo(StFmsCluster* cluster) const {
+  cluster->SetCatag(mCatag);
+  cluster->SetNumbTower(mNumbTower);
+  cluster->SetNphoton(mNphoton);
+  cluster->SetClusterEnergy(mEnergy);
+  cluster->SetX0(mX0);
+  cluster->SetY0(mY0);
+  cluster->SetSigmaMax(mSigmaMax);
+  cluster->SetSigmaMin(mSigmaMin);
+  //	cluster->SetChi2NdfPh1(Chi2NdfPh1);
+  //	--no such funtion in SH's package --Yuxi
+  //	cluster->SetChi2NdfPh2(Chi2NdfPh2);
 }
 }  // namespace PSUGlobals

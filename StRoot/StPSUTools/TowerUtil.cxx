@@ -222,8 +222,8 @@ class TowerClusterAssociation : public TObject {
       return separation(peak);
     } else {
       // Use calculated cluster center (x0, y0)
-      return sqrt(pow(cluster->x0 - (mTower->column() - 0.5), 2.) +
-                  pow(cluster->y0 - (mTower->row() - 0.5), 2.));
+      return sqrt(pow(cluster->GetX0() - (mTower->column() - 0.5), 2.) +
+                  pow(cluster->GetY0() - (mTower->row() - 0.5), 2.));
     }  // if
   }
   /*
@@ -585,35 +585,35 @@ void TowerUtil::CalClusterMoment(HitCluster *cluster) {
   if (cluster) {
     cluster->CalClusterMoment(Ecutoff);
   }  // if
-  cluster->numbTower = cluster->tow->GetEntriesFast() ;
+  cluster->SetNumbTower(cluster->tow->GetEntriesFast());
 }
 
 /* Categorise a cluster */
 Int_t TowerUtil::CatagBySigmXY(HitCluster* cluster) {
   // If the number of towers in a cluster is less than "minTowerCatag02"
   // always consider the cluster a one-photon cluster
-  if (cluster->numbTower < minTowerCatag02) {
-    cluster->catag = k1PhotonCluster;
+  if (cluster->GetNTower() < minTowerCatag02) {
+    cluster->SetCatag(k1PhotonCluster);
   } else {
     // Categorise cluster based on its properties
-    Float_t sMaxEc = cluster->sigmaMax * cluster->energy;
-    if (cluster->energy < cutEcSigma[0][0] * (sMaxEc - cutEcSigma[0][1])) {
+    Float_t sMaxEc = cluster->GetSigmaMax() * cluster->GetEnergy();
+    if (cluster->GetEnergy() < cutEcSigma[0][0] * (sMaxEc - cutEcSigma[0][1])) {
       if (sMaxEc > minEcSigma2Ph) {
-        cluster->catag = k2PhotonCluster;
+        cluster->SetCatag(k2PhotonCluster);
       } else {
-        cluster->catag = kAmbiguousCluster;
+        cluster->SetCatag(kAmbiguousCluster);
       }  // if
-    } else if (cluster->energy >
+    } else if (cluster->GetEnergy() >
                cutEcSigma[1][0] * (sMaxEc - cutEcSigma[1][1])) {
       if (sMaxEc < maxEcSigma1Ph) {
-        cluster->catag = k1PhotonCluster;
+        cluster->SetCatag(k1PhotonCluster);
       } else {
-        cluster->catag = kAmbiguousCluster;
+        cluster->SetCatag(kAmbiguousCluster);
       }  // if
     } else {
-      cluster->catag = kAmbiguousCluster;
+      cluster->SetCatag(kAmbiguousCluster);
     }  // if (cluster->hit->energy()...)
   } // if (cluster->numbTower...)
-  return cluster->catag;
+  return cluster->GetCatag();
 }
 }  // namespace PSUGlobals

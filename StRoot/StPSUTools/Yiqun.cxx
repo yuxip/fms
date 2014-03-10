@@ -17,7 +17,7 @@ using namespace PSUGlobals;
 namespace {
 /* Helper function to add numbers of photons using std::accumulate */
 int accumulatePhotons(int nPhotons, const HitCluster& cluster) {
-  return nPhotons + cluster.nPhoton;
+  return nPhotons + cluster.GetNphoton();
 }
 
 /* Unary predicate for selecting bad clusters. */
@@ -26,7 +26,7 @@ struct IsBadCluster : public std::unary_function<const HitCluster&, bool> {
   IsBadCluster(double minEnergy, int maxTowers)
       : energy(minEnergy), towers(maxTowers) { }
   bool operator()(const HitCluster& cluster) const {
-    return cluster.energy <= energy || cluster.tow->GetEntries() > towers;
+    return cluster.GetEnergy() <= energy || cluster.tow->GetEntries() > towers;
   }
   double energy;
   int towers;
@@ -40,7 +40,7 @@ struct IsBadCluster : public std::unary_function<const HitCluster&, bool> {
  */
 PhotonHitFPD* findLowestEnergyPhoton(HitCluster* cluster) {
   PhotonHitFPD* photon(NULL);
-  switch (cluster->nPhoton) {
+  switch (cluster->GetNphoton()) {
     case 1:
       photon = &(cluster->photon[0]);
       break;
@@ -63,7 +63,7 @@ PhotonHitFPD* findLowestEnergyPhoton(HitCluster* cluster) {
  */
 TowerFPD* searchClusterTowers(int row, int column, const HitCluster& cluster) {
   TowerFPD* match(NULL);
-  for (Int_t i(0); i < cluster.numbTower; ++i) {
+  for (Int_t i(0); i < cluster.GetNTower(); ++i) {
     TowerFPD* tower = static_cast<TowerFPD*>(cluster.tow->At(i));
     if (tower->row() == row && tower->column() == column) {
       match = tower;
@@ -83,10 +83,11 @@ Float_t Yiqun::FitOnePhoton(HitCluster* p_clust) {
   // for the fitting routine, plus lower and upper bounds on allowed values.
   // - set starting points for the fit parameters:
   const Double_t start[4] = {
-    1.0, widLG[0] * p_clust->x0, widLG[1] * p_clust->y0, p_clust->energy};
+    1.0, widLG[0] * p_clust->GetX0(), widLG[1] * p_clust->GetY0(),
+    p_clust->GetEnergy()};
   // - maximum deviations from the start points during fit:
   const Double_t delta[4] = {
-    0.5, 0.5 * widLG[0], 0.5 * widLG[1], 0.15 * p_clust->energy};
+    0.5, 0.5 * widLG[0], 0.5 * widLG[1], 0.15 * p_clust->GetEnergy()};
   // - set lower and upper physical limits of fit parameters = start +/- delta
   //   The parameters will stay within these ranges during the fit
   Double_t lowLim[4], upLim[4];
@@ -120,7 +121,7 @@ Float_t Yiqun::FitOnePhoton(HitCluster* p_clust) {
   Double_t chiSq;
   Int_t iflag = 1;
   fitter->fMn->Eval(4, gradient, chiSq, param, iflag);
-  p_clust->nPhoton = 1;
+  p_clust->SetNphoton(1);
   int ndf = p_clust->tow->GetEntriesFast() - 3;
   if (ndf <= 0) {
     ndf = 1;
@@ -172,7 +173,7 @@ Float_t Yiqun::GlobalFit(const Int_t nPh, const Int_t nCl,
   std::advance(end, nCl);
   for (ClusterIter cluster = first; cluster != end; ++cluster) {
     // Loop over all photons in cluster
-    for (Int_t jp = 0; jp < cluster->nPhoton; jp++) {
+    for (Int_t jp = 0; jp < cluster->GetNphoton(); jp++) {
       if (totPh > FitTower::MAX_NUMB_PHOTONS) {
         std::cout << "Total # of photons in " << nCl << " clusters is at least "
           << totPh << "! I can NOT do fit! ERROR!" << "\n";
@@ -220,7 +221,7 @@ Float_t Yiqun::GlobalFit(const Int_t nPh, const Int_t nCl,
   Int_t tPh = 0 ;
   for (ClusterIter cluster = first; cluster != end; ++cluster) {
     // Loop over all photons in cluster
-    for (Int_t jp = 0; jp < cluster->nPhoton; jp++) {
+    for (Int_t jp = 0; jp < cluster->GetNphoton(); jp++) {
       Int_t kpar = 3 * tPh + 1 ;
       cluster->photon[jp].xPos    = param[kpar] ;
       cluster->photon[jp].errXPos = error[kpar] ;
@@ -244,13 +245,13 @@ Float_t Yiqun::GlobalFit(const Int_t nPh, const Int_t nCl,
  */
 Float_t Yiqun::Fit2PhotonClust(ClusterIter p_clust) {
   const Double_t step2[7] = {0, 0.02, 0.02, 0.01, 0.01, 0.01, 0.1} ;
-  Double_t ratioSigma = p_clust->sigmaMin / p_clust->sigmaMax ;
+  Double_t ratioSigma = p_clust->GetSigmaMin() / p_clust->GetSigmaMax();
   Double_t maxTheta = ratioSigma / thetaPara ;
   if (maxTheta > (TMath::Pi() / 2.0)) {
     maxTheta = TMath::Pi() / 2.0;
   }  // if
   // Use for restricting d_gg
-  Double_t EcSigmaMax = p_clust->energy * p_clust->sigmaMax ;
+  Double_t EcSigmaMax = p_clust->GetEnergy() * p_clust->GetSigmaMax();
   Double_t chiSq;
   // Fit parameters (starting positions), errors, and gradients of function
   Double_t param[7];
@@ -274,11 +275,11 @@ Float_t Yiqun::Fit2PhotonClust(ClusterIter p_clust) {
   //  - z_gg:        should just let it vary from -1 to 1.
   //  - d_gg:        a lower bound is given by r=sqrt(sigmaX^2+sigmaY^2). 
   //                 d_gg > Max( 2.5*(r-0.6), 0.5 )
-  start[1]  = widLG[0] * p_clust->x0;
-  start[2]  = widLG[1] * p_clust->y0;
-  start[6]  = p_clust->energy;
+  start[1]  = widLG[0] * p_clust->GetX0();
+  start[2]  = widLG[1] * p_clust->GetY0();
+  start[6]  = p_clust->GetEnergy();
   start[4]  = p_clust->thetaAxis;
-  start[3] = dggPara[1] * widLG[0] * p_clust->sigmaMax ;
+  start[3] = dggPara[1] * widLG[0] * p_clust->GetSigmaMax();
   // Randomize the starting point of Z_gg (from -0.1 to 0.1)
   start[5]  = 0.1 * (2 * gRandom->Rndm() - 1);
   lowLim[1] = start[1] - posDif_2PC * widLG[0];
@@ -339,7 +340,7 @@ Float_t Yiqun::Fit2PhotonClust(ClusterIter p_clust) {
   p_clust->photon[1].errEne  = error[6]*(1-param[5])/2.0 - param[6]*error[5]/2.0;
   // Do a global fit, using result of 1st fit as starting point
   // Need to set "nPhoton" before calling "GlobalFit(..)"
-  p_clust->nPhoton = 2;
+  p_clust->SetNphoton(2);
   chiSq = GlobalFit(2, 1, p_clust);
   int ndf = p_clust->tow->GetEntriesFast() - 6;
   if (ndf <= 0) {
@@ -474,13 +475,13 @@ Int_t Yiqun::FitEvent(Int_t nTows, Int_t &nClusts, Int_t &nRealClusts,
       // Now fill in the fit result, either 1- or 2-photon
       if (is2Photon) {
         // 2-photon fit is better
-        cluster->nPhoton = 2;
+        cluster->SetNphoton(2);
         cluster->chiSquare = chiSq2;
         // Flag the event as bad if the fit chi2/ndf is too bad
         junkyEvent = cluster->chiSquare > MaxChi2Catag2;
       } else {
         // 1-photon fit is better
-        cluster->nPhoton = 1;
+        cluster->SetNphoton(1);
         cluster->chiSquare = chiSq1;
         cluster->photon[0] = photon;
       }  // if (is2Photon)
@@ -505,7 +506,7 @@ Int_t Yiqun::FitEvent(Int_t nTows, Int_t &nClusts, Int_t &nRealClusts,
   for (ClusterIter cluster = mClusters.begin(); cluster != mClusters.end();
        ++cluster) {
     allTow.AddAll(cluster->tow);
-    ndfg += (cluster->tow->GetEntriesFast() - 3 * cluster->nPhoton);
+    ndfg += (cluster->tow->GetEntriesFast() - 3 * cluster->GetNphoton());
   }  // for
   if(ndfg <= 0) {
     ndfg = 1;
@@ -539,7 +540,7 @@ Double_t Yiqun::EnergyInClusterByPhoton(Double_t widthLG, HitCluster *p_clust,
                                         PhotonHitFPD *p_photon) {
   Double_t eSS = 0;
   // Sum depositions by the photon in all towers of this cluster
-  for(Int_t it=0; it<p_clust->numbTower; it++) {
+  for(Int_t it=0; it<p_clust->GetNTower(); it++) {
     eSS += EnergyInTowerByPhoton(widthLG, (TowerFPD*)p_clust->tow->At(it),
                                  p_photon);
   };
