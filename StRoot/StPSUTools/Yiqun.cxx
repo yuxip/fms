@@ -416,7 +416,6 @@ bool Yiqun::validate2ndPhoton(ClusterIter cluster) {
 Int_t Yiqun::FitEvent(Int_t nTows, Int_t &nClusts, Int_t &nRealClusts,
                       Bool_t &junkyEvent) {
   // Possible alternative clusters for 1-photon fit: for catagory 0
-  HitCluster altClu ;
   nClusts = 0 ;
   TowerUtil::TowerList towerList;
   std::vector<TowerFPD>::iterator towerIter;
@@ -452,8 +451,8 @@ Int_t Yiqun::FitEvent(Int_t nTows, Int_t &nClusts, Int_t &nRealClusts,
       // If the fit is good enough, it is 1-photon. Else also
       // try 2-photon fit, and find the best fit (including 1-photon fit).
       Bool_t is2Photon = true;
-      altClu = *cluster;
-      double chiSq1 = FitOnePhoton(&altClu);
+      double chiSq1 = FitOnePhoton(&(*cluster));
+      const PhotonHitFPD photon = cluster->photon[0];  // Cache the photon
       double chiSq2(NAN);  // Only set if do 2-photon fit
       // Decide if this 1-photon fit is good enough
       if (chiSq1 < maxGood1PhChi2NDF) {
@@ -483,7 +482,7 @@ Int_t Yiqun::FitEvent(Int_t nTows, Int_t &nClusts, Int_t &nRealClusts,
         // 1-photon fit is better
         cluster->nPhoton = 1;
         cluster->chiSquare = chiSq1;
-        cluster->photon[0] = altClu.photon[0];
+        cluster->photon[0] = photon;
       }  // if (is2Photon)
     } else {  // Invalid cluster category
       // should not happen!

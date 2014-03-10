@@ -20,10 +20,25 @@
 #include "TMinuit.h"
 #include "TVector3.h"
 
-
-
 #include "PhotonHitFPD.h"
 #define MAX_PHOTON_PER_CLUSTER 2
+
+/*
+ http://google-styleguide.googlecode.com/svn/trunk/cppguide.xml#Copy_Constructors
+ A macro to disallow the copy constructor and operator= functions
+ This should be used in the private: declarations for a class e.g.
+  class Foo {
+   public:
+    Foo(int f);
+    ~Foo();
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(Foo);
+  };
+*/
+#define DISALLOW_COPY_AND_ASSIGN(TypeName) \
+  TypeName(const TypeName&);               \
+  void operator=(const TypeName&)
 
 namespace PSUGlobals {//$NMSPC
 enum EClusterCategory {
@@ -61,42 +76,6 @@ class HitCluster : public TObject {
   Bool_t IsEUpdated;
   void Clear(void) ;
   
-  HitCluster& operator=(const HitCluster& rhs) 
-    {
-      
-      // HitCluster assignment operator
-      //
-      if (this != &rhs) 
-	{
-	  catag     = rhs.catag   ;
-	  numbTower = rhs.numbTower;
-	  nPhoton   = rhs.nPhoton ;
-	  energy    = rhs.energy  ;
-	  x0        = rhs.x0      ;
-	  y0        = rhs.y0      ;
-	  sigmaX    = rhs.sigmaX  ;
-	  sigmaY    = rhs.sigmaY  ;
-	  sigmaXY   = rhs.sigmaXY ;
-	  thetaAxis = rhs.thetaAxis;
-	  sigmaMin  = rhs.sigmaMin;
-	  sigmaMax  = rhs.sigmaMax;
-	  chiSquare = rhs.chiSquare;
-	  if(tow)delete tow;
-	  tow       = new TObjArray(*rhs.tow);
-	  Ecutoff   = rhs.Ecutoff;
-	  IEW       = rhs.IEW;
-	  NSTB      = rhs.NSTB;
-	  IsEUpdated= rhs.IsEUpdated;
-	};
-      
-      for(Int_t i=0; i<nPhoton; i++) 
-	{
-	  photon[i] = rhs.photon[i] ;
-	}
-   
-      return *this;
-    };
-  
   void Print(void);
   
   void FindClusterAxis(void);
@@ -107,6 +86,7 @@ class HitCluster : public TObject {
   Int_t IEW;
   Int_t NSTB;
  private:
+  DISALLOW_COPY_AND_ASSIGN(HitCluster);
   Float_t Ecutoff;
   Bool_t EnergyUpdated;
   ClassDef (HitCluster, 7);
