@@ -6,3 +6,6 @@ temp_gccflags.c
 
 # Libraries are built in directores starting ".sl....."
 .sl*
+
+# Ignore CVS-related directories
+**CVS
