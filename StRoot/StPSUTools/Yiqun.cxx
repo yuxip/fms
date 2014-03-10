@@ -202,7 +202,7 @@ Float_t Yiqun::GlobalFit(const Int_t nPh, const Int_t nCl,
   // Set the number-of-photons fit parameter
   start[0] = totPh;
   lowLim[0] = 0.5;
-  lowLim[0] = FitTower::MAX_NUMB_PHOTONS + 0.5 ;
+  upLim[0] = FitTower::MAX_NUMB_PHOTONS + 0.5 ;
   // Fit status, and flag needed by fitter
   Int_t status, iflag=1;
   status = fitter->Fit(start, fitter->step, lowLim, upLim);
@@ -263,7 +263,7 @@ Float_t Yiqun::Fit2PhotonClust(ClusterIter p_clust) {
   // First parameter is the number of photons, which is constant = 2 photons
   start[0] = 2;
   lowLim[0] = 1.5;
-  lowLim[0] = 2.5;
+  upLim[0] = 2.5;
   // Parameter starting points and limits are determined by looking at cluster
   // information
   //  - xPi and yPi: rarely do they go beyond 0.3 unit of lgd
