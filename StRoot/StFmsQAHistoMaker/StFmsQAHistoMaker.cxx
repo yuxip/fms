@@ -3,9 +3,9 @@
 #include <sstream>
 #include <string>
 
-#include "StFmsPointMaker/StFmsClusterCollection.h"
-#include "StFmsPointMaker/StFmsClHitCollection.h"
-#include "StFmsPointMaker/StFmsPointCollection.h"
+#include "StEvent/StFmsClusterCollection.h"
+#include "StEvent/StFmsClHitCollection.h"
+#include "StEvent/StFmsPointCollection.h"
 
 #include "TObjArray.h"
 #include "TFile.h"

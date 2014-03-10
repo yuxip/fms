@@ -9,3 +9,20 @@ temp_gccflags.c
 
 # Ignore CVS-related directories
 **CVS
+
+# Ignore everything in StRoot/StEvent except the few files we develop,
+# to keep from storing the whole of StEvent in out project. If on RCF,
+# checkout StEvent via CVS.
+StRoot/StEvent/*
+!StRoot/StEvent/StFmsClHitCollection.cxx
+!StRoot/StEvent/StFmsClHitCollection.h
+!StRoot/StEvent/StFmsClHit.cxx
+!StRoot/StEvent/StFmsClHit.h
+!StRoot/StEvent/StFmsClusterCollection.cxx
+!StRoot/StEvent/StFmsClusterCollection.h
+!StRoot/StEvent/StFmsCluster.cxx
+!StRoot/StEvent/StFmsCluster.h
+!StRoot/StEvent/StFmsPointCollection.cxx
+!StRoot/StEvent/StFmsPointCollection.h
+!StRoot/StEvent/StFmsPoint.cxx
+!StRoot/StEvent/StFmsPoint.h
