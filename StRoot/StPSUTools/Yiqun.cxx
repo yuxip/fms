@@ -621,10 +621,6 @@ void Yiqun::Y(TowerList* pEm) {
     maxHitsInRealCluster=25;
   }  // if
   fitter = new FitTower(p_geom,EW,NSTB);
-  fitter->SetTWidthCM(*(p_geom->FpdTowWid(EW, NSTB)));
-  if (p_geom->FMSGeom) {
-    fitter->SetXYTWidthCM(p_geom->FpdTowWid(EW, NSTB));
-  }  // if
   Bool_t badEvent(true);
   NPh = FitEvent(NTower, NClusts, NRealClusts, badEvent);
 }

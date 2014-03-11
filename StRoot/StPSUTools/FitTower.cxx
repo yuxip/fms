@@ -26,7 +26,10 @@ TF2* FitTower::GetFunctShowShape() {
 FitTower::FitTower(Geom* pgeom,Int_t iew,Int_t nstb) {
   SetStep();
   pTowerUtil=new TowerUtil();
-  fTWidthCM=*(pgeom->FpdTowWid(iew,nstb));
+  Float_t* towerWidth = pgeom->FpdTowWid(iew, nstb);
+  fTWidthCM = towerWidth[0];
+  fTXWidthCM = FitTower::widLG[0] = towerWidth[0];
+  fTYWidthCM = FitTower::widLG[1] = towerWidth[1];
   Double_t para[numbPara];
   para[0] = fTWidthCM ;
   para[1] =  1.070804;

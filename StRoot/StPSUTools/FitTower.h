@@ -27,15 +27,6 @@ class FitTower : public TObject {
   FitTower(Geom* pgeom,Int_t iew,Int_t nstb);
   FitTower() { }
   ~FitTower();
-  void SetTWidthCM(Float_t tw) {
-    fTWidthCM = tw;
-    fTXWidthCM=fTYWidthCM=tw;
-    FitTower::widLG[0] = FitTower:: widLG[1] = tw;
-  }
-  void SetXYTWidthCM(Float_t* ptw) {
-    fTXWidthCM = FitTower::widLG[0] = ptw[0];
-    fTYWidthCM = FitTower::widLG[1] = ptw[1];
-  }
   TF2* GetFunctShowShape();
   Int_t Fit(const Double_t *par, const Double_t *step, 
             const Double_t *low, const Double_t *up);
