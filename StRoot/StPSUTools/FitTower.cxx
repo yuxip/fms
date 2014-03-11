@@ -152,12 +152,14 @@ void FitTower::SetFCN(void (*fcn)(Int_t &, Double_t *, Double_t &, Double_t *, I
   fMn->SetFCN(fcn);
 }
 
-Int_t FitTower::Fit(const Double_t *para, const Double_t *step,
-                    const Double_t *low, const Double_t *up) {
+Double_t FitTower::Fit(const Double_t *para, const Double_t *step,
+                       const Double_t *low, const Double_t *up,
+                       PhotonList* photons) {
+  Double_t chiSq(-1.);
   // check that there is a pointer to TObjArray of towers
   if( !(FitTower::tow2Fit) ) {
     std::cerr << "no tower data available! return -1!" << "\n";
-    return -1;
+    return chiSq;
   }  // if
   fMn->SetPrintLevel(-1);
   fMn->fLwarn = false ;
@@ -194,7 +196,31 @@ Int_t FitTower::Fit(const Double_t *para, const Double_t *step,
   arglist[1] = 1.;
   ierflg = 0;
   fMn->mnexcm("MIGRAD", arglist ,2,ierflg);
-  return fMn->GetStatus();
+  // Populate the list of photons
+  if (0 == fMn->GetStatus() && photons) {
+    // Get the fit results for starting positions and errors
+    Double_t param[1 + 3 * MAX_NUMB_PHOTONS];
+    Double_t error[1 + 3 * MAX_NUMB_PHOTONS];
+    fMn->GetParameter(0, param[0], error[0]);
+    // There are 3 parameters per photon, plus the 1st parameter,
+    // which gives the number of photons
+    nPh = (Int_t)param[0];
+    Int_t nPar = 3 * nPh + 1;
+    for (Int_t i(1); i < nPar; ++i) {
+      fMn->GetParameter(i, param[i], error[i]);
+    }  // for
+    // There are 3 parameters per photon, starting at parameter 1
+    for (Int_t par(1); par < nPar; par += 3) {
+      photons->push_back(
+        PhotonHitFPD(param[par], param[par + 1], param[par + 2],
+                     error[par], error[par + 1], error[par + 2]));
+    }  // for
+    // Evaluate chi-square (*not* chi-square per degree of freedom)
+    Double_t gradient[1 + 3 * MAX_NUMB_PHOTONS];
+    Int_t iflag = 1;
+    fMn->Eval(photons->size(), gradient, chiSq, param, iflag);
+  }  // for
+  return chiSq;
 }
 
 // a different set of parameters for 2-photon clusters only:

@@ -2,17 +2,20 @@
 #define FIT_TOWER_H
 
 #include <iostream>
+#include <list>
 
 #include <TMinuit.h>
 #include <TObject.h>
 
 #include "StPSUTools/Geom.h"
+#include "StPSUTools/PhotonHitFPD.h"
 #include "StPSUTools/TowerFPD.h"
 #include "StPSUTools/TowerUtil.h"
 
 class TF2;
 
 namespace PSUGlobals {//$NMSPC
+typedef std::list<PhotonHitFPD> PhotonList;
 /**
  \todo
  It may be safer to make FitTower a singleton class, or something like that.
@@ -49,8 +52,8 @@ class FitTower : public TObject {
    The next 3 are the x position, y position and energy of a photon.
    e.g. for 1 photon [1, x0, y0, E0]; for 2 photons [2, x0, y0, E0, x1, y1, E1]
    */
-  Int_t Fit(const Double_t *par, const Double_t *step, 
-            const Double_t *low, const Double_t *up);
+  Double_t Fit(const Double_t *par, const Double_t *step, 
+               const Double_t *low, const Double_t *up, PhotonList* photons);
   /**
    Specialized fit function for exactly 2-photon fit
    

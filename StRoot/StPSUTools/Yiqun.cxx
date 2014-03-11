@@ -1,5 +1,7 @@
 #include "Yiqun.h"
 
+#include <cassert>
+
 #include <TCanvas.h>
 #include <TRandom.h>  // For ROOT global random generator, gRandom
 
@@ -96,33 +98,14 @@ Float_t Yiqun::FitOnePhoton(HitCluster* p_clust) {
     lowLim[i] = start[i] - delta[i];
     upLim[i] = start[i] + delta[i];
   }  // for
-  Int_t status = fitter->Fit(start, fitter->step, lowLim, upLim);
-  if (status != 0) {  // check return status in case of a bad fit
-    std::cerr << "Minuit fit returns " << status << "!" << std::endl;
+  PhotonList photons;
+  Double_t chiSq = fitter->Fit(start, fitter->step, lowLim, upLim, &photons);
+  if (photons.empty()) {  // check return status in case of a bad fit
+    std::cerr << "1-photon Minuit fit returns error!" << std::endl;
   }  // if
-  // Get the fit results for starting positions and errors
-  Double_t param[4];
-  Double_t error[4];
-  fitter->fMn->GetParameter(0, param[0], error[0]);
-  // There are 3 parameters per photon, plus the 1st parameter, which gives the
-  // number of photons
-  Int_t nPar = 3 * ((Int_t)param[0]) + 1;
-  for (Int_t i(1); i < nPar; ++i) {
-    fitter->fMn->GetParameter(i, param[i], error[i]);
-  }  // for
-  // put the fit result back in "clust"
-  p_clust->photons()[0].xPos    = param[1];
-  p_clust->photons()[0].errXPos = error[1];
-  p_clust->photons()[0].yPos    = param[2];
-  p_clust->photons()[0].errYPos = error[2];
-  p_clust->photons()[0].energy  = param[3];
-  p_clust->photons()[0].errEne  = error[3];
-  // evaluate the Chi-square function
-  Double_t gradient[4];
-  Double_t chiSq;
-  Int_t iflag = 1;
-  fitter->fMn->Eval(4, gradient, chiSq, param, iflag);
-  p_clust->SetNphoton(1);
+  p_clust->photons()[0] = photons.back();
+  p_clust->SetNphoton(photons.size());
+  assert(photons.size() == 1);
   int ndf = p_clust->towers()->GetEntriesFast() - 3;
   if (ndf <= 0) {
     ndf = 1;
@@ -207,35 +190,22 @@ Float_t Yiqun::GlobalFit(const Int_t nPh, const Int_t nCl,
   upLim[0] = FitTower::MAX_NUMB_PHOTONS + 0.5 ;
   // Fit status, and flag needed by fitter
   Int_t status, iflag=1;
-  status = fitter->Fit(start, fitter->step, lowLim, upLim);
-  if (status != 0) {
-    std::cout << "Minuit fit returns " << status << "!" << "\n";
+  PhotonList photons;
+  Double_t chiSq = fitter->Fit(start, fitter->step, lowLim, upLim, &photons);
+  if (photons.empty()) {
+    std::cout << "Global Minuit fit returns error!" << "\n";
   }  // if
-  // Get the fit results
-  fitter->fMn->GetParameter(0, param[0], error[0]);
-  Int_t nPar = 3 * ((Int_t)param[0]) + 1;
-  for(Int_t i = 1; i < nPar; ++i) {
-    fitter->fMn->GetParameter(i, param[i], error[i]);
-  }  // for
   // Put the fit result back in the clusters
   // Loop over all clusters
-  Int_t tPh = 0 ;
+  PhotonList::const_iterator photonIter = photons.begin();
   for (ClusterIter cluster = first; cluster != end; ++cluster) {
     // Loop over all photons in cluster
-    for (Int_t jp = 0; jp < cluster->GetNphoton(); jp++) {
-      Int_t kpar = 3 * tPh + 1 ;
-      cluster->photons()[jp].xPos    = param[kpar] ;
-      cluster->photons()[jp].errXPos = error[kpar] ;
-      cluster->photons()[jp].yPos    = param[kpar+1] ;
-      cluster->photons()[jp].errYPos = error[kpar+1] ;
-      cluster->photons()[jp].energy  = param[kpar+2] ;
-      cluster->photons()[jp].errEne  = error[kpar+2] ;
-      tPh++;
+    for (Int_t jp = 0; jp < cluster->GetNphoton(); jp++, ++photonIter) {
+      assert(jp < 2);
+      cluster->photons()[jp] = *photonIter;
     }  // for loop over photons
   }  // for loop over clusters
   // Evaluate the Chi-square function and return it
-  Double_t chiSq;
-  fitter->fMn->Eval(7, gradient, chiSq, param, iflag);
   return chiSq;
 }
 
