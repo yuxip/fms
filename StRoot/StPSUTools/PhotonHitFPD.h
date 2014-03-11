@@ -1,6 +1,8 @@
 #ifndef PHOTONHITFPD_H
 #define PHOTONHITFPD_H
 
+#include <Rtypes.h>
+
 namespace PSUGlobals {//$NMSPC
 /**
  Definition of a photon hit (SMD position info and reconstructed energy)
