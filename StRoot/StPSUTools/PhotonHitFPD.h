@@ -1,13 +1,11 @@
 #ifndef PHOTONHITFPD_H
 #define PHOTONHITFPD_H
 
-#include <TObject.h>
-
 namespace PSUGlobals {//$NMSPC
 /**
  Definition of a photon hit (SMD position info and reconstructed energy)
  */
-struct PhotonHitFPD : public TObject {
+struct PhotonHitFPD {
   Float_t energy;  ///< Fitted energy
   Float_t errEne;  ///< Energy fit error
   Float_t xPos;  ///< Fitted (relative) x-position
@@ -18,7 +16,8 @@ struct PhotonHitFPD : public TObject {
   PhotonHitFPD(Float_t x = -1., Float_t y = -1., Float_t e = 0.);
   /** Destructor */
   ~PhotonHitFPD() { }
-  /** Set (x, y) position and energy */
+  /** Reset all values to defaults */
+  void Clear();
   ClassDef(PhotonHitFPD, 4)
 };  // class PhotonHitFPD
 }  // namespace PSUGlobals
