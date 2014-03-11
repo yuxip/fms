@@ -1,8 +1,10 @@
 #include "PhotonHitFPD.h"
 
 namespace PSUGlobals {
-PhotonHitFPD::PhotonHitFPD(const Float_t x, const Float_t y, const Float_t e)
-    : energy(e), errEne(-1.), xPos(x), errXPos(-1.), yPos(y), errYPos(-1.) {
+PhotonHitFPD::PhotonHitFPD(const Float_t x, const Float_t y,
+                           const Float_t e, const Float_t xerr,
+                           const Float_t yerr, const Float_t eerr)
+    : energy(e), errEne(eerr), xPos(x), errXPos(xerr), yPos(y), errYPos(yerr) {
 }
 
 void PhotonHitFPD::Clear() {

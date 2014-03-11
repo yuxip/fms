@@ -15,7 +15,8 @@ struct PhotonHitFPD {
   Float_t yPos;  ///< Fitted (relative) y-position
   Float_t errYPos;  ///< y-position fit error
   /** Constructor with optional position and energy */
-  PhotonHitFPD(Float_t x = -1., Float_t y = -1., Float_t e = 0.);
+  PhotonHitFPD(Float_t x = -1., Float_t y = -1., Float_t e = 0.,
+               Float_t xerr = -1., Float_t yerr = -1., Float_t eerr = -1.);
   /** Destructor */
   ~PhotonHitFPD() { }
   /** Reset all values to defaults */
