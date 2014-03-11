@@ -2,13 +2,16 @@
 #define FIT_TOWER_H
 
 #include <iostream>
-#include  "TObject.h"
-#include "Geom.h"
-#include "TMinuit.h"
-#include "TF2.h"
-#include "TowerUtil.h"
-#include "TMath.h"
-#include "TowerFPD.h"
+
+#include <TMinuit.h>
+#include <TObject.h>
+
+#include "StPSUTools/Geom.h"
+#include "StPSUTools/TowerFPD.h"
+#include "StPSUTools/TowerUtil.h"
+
+class TF2;
+
 namespace PSUGlobals {//$NMSPC
 /**
  \todo
@@ -19,62 +22,47 @@ namespace PSUGlobals {//$NMSPC
  more than one object in existence at any time. There isn't ever more than one
  instance created in this code, but I think it would be good to enforce that.
  */
-class FitTower : public TObject
-{
+class FitTower : public TObject {
  public:
-  
-  TMinuit*    fMn;    // Minuit fitter ma
   FitTower(Geom* pgeom,Int_t iew,Int_t nstb);
-  /*
-    constructor removed by SH  8/2009
-  FitTower(const Int_t dim[2], const Double_t wd, TF2 *ssFunct);
-  */
-  FitTower(){};
-
+  FitTower() { }
   ~FitTower();
-  static TObjArray* tow2Fit;
-  static const Int_t MAX_NUMB_PHOTONS = 7;
-  Double_t step[3*MAX_NUMB_PHOTONS+1];
-  TowerUtil* pTowerUtil;
-  static Double_t GGams(Double_t *x, Double_t *par);
-  static Double_t FGams(Double_t *x, Double_t *par);
-  
-  static void  Fcn1(Int_t & npar, Double_t *grad,  
-		    Double_t &fval, Double_t *par, Int_t iflag);
-  static void Fcn2(Int_t & nparam, Double_t *grad, 
-		   Double_t &fval, Double_t *param, Int_t iflag);
-  void SetTWidthCM(Float_t tw) 
-    {
-      fTWidthCM = tw;
-      fTXWidthCM=fTYWidthCM=tw;
-      FitTower::widLG[0] = FitTower:: widLG[1] = tw;
-    };
-  void SetXYTWidthCM(Float_t*  ptw)
-    {
-      fTXWidthCM = FitTower::widLG[0] = ptw[0];
-      fTYWidthCM = FitTower::widLG[1] = ptw[1];
-    };
-  void SetFCN(void (*fcn)(Int_t &, Double_t *, Double_t &, Double_t *, Int_t));
-  void SetNumberPhoton(const Int_t nP);
-
-  void GetParameter(Double_t *ap){/* not implemeted*/};
-  void GetTWidthCM(Double_t &tw) {tw=fTWidthCM;};
+  void SetTWidthCM(Float_t tw) {
+    fTWidthCM = tw;
+    fTXWidthCM=fTYWidthCM=tw;
+    FitTower::widLG[0] = FitTower:: widLG[1] = tw;
+  }
+  void SetXYTWidthCM(Float_t* ptw) {
+    fTXWidthCM = FitTower::widLG[0] = ptw[0];
+    fTYWidthCM = FitTower::widLG[1] = ptw[1];
+  }
   TF2* GetFunctShowShape();
   Int_t Fit(const Double_t *par, const Double_t *step, 
-	    const Double_t *low, const Double_t *up);
+            const Double_t *low, const Double_t *up);
   Int_t Fit2Pin1Clust(const Double_t *para, const Double_t *step, 
-		      const Double_t *low, const Double_t *up);
- private:	
-  
-  ClassDef(FitTower,4);
+                      const Double_t *low, const Double_t *up);
+  static Double_t GGams(Double_t *x, Double_t *par);
+  TowerUtil* pTowerUtil;
+  TMinuit* fMn;  // Minuit fitter
+  static const Int_t MAX_NUMB_PHOTONS = 7;
+  Double_t step[3*MAX_NUMB_PHOTONS+1];
+  static TObjArray* tow2Fit;
+
+ private:  
+  static Double_t FGams(Double_t *x, Double_t *par);
+  static void  Fcn1(Int_t & npar, Double_t *grad,  
+                    Double_t &fval, Double_t *par, Int_t iflag);
+  static void Fcn2(Int_t & nparam, Double_t *grad, 
+                   Double_t &fval, Double_t *param, Int_t iflag);
+  void SetFCN(void (*fcn)(Int_t &, Double_t *, Double_t &, Double_t *, Int_t));
   void SetStep();
-  
-  Double_t    fTWidthCM;      // width of one lead glass module
-  Double_t    fTXWidthCM;      // width of one lead glass module in X
-  Double_t    fTYWidthCM;      // width of one lead glass module in Y
-  Double_t    fNumbPhotons;   // number of photons to be fitted: Minuit wants a Double_t!
-  Double_t    fFitPara[3*MAX_NUMB_PHOTONS+1];  // Minuit fit parameter
-  static Float_t widLG[2];//glass width X,Y
-};
-}
+  Double_t fTWidthCM;  // width of one lead glass module
+  Double_t fTXWidthCM;  // width of one lead glass module in X
+  Double_t fTYWidthCM;  // width of one lead glass module in Y
+  Double_t fNumbPhotons;  // number of photons to be fitted: Minuit wants a Double_t!
+  Double_t fFitPara[3*MAX_NUMB_PHOTONS+1];  // Minuit fit parameter
+  static Float_t widLG[2];  //glass width X,Y
+  ClassDef(FitTower,4);
+};  // class FitTower
+}  // namespace PSUGlobals
 #endif
