@@ -15,14 +15,11 @@ class PhotonHitFPD : public TObject {
   Float_t errXPos;  ///< x-position fit error
   Float_t yPos;  ///< Fitted (relative) y-position
   Float_t errYPos;  ///< y-position fit error
-  /** Default constructor */
-  PhotonHitFPD();
-  /** Constructor with position and energy */
-  PhotonHitFPD(const Float_t x, const Float_t y, const Float_t e);
+  /** Constructor with optional position and energy */
+  PhotonHitFPD(const Float_t x = -1., const Float_t y = -1.,
+               const Float_t e = 0.);
   /** Destructor */
   ~PhotonHitFPD() { }
-  /** Reset all values */
-  void Clear();
   /** Set (x, y) position and energy */
   ClassDef(PhotonHitFPD, 4)
 };  // class PhotonHitFPD
