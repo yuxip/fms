@@ -160,15 +160,15 @@ enum ETowerClusterDistance {
 void sortTowersEnergyAscending(PSUGlobals::ClusterList* clusters,
                                int nClusters) {
   for (ClusterIter i = clusters->begin(); i != clusters->end(); ++i) {
-    i->tow->UnSort();
-    i->tow->Sort();  // Sorts by *descending* energy
+    i->towers()->UnSort();
+    i->towers()->Sort();  // Sorts by *descending* energy
     // Do an exchange of towers: 0<-->N-1, 1<-->N-2... to get ascending
-    Int_t n = i->tow->GetEntriesFast();
+    Int_t n = i->towers()->GetEntriesFast();
     for(Int_t j(0); j < n / 2; ++j) {
-      TowerFPD* t1 = static_cast<TowerFPD*>(i->tow->RemoveAt(j));
-      TowerFPD* t2 = static_cast<TowerFPD*>(i->tow->RemoveAt(n - 1 - j));
-      i->tow->AddAt(t1, n - 1 - j);
-      i->tow->AddAt(t2, j);
+      TowerFPD* t1 = static_cast<TowerFPD*>(i->towers()->RemoveAt(j));
+      TowerFPD* t2 = static_cast<TowerFPD*>(i->towers()->RemoveAt(n - 1 - j));
+      i->towers()->AddAt(t1, n - 1 - j);
+      i->towers()->AddAt(t2, j);
     }  // for
   }  // for
 }
@@ -218,7 +218,7 @@ class TowerClusterAssociation : public TObject {
    */
   double separation(HitCluster* cluster, const ETowerClusterDistance distance) {
     if (kPeakTower == distance) {
-      TowerFPD* peak = static_cast<TowerFPD*>(cluster->tow->First());
+      TowerFPD* peak = static_cast<TowerFPD*>(cluster->towers()->First());
       return separation(peak);
     } else {
       // Use calculated cluster center (x0, y0)
@@ -241,7 +241,7 @@ class TowerClusterAssociation : public TObject {
    */
   bool canAssociate(HitCluster* cluster) {
     // The peak tower in a cluster is always the first
-    TowerFPD* peak = static_cast<TowerFPD*>(cluster->tow->First());
+    TowerFPD* peak = static_cast<TowerFPD*>(cluster->towers()->First());
     // Make sure that this tower has lower energy than the peak, but be careful;
     // because of digitization, it is possible that the "neighbor" tower
     // has the exact same energy as the peak tower, not just less
@@ -250,8 +250,8 @@ class TowerClusterAssociation : public TObject {
     }  // if
     // Loop over all towers in this cluster to see if this tower is
     // physically adjacent to any of them.
-    for(Int_t i(0); i < cluster->tow->GetEntriesFast(); ++i) {
-      TowerFPD* clusterTower = static_cast<TowerFPD*>(cluster->tow->At(i));
+    for(Int_t i(0); i < cluster->towers()->GetEntriesFast(); ++i) {
+      TowerFPD* clusterTower = static_cast<TowerFPD*>(cluster->towers()->At(i));
       // Place an energy selection when determining adjacent towers, as a
       // neighbor cannot exceed an adjacent tower by a factor more than
       // minRatioPeakTower, otherwise it will be considered a peak itself.
@@ -285,7 +285,7 @@ class TowerClusterAssociation : public TObject {
       if (mClusters.empty()) {
         // There is nothing in the list yet, add the cluster, simples!
         mClusters.push_back(cluster);
-        mTower->setCluster(cluster->index);
+        mTower->setCluster(cluster->index());
         inserted = true;
       } else {
         // Cluster(s) are already present, so only add the new one if it is
@@ -301,7 +301,7 @@ class TowerClusterAssociation : public TObject {
         // Add the new cluster if it is not further away than existing ones
         if (distNew <= distOld) {
           mClusters.push_back(cluster);
-          mTower->setCluster(cluster->index);
+          mTower->setCluster(cluster->index());
           inserted = true;
         }  // if
       }  // if
@@ -350,8 +350,8 @@ unsigned TowerUtil::locateClusterSeeds(TowerList* towers, TowerList* neighbors,
       // Add "high" to cluster and move towers neighboring "high" to "neighbor"
       high->setCluster(nClusts);
       clusters->push_back(new HitCluster);
-      clusters->back().index = nClusts;
-      clusters->back().tow->Add(high);
+      clusters->back().setIndex(nClusts);
+      clusters->back().towers()->Add(high);
       nClusts++ ;
       // Add neighbors of the new peak tower to the neighbor list.
       // Partition the remaining towers so that neighbours of the high tower are
@@ -416,7 +416,7 @@ unsigned TowerUtil::associateTowersWithClusters(TowerList* neighbors,
     // Attempt to move the tower to the appropriate cluster
     if (association->clusters()->size() == 1) {
       // Only one peak is closest to the tower; the tower belongs to this peak
-      association->clusters()->front()->tow->Add(*tower);
+      association->clusters()->front()->towers()->Add(*tower);
       associated.push_back(*tower);
     } else if (association->clusters()->size() > 1) {
       // Multiple potential clusters, need to do something more sophisticated
@@ -457,8 +457,8 @@ unsigned TowerUtil::associateResidualTowersWithClusters(TowerList* neighbors,
     }  // loop over all clusters
     if (!association.clusters()->empty()) {
       HitCluster* cluster = association.clusters()->front();
-      (*tower)->setCluster(cluster->index);
-      cluster->tow->Add(*tower);
+      (*tower)->setCluster(cluster->index());
+      cluster->towers()->Add(*tower);
       associated.push_back(*tower);
     }  // if
   } // loop over TObjArray "neighbor"
@@ -489,9 +489,9 @@ unsigned TowerUtil::associateValleyTowersWithClusters(TowerList* neighbors,
     HitCluster* cluster = association->nearestCluster();
     if (cluster) {
       // Move the tower to the appropriate cluster
-      association->tower()->setCluster(cluster->index);
+      association->tower()->setCluster(cluster->index());
       neighbors->remove(association->tower());
-      cluster->tow->Add(association->tower());
+      cluster->towers()->Add(association->tower());
     } else {
       std::cout << "Something is wrong! The following \"Valley\" tower does "
         << "not belong to any cluster! Error!" << std::endl;
@@ -519,8 +519,8 @@ unsigned TowerUtil::associateSubThresholdTowersWithClusters(
     HitCluster* cluster = association.nearestCluster();
     if (cluster &&
         association.separation(cluster, kClusterCenter) < maxDistanceFromPeak) {
-      (*tower)->setCluster(cluster->index);
-      cluster->tow->Add(*tower);
+      (*tower)->setCluster(cluster->index());
+      cluster->towers()->Add(*tower);
     }  // if
   }  // for
 }
@@ -585,7 +585,7 @@ void TowerUtil::CalClusterMoment(HitCluster *cluster) {
   if (cluster) {
     cluster->CalClusterMoment(Ecutoff);
   }  // if
-  cluster->SetNumbTower(cluster->tow->GetEntriesFast());
+  cluster->SetNumbTower(cluster->towers()->GetEntriesFast());
 }
 
 /* Categorise a cluster */

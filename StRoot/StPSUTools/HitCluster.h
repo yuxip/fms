@@ -46,28 +46,65 @@ class HitCluster : public StFmsCluster {
   void CalClusterMoment(Float_t Ecoff);
   void Clear(const char* optionNotUsed = "");
   void FindClusterAxis(Float_t Ecoff);
+  /** Return the index of this cluster in the event */
+  Int_t index() const;
+  /** Sets the index of this cluster in the event */
+  void setIndex(Int_t index);
+  /** Return the &chi;<sup>2</sup> of the photon fit for this cluster */
+  Float_t chiSquare() const;
+  /** Set the &chi;<sup>2</sup> of the photon fit for this cluster */
+  void setChiSquare(Float_t chi2);
+  Float_t thetaAxis() const;
+  /** Return the list of towers in this cluster */
+  TObjArray* towers();
+  /** \overload */
+  const TObjArray* towers() const;
+  /** Return the array of photons creating this cluster */
+  PhotonHitFPD* photons();
+  /** \overload */
+  const PhotonHitFPD* photons() const;
+  /** Update an StFmsCluster with values from this cluster */
   void copyTo(StFmsCluster*) const;
-// protected:
-  static const int mMaxPhotonsPerCluster = 2;
-  PhotonHitFPD photon[mMaxPhotonsPerCluster];  ///< Photon-Hits in the cluster
-  Bool_t IsEUpdated;
-  Int_t index;  ///< cluster number in an event, counts from 0
-  Float_t sigmaX;  ///< 2nd moment in x
-  Float_t sigmaY;  ///< 2nd moment in y
-  Float_t sigmaXY;  ///< 2nd moment in x-y
-  Float_t thetaAxis;  ///< theta angle in x-y plane that define the direction
+
+ protected:
+  Int_t mIndex;  ///< cluster number in an event, counts from 0
+  Float_t mSigmaX;  ///< 2nd moment in x
+  Float_t mSigmaY;  ///< 2nd moment in y
+  Float_t mSigmaXY;  ///< 2nd moment in x-y
+  Float_t mThetaAxis;  ///< theta angle in x-y plane that define the direction
                       ///< of least-2nd-sigma axis
-  Float_t chiSquare;  ///< Chi-square of the fitting
-  TObjArray* tow;  //!<  TowerFPD objects that make the cluster
+  Float_t mChiSquare;  ///< Chi-square of the fitting
+  TObjArray* mTowers;  //!<  TowerFPD objects that make the cluster
+  static const int mMaxPhotonsPerCluster = 2;
+  PhotonHitFPD mPhotons[mMaxPhotonsPerCluster];  ///< Photon-Hits in the cluster
 
  private:
   DISALLOW_COPY_AND_ASSIGN(HitCluster);
   void FindClusterAxis();
   Double_t GetSigma(Double_t theta);
   Float_t Ecutoff;
-  Bool_t EnergyUpdated;
   ClassDef(HitCluster, 7)
 };  // class HitCluster
+
+inline Int_t HitCluster::index() const { return mIndex; }
+
+inline void HitCluster::setIndex(Int_t index) { mIndex = index; }
+
+inline Float_t HitCluster::chiSquare() const { return mChiSquare; }
+
+inline void HitCluster::setChiSquare(Float_t chi2) {
+  mChiSquare = chi2;
+}
+
+inline Float_t HitCluster::thetaAxis() const { return mThetaAxis; }
+
+inline TObjArray* HitCluster::towers() { return mTowers; }
+
+inline const TObjArray* HitCluster::towers() const { return mTowers; }
+
+inline PhotonHitFPD* HitCluster::photons() { return mPhotons; }
+
+inline const PhotonHitFPD* HitCluster::photons() const { return mPhotons; }
 
 inline void HitCluster::FindClusterAxis(Float_t Ecoff) {
   Ecutoff = Ecoff;

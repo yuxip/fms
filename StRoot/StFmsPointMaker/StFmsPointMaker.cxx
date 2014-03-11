@@ -176,9 +176,9 @@ Int_t StFmsPointMaker::FindPoint() {
 			for(Int_t np = 0; np < cluster->GetNphoton(); np++){
 				
 				StFmsPoint* clpoint = new StFmsPoint();
-				clpoint->SetEnergy(ci->photon[np].energy);
-				clpoint->SetXpos(ci->photon[np].xPos);//in cm
-				clpoint->SetYpos(ci->photon[np].yPos);//in cm
+				clpoint->SetEnergy(ci->photons()[np].energy);
+				clpoint->SetXpos(ci->photons()[np].xPos);//in cm
+				clpoint->SetYpos(ci->photons()[np].yPos);//in cm
 				
 				Int_t phid = 305 + 20*(clustering.NSTB - 1) + iPh;
 				clpoint->SetPhotonId(phid);
@@ -221,7 +221,7 @@ Int_t StFmsPointMaker::FindPoint() {
 			}
 			
 			//save the tower hit info.
-			TIter next(ci->tow);
+			TIter next(ci->towers());
 			while(TowerFPD* tow = (TowerFPD*)next()){
 				if (tow->hit()->adc() >= 1) {			//minADC=1
 					Int_t snstb = clustering.NSTB; 	//starts from 1
