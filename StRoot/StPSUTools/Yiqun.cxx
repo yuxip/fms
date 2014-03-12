@@ -105,7 +105,6 @@ Float_t Yiqun::FitOnePhoton(HitCluster* p_clust) {
   }  // if
   p_clust->photons()[0] = photons.back();
   p_clust->SetNphoton(photons.size());
-  assert(photons.size() == 1);
   int ndf = p_clust->towers()->GetEntriesFast() - 3;
   if (ndf <= 0) {
     ndf = 1;
@@ -223,11 +222,6 @@ Float_t Yiqun::Fit2PhotonClust(ClusterIter p_clust) {
   }  // if
   // Use for restricting d_gg
   Double_t EcSigmaMax = p_clust->GetEnergy() * p_clust->GetSigmaMax();
-  Double_t chiSq;
-  // Fit parameters (starting positions), errors, and gradients of function
-  Double_t param[7];
-  Double_t error[7];
-  Double_t gradient[7];
   // Starting position, lower and upper limit of parameters
   Double_t start[7], lowLim[7], upLim[7];
   // Fit status, and flag
@@ -280,38 +274,16 @@ Float_t Yiqun::Fit2PhotonClust(ClusterIter p_clust) {
   upLim[4] = start[4] + maxTheta;
   upLim[5] = 1.0;
   // Call special 2-photon-cluster fitter
-  status = fitter->Fit2Pin1Clust(start, step2, lowLim, upLim);
-  if (status != 0) {
-    std::cout << "Minuit fit returns " << status << "!" << "\n";
+  PhotonList photons;
+  Double_t chiSq = fitter->Fit2Pin1Clust(start, step2, lowLim, upLim, &photons);
+  if (photons.empty()) {
+    std::cout << "Minuit fit returns error!" << "\n";
   }  // if
-  // Get the fit result
-  fitter->fMn->GetParameter(0, param[0], error[0]);
-  Int_t nPar = 3*((Int_t) param[0])+1;
-  for (Int_t ipar = 1; ipar < nPar; ipar++) {
-    fitter->fMn->GetParameter(ipar, param[ipar], error[ipar]);
-  }  // for
-  // Evaluate the Chi-square function
-  fitter->fMn->Eval(7, gradient, chiSq, param, iflag);
-  if (status != 0) {
-    std::cout << "Minuit fit returns " << status << "!" << "\n";
-  }  // if
-  // Put the fit result back in "clust"
-  p_clust->photons()[0].xPos    = param[1] + cos(param[4]) * param[3] * (1 - param[5]) / 2.0 ;
-  p_clust->photons()[0].errXPos = error[1] + (cos(param[4])*error[3]-error[4]*sin(param[4])*param[3])*(1-param[5])/2 - cos(param[4])*param[3]*error[5]/2.0;
-  p_clust->photons()[0].yPos    = param[2] + sin(param[4]) * param[3] * (1 - param[5]) / 2.0 ;
-  p_clust->photons()[0].errYPos = error[2] + (sin(param[4])*error[3]+error[4]*cos(param[4])*param[3])*(1-param[5])/2 - sin(param[4])*param[3]*error[5]/2.0;
-  p_clust->photons()[0].energy  = param[6] * (1 + param[5]) / 2.0 ;
-  p_clust->photons()[0].errEne  = error[6]*(1+param[5])/2.0 + param[6]*error[5]/2.0;
-  // Second photon
-  p_clust->photons()[1].xPos    = param[1] - cos(param[4]) * param[3] * (1 + param[5]) / 2.0 ;
-  p_clust->photons()[1].errXPos = error[1] + (-cos(param[4])*error[3]+error[4]*sin(param[4])*param[3])*(1+param[5])/2 - cos(param[4])*param[3]*error[5]/2.0;
-  p_clust->photons()[1].yPos    = param[2] - sin(param[4]) * param[3] * (1 + param[5]) / 2.0 ;
-  p_clust->photons()[1].errYPos = error[2] + (sin(param[4])*error[3]-error[4]*cos(param[4])*param[3])*(1+param[5])/2 - sin(param[4])*param[3]*error[5]/2.0;
-  p_clust->photons()[1].energy  = param[6] * (1 - param[5]) / 2.0 ;
-  p_clust->photons()[1].errEne  = error[6]*(1-param[5])/2.0 - param[6]*error[5]/2.0;
   // Do a global fit, using result of 1st fit as starting point
   // Need to set "nPhoton" before calling "GlobalFit(..)"
-  p_clust->SetNphoton(2);
+  p_clust->photons()[0] = photons.front();
+  p_clust->photons()[1] = photons.back();
+  p_clust->SetNphoton(photons.size());
   chiSq = GlobalFit(2, 1, p_clust);
   int ndf = p_clust->towers()->GetEntriesFast() - 6;
   if (ndf <= 0) {

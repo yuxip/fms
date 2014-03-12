@@ -246,11 +246,13 @@ Double_t FitTower::Fit(const Double_t *para, const Double_t *step,
 //    d_gg:          a lower bound is given by r=sqrt(sigmaX^2+sigmaY^2). 
 //                      d_gg > Max( 2.5*(r-0.6), 0.5 )
 Int_t FitTower::Fit2Pin1Clust(const Double_t *para, const Double_t *step,
-                              const Double_t *low, const Double_t *up) {
+                              const Double_t *low, const Double_t *up,
+                              PhotonList* photons) {
+  Double_t chiSq(-1.);
   // check that there is a pointer to TObjArray of towers
   if (!(FitTower::tow2Fit)) {
     std::cerr << "no tower data available! return -1!" << "\n";
-    return -1;
+    return chiSq;
   }  // if
   // must set the function to "Fcn2"!
   fMn->SetFCN(Fcn2);
@@ -282,7 +284,37 @@ Int_t FitTower::Fit2Pin1Clust(const Double_t *para, const Double_t *step,
   fMn->FixParameter(4);
   fMn->mnexcm("MIGRAD", arglist ,2,ierflg);
   fMn->mnfree(0);
-  return fMn->GetStatus() ;
+  if (0 == fMn->GetStatus() && photons) {
+    // Get the fit result
+    Double_t param[7];  // 3 * nPhotons + 1 parameters
+    Double_t error[7];
+    fMn->GetParameter(0, param[0], error[0]);
+    Int_t nPar = 3*((Int_t) param[0])+1;
+    for (Int_t ipar = 1; ipar < nPar; ipar++) {
+      fMn->GetParameter(ipar, param[ipar], error[ipar]);
+    }  // for
+    // Put the fit result back in "clust"
+    double x = param[1] + cos(param[4]) * param[3] * (1 - param[5]) / 2.0 ;
+    double xErr = error[1] + (cos(param[4])*error[3]-error[4]*sin(param[4])*param[3])*(1-param[5])/2 - cos(param[4])*param[3]*error[5]/2.0;
+    double y = param[2] + sin(param[4]) * param[3] * (1 - param[5]) / 2.0 ;
+    double yErr = error[2] + (sin(param[4])*error[3]+error[4]*cos(param[4])*param[3])*(1-param[5])/2 - sin(param[4])*param[3]*error[5]/2.0;
+    double E = param[6] * (1 + param[5]) / 2.0 ;
+    double EErr = error[6]*(1+param[5])/2.0 + param[6]*error[5]/2.0;
+    photons->push_back(PhotonHitFPD(x, y, E, xErr, yErr, EErr));
+    // Second photon
+    x = param[1] - cos(param[4]) * param[3] * (1 + param[5]) / 2.0 ;
+    xErr = error[1] + (-cos(param[4])*error[3]+error[4]*sin(param[4])*param[3])*(1+param[5])/2 - cos(param[4])*param[3]*error[5]/2.0;
+    y = param[2] - sin(param[4]) * param[3] * (1 + param[5]) / 2.0 ;
+    yErr = error[2] + (sin(param[4])*error[3]-error[4]*cos(param[4])*param[3])*(1+param[5])/2 - sin(param[4])*param[3]*error[5]/2.0;
+    E = param[6] * (1 - param[5]) / 2.0 ;
+    EErr = error[6]*(1-param[5])/2.0 - param[6]*error[5]/2.0;
+    photons->push_back(PhotonHitFPD(x, y, E, xErr, yErr, EErr));
+    // Evaluate the Chi-square function
+    Double_t gradient[7];
+    Int_t iflag = 1;
+    fMn->Eval(7, gradient, chiSq, param, iflag);
+  }  // if
+  return chiSq;
 }
 
 void FitTower::Fcn2(Int_t & nparam, Double_t *grad, Double_t &fval,

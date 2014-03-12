@@ -68,7 +68,8 @@ class FitTower : public TObject {
     - 6: E_gg     (total energy of two photons)
    */
   Int_t Fit2Pin1Clust(const Double_t *para, const Double_t *step, 
-                      const Double_t *low, const Double_t *up);
+                      const Double_t *low, const Double_t *up,
+                      PhotonList* photons);
   /**
    Shower shape function for use with TF2
    
