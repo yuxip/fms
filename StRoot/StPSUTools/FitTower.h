@@ -28,7 +28,7 @@ typedef std::list<PhotonHitFPD> PhotonList;
 class FitTower : public TObject {
  public:
   /** Constructor using detector geometry */
-  FitTower(Geom* pgeom,Int_t iew,Int_t nstb);
+  FitTower(Geom* pgeom, Int_t iew, Int_t nstb);
   /** Default constructor */
   FitTower() { }
   /** Destructor */
@@ -52,8 +52,8 @@ class FitTower : public TObject {
    The next 3 are the x position, y position and energy of a photon.
    e.g. for 1 photon [1, x0, y0, E0]; for 2 photons [2, x0, y0, E0, x1, y1, E1]
    */
-  Double_t Fit(const Double_t *par, const Double_t *step, 
-               const Double_t *low, const Double_t *up, PhotonList* photons);
+  Double_t Fit(const Double_t* par, const Double_t* step, 
+               const Double_t* low, const Double_t* up, PhotonList* photons);
   /**
    Specialized fit function for exactly 2-photon fit
    
@@ -67,8 +67,8 @@ class FitTower : public TObject {
     - 5: z_gg     (this z_gg can go from -1 to +1, so we do not set E1>E2)
     - 6: E_gg     (total energy of two photons)
    */
-  Int_t Fit2Pin1Clust(const Double_t *para, const Double_t *step, 
-                      const Double_t *low, const Double_t *up,
+  Int_t Fit2Pin1Clust(const Double_t* para, const Double_t* step, 
+                      const Double_t* low, const Double_t* up,
                       PhotonList* photons);
   /**
    Shower shape function for use with TF2
@@ -82,11 +82,10 @@ class FitTower : public TObject {
    https://drupal.star.bnl.gov/STAR/blog/leun/2010/aug/02/fms-meeting-20100802
    \todo Provide LaTeX math function in documentation
    */
-  static Double_t GGams(Double_t *x, Double_t *par);
-  TowerUtil* pTowerUtil;
+  static Double_t GGams(Double_t* x, Double_t* par);
   TMinuit* fMn;  // Minuit fitter
   static const Int_t MAX_NUMB_PHOTONS = 7;
-  Double_t step[3*MAX_NUMB_PHOTONS+1];
+  Double_t step[3 * MAX_NUMB_PHOTONS + 1];
   static TObjArray* tow2Fit;
 
  private:  
@@ -98,7 +97,7 @@ class FitTower : public TObject {
    https://drupal.star.bnl.gov/STAR/blog/leun/2010/aug/02/fms-meeting-20100802
    \todo Provide LaTeX math function in documentation
    */
-  static Double_t FGams(Double_t *x, Double_t *par);
+  static Double_t FGams(Double_t* x, Double_t* par);
   /**
    Minuit minimization function for Fit() routine
    
@@ -107,15 +106,15 @@ class FitTower : public TObject {
    For its use in ROOT via TMinuit see
    http://root.cern.ch/root/htmldoc/TMinuit.html#TMinuit:SetFCN
    */
-  static void Fcn1(Int_t & npar, Double_t *grad,  
-                    Double_t &fval, Double_t *par, Int_t iflag);
+  static void Fcn1(Int_t& npar, Double_t* grad,  
+                   Double_t& fval, Double_t* par, Int_t iflag);
   /**
    Minuit minimization function for Fit2Pin1Clust() routine
    
    See also Fcn1().
    */
-  static void Fcn2(Int_t & nparam, Double_t *grad, 
-                   Double_t &fval, Double_t *param, Int_t iflag);
+  static void Fcn2(Int_t& nparam, Double_t* grad, 
+                   Double_t& fval, Double_t* param, Int_t iflag);
   /**
    Set default steps for fitting functions Fit() and Fit2Pin1Clust()
    */
@@ -124,7 +123,7 @@ class FitTower : public TObject {
   Double_t fTXWidthCM;  ///< width of one lead glass module in X
   Double_t fTYWidthCM;  ///< width of one lead glass module in Y
   Double_t fNumbPhotons;  ///< number of photons to be fitted: Minuit wants a Double_t!
-  Double_t fFitPara[3*MAX_NUMB_PHOTONS+1];  ///< Minuit fit parameter
+  Double_t fFitPara[3 * MAX_NUMB_PHOTONS + 1];  ///< Minuit fit parameter
   static Float_t widLG[2];  ///< glass width X,Y
   ClassDef(FitTower,4);
 };  // class FitTower
