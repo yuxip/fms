@@ -149,10 +149,6 @@ void FitTower::Fcn1(Int_t& npara, Double_t* grad, Double_t& fval,
   }  // if
 }
 
-void FitTower::SetFCN(void (*fcn)(Int_t &, Double_t *, Double_t &, Double_t *, Int_t)) {
-  fMn->SetFCN(fcn);
-}
-
 Double_t FitTower::Fit(const Double_t *para, const Double_t *step,
                        const Double_t *low, const Double_t *up,
                        PhotonList* photons) {

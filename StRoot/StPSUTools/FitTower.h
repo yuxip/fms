@@ -116,7 +116,6 @@ class FitTower : public TObject {
    */
   static void Fcn2(Int_t & nparam, Double_t *grad, 
                    Double_t &fval, Double_t *param, Int_t iflag);
-  void SetFCN(void (*fcn)(Int_t &, Double_t *, Double_t &, Double_t *, Int_t));
   /**
    Set default steps for fitting functions Fit() and Fit2Pin1Clust()
    */
