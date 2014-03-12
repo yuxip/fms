@@ -44,6 +44,7 @@ FitTower::FitTower(Geom* pgeom,Int_t iew,Int_t nstb) {
   showerShapeFitFunction.SetParameters(para); 
   // create a Minuit instance
   fMn = new TMinuit(3*MAX_NUMB_PHOTONS+1);
+  fMn->SetPrintLevel(-1);  // Quiet, including suppression of warnings
 }
 
 FitTower::~FitTower() {
@@ -161,14 +162,8 @@ Double_t FitTower::Fit(const Double_t *para, const Double_t *step,
     std::cerr << "no tower data available! return -1!" << "\n";
     return chiSq;
   }  // if
-  fMn->SetPrintLevel(-1);
-  fMn->fLwarn = false ;
   // must set the function to "Fcn1"!
   fMn->SetFCN(Fcn1);
-  Double_t arglist[10];
-  Int_t ierflg = 0;
-  arglist[0] = 1;
-  fMn->mnexcm("SET ERR", arglist, 1, ierflg);
   Int_t nPh = (Int_t) para[0];
   if( nPh < 1 || nPh > MAX_NUMB_PHOTONS ) {
     fNumbPhotons = 1;
@@ -180,7 +175,7 @@ Double_t FitTower::Fit(const Double_t *para, const Double_t *step,
   fMn->mncler();
   // The first parameter tells Minuit how many photons to fit!
   // It should be a fixed parameter!
-  ierflg = 0;
+  Int_t ierflg = 0;
   fMn->mnparm(0, "nph", fNumbPhotons, 0, 0.5, 4.5, ierflg);
   // set the rest of parameters, 3 parameters for 1 photon
   for (Int_t i=0; i<fNumbPhotons; i++) {
@@ -192,6 +187,7 @@ Double_t FitTower::Fit(const Double_t *para, const Double_t *step,
     j++ ;
     fMn->mnparm(j, Form("E%d", i+1), para[j], step[j], low[j], up[j], ierflg);
   }  // if
+  Double_t arglist[10];
   arglist[0] = 1000;
   arglist[1] = 1.;
   ierflg = 0;
@@ -256,14 +252,8 @@ Int_t FitTower::Fit2Pin1Clust(const Double_t *para, const Double_t *step,
     std::cerr << "no tower data available! return -1!" << "\n";
     return -1;
   }  // if
-  fMn->SetPrintLevel(-1);
-  fMn->fLwarn = false ;
   // must set the function to "Fcn2"!
   fMn->SetFCN(Fcn2);
-  Double_t arglist[10];
-  Int_t ierflg = 0;
-  arglist[0] = 1;
-  fMn->mnexcm("SET ERR", arglist, 1, ierflg);
   Int_t nPh = (Int_t) para[0];
   fNumbPhotons = 2;
   if (nPh != 2) {
@@ -275,7 +265,7 @@ Int_t FitTower::Fit2Pin1Clust(const Double_t *para, const Double_t *step,
   fMn->mncler();
   // The first parameter tells Minuit how many photons to fit!
   // It should be a fixed parameter!
-  ierflg = 0;
+  Int_t ierflg = 0;
   fMn->mnparm(0, "nph", fNumbPhotons, 0, 1.5, 2.5, ierflg);
   fMn->mnparm(1, "xPi"  , para[1], step[1], low[1], up[1], ierflg);
   fMn->mnparm(2, "yPi"  , para[2], step[2], low[2], up[2], ierflg);
@@ -283,6 +273,7 @@ Int_t FitTower::Fit2Pin1Clust(const Double_t *para, const Double_t *step,
   fMn->mnparm(4, "theta", para[4], step[4], low[4], up[4], ierflg);
   fMn->mnparm(5, "z_gg" , para[5], step[5], low[5], up[5], ierflg);
   fMn->mnparm(6, "E_gg" , para[6], step[6], low[6], up[6], ierflg);
+  Double_t arglist[10];
   arglist[0] = 1000;
   arglist[1] = 1.;
   ierflg = 0;
