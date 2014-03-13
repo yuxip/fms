@@ -1,9 +1,14 @@
 #include "FitTower.h"
 
+#include <iostream>
+
 #include <TF2.h>
 #include <TMath.h>
 
 #include "StEvent/StFmsHit.h"
+
+#include "StPSUTools/Geom.h"
+#include "StPSUTools/TowerFPD.h"
 
 using namespace PSUGlobals;
 

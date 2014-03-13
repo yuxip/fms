@@ -13,6 +13,8 @@
 
 #include "StEvent/StFmsHit.h"
 
+#include "StPSUTools/TowerFPD.h"
+
 using namespace std;
 using namespace PSUGlobals;
 

@@ -25,6 +25,7 @@
 #define MAX_NUMER_CLUSTERS 6
 
 namespace PSUGlobals {//$NMSPC
+class ToweFPD;
 class Yiqun: public TObject {
  public:
   TowerUtil* pTowerUtil;

@@ -1,21 +1,18 @@
 #ifndef FIT_TOWER_H
 #define FIT_TOWER_H
 
-#include <iostream>
 #include <list>
 
 #include <TMinuit.h>
 #include <TObject.h>
 
-#include "StPSUTools/Geom.h"
 #include "StPSUTools/PhotonHitFPD.h"
-#include "StPSUTools/TowerFPD.h"
-#include "StPSUTools/TowerUtil.h"
 
 class TF2;
 
 namespace PSUGlobals {//$NMSPC
 typedef std::list<PhotonHitFPD> PhotonList;
+class Geom;
 /**
  \todo
  It may be safer to make FitTower a singleton class, or something like that.
