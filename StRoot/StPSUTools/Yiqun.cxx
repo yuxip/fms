@@ -1,6 +1,5 @@
 #include "Yiqun.h"
 
-#include <TCanvas.h>
 #include <TRandom.h>  // For ROOT global random generator, gRandom
 
 #include <algorithm>
@@ -567,9 +566,6 @@ Bool_t Yiqun::cluster(TowerList* towerList) {
 }
 
 Yiqun::~Yiqun() {
-  fitter->GetFunctShowShape()->Draw("colz");
-  gPad->SetLogz(true);
-  gPad->Print("showerShape.eps");
   if (fitter) {
     delete fitter;
   }  // if
