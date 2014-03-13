@@ -10,16 +10,14 @@
 #include "StPSUTools/Geom.h"
 #include "StPSUTools/TowerFPD.h"
 
-using namespace PSUGlobals;
-
-ClassImp(FitTower)
-
 namespace {
 Int_t numbPara = 10;
-TF2 showerShapeFitFunction("showerShapeFitFunction", &FitTower::GGams,
+TF2 showerShapeFitFunction("showerShapeFitFunction",
+                           &PSUGlobals::FitTower::GGams,
                            -25.0, 25.0, -25.0, 25.0, numbPara);
 }  // unnamed namespace
 
+namespace PSUGlobals {
 // Instantiate static members
 Float_t FitTower::widLG[2];
 TObjArray* FitTower::tow2Fit(NULL);
@@ -152,8 +150,8 @@ void FitTower::Fcn1(Int_t& npara, Double_t* grad, Double_t& fval,
   }  // if
 }
 
-Double_t FitTower::Fit(const Double_t *para, const Double_t *step,
-                       const Double_t *low, const Double_t *up,
+Double_t FitTower::Fit(const Double_t* para, const Double_t* step,
+                       const Double_t* low, const Double_t* up,
                        PhotonList* photons) {
   Double_t chiSq(-1.);  // Return value
   // Check that there is a pointer to TObjArray of towers
@@ -238,8 +236,8 @@ Double_t FitTower::Fit(const Double_t *para, const Double_t *step,
 //    z_gg:          should just let it vary from -1 to 1.
 //    d_gg:          a lower bound is given by r=sqrt(sigmaX^2+sigmaY^2). 
 //                      d_gg > Max( 2.5*(r-0.6), 0.5 )
-Int_t FitTower::Fit2Pin1Clust(const Double_t *para, const Double_t *step,
-                              const Double_t *low, const Double_t *up,
+Int_t FitTower::Fit2Pin1Clust(const Double_t* para, const Double_t* step,
+                              const Double_t* low, const Double_t* up,
                               PhotonList* photons) {
   Double_t chiSq(-1.);  // Return value
   // Check that there is a pointer to TObjArray of towers
@@ -324,3 +322,4 @@ void FitTower::Fcn2(Int_t& nparam, Double_t* grad, Double_t& fval,
   // Now we can call the regular Fcn1 with the translated parameters
   Fcn1(nparam, grad, fval, oldParam, iflag);
 }
+}  // namespace PSUGlobals
