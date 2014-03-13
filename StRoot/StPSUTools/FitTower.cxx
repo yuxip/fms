@@ -23,7 +23,8 @@ TF2* FitTower::GetFunctShowShape() {
   return &showerShapeFitFunction;
 }
 
-FitTower::FitTower(Geom* pgeom,Int_t iew,Int_t nstb) {
+FitTower::FitTower(Geom* pgeom,Int_t iew,Int_t nstb)
+    : fMn(3 * MAX_NUMB_PHOTONS + 1) {
   SetStep();
   Float_t* towerWidth = pgeom->FpdTowWid(iew, nstb);
   fTWidthCM = towerWidth[0];
@@ -42,18 +43,12 @@ FitTower::FitTower(Geom* pgeom,Int_t iew,Int_t nstb) {
   para[9] = 1.0;
   showerShapeFitFunction.SetParameters(para); 
   // create a Minuit instance
-  fMn = new TMinuit(3*MAX_NUMB_PHOTONS+1);
-  fMn->SetPrintLevel(-1);  // Quiet, including suppression of warnings
+  fMn.SetPrintLevel(-1);  // Quiet, including suppression of warnings
 }
 
-FitTower::~FitTower() {
-  if (fMn) {
-    delete fMn;
-  }  // if
-}
+FitTower::~FitTower() { }
 
 void FitTower::SetStep() {
-  fMn=0;
   const Double_t step0[3 * MAX_NUMB_PHOTONS + 1]= {
     0.0, 0.1, 0.1, 0.2, 0.1, 0.1, 0.2, 0.1, 0.1, 0.2, 0.1,
     0.1, 0.2, 0.1, 0.1, 0.2, 0.1, 0.1, 0.2, 0.1, 0.1, 0.2
@@ -161,44 +156,44 @@ Double_t FitTower::Fit(const Double_t *para, const Double_t *step,
     std::cerr << "no tower data available! return -1!" << "\n";
     return chiSq;
   }  // if
-  fMn->SetFCN(Fcn1);  // Must set the function for Minuit to use
+  fMn.SetFCN(Fcn1);  // Must set the function for Minuit to use
   Int_t nPh = (Int_t)para[0];  // Get the number of photons from parameters
   if (nPh < 1 || nPh > MAX_NUMB_PHOTONS) {
     std::cerr << "nPh = " << nPh << "! Number of photons must be between 1 and "
       << MAX_NUMB_PHOTONS << "! Set it to be 1!" << std::endl;
     nPh = 1;
   }  // if
-  fMn->mncler();  // Clear old parameters, so we can define the new parameters
+  fMn.mncler();  // Clear old parameters, so we can define the new parameters
   // The first parameter tells Minuit how many photons to fit!
   // It should be a fixed parameter, and between 1 and the max number of photons
   Int_t ierflg = 0;
   Double_t nPhotons(nPh);  // Minuit needs a double argument
-  fMn->mnparm(0, "nph", nPhotons, 0, 0.5, 4.5, ierflg);
+  fMn.mnparm(0, "nph", nPhotons, 0, 0.5, 4.5, ierflg);
   // Set the rest of parameters: 3 parameters per photon
   for (Int_t i = 0; i < nPh; i++) {
     Int_t j = 3 * i + 1;  // Need to set 3 parameters per photon
-    fMn->mnparm(j, Form("x%d", i+1), para[j], step[j], low[j], up[j], ierflg);
+    fMn.mnparm(j, Form("x%d", i+1), para[j], step[j], low[j], up[j], ierflg);
     j++;
-    fMn->mnparm(j, Form("y%d", i+1), para[j], step[j], low[j], up[j], ierflg);
+    fMn.mnparm(j, Form("y%d", i+1), para[j], step[j], low[j], up[j], ierflg);
     j++;
-    fMn->mnparm(j, Form("E%d", i+1), para[j], step[j], low[j], up[j], ierflg);
+    fMn.mnparm(j, Form("E%d", i+1), para[j], step[j], low[j], up[j], ierflg);
   }  // if
   Double_t arglist[10];
   arglist[0] = 1000;
   arglist[1] = 1.;
   ierflg = 0;
-  fMn->mnexcm("MIGRAD", arglist ,2,ierflg);
+  fMn.mnexcm("MIGRAD", arglist ,2,ierflg);
   // Populate the list of photons
-  if (0 == fMn->GetStatus() && photons) {
+  if (0 == fMn.GetStatus() && photons) {
     // Get the fit results for starting positions and errors
     Double_t param[1 + 3 * MAX_NUMB_PHOTONS];
     Double_t error[1 + 3 * MAX_NUMB_PHOTONS];
-    fMn->GetParameter(0, param[0], error[0]);
+    fMn.GetParameter(0, param[0], error[0]);
     // There are 3 parameters per photon, plus the 1st parameter
     nPh = (Int_t)param[0];  // Shouldn't have changed, but just to be safe...
     const Int_t nPar = 3 * nPh + 1;
     for (Int_t i(1); i < nPar; ++i) {  // Get remaining fit parameters (x, y, E)
-      fMn->GetParameter(i, param[i], error[i]);
+      fMn.GetParameter(i, param[i], error[i]);
     }  // for
     for (Int_t par(1); par < nPar; par += 3) {  // Fill photons from parameters
       photons->push_back(
@@ -207,7 +202,7 @@ Double_t FitTower::Fit(const Double_t *para, const Double_t *step,
     }  // for
     // Evaluate chi-square (*not* chi-square per degree of freedom)
     Int_t iflag = 1;  // Don't calculate 1st derivatives, 2nd argument unneeded
-    fMn->Eval(photons->size(), NULL, chiSq, param, iflag);
+    fMn.Eval(photons->size(), NULL, chiSq, param, iflag);
   }  // for
   return chiSq;
 }
@@ -247,42 +242,42 @@ Int_t FitTower::Fit2Pin1Clust(const Double_t *para, const Double_t *step,
     std::cerr << "no tower data available! return -1!" << "\n";
     return chiSq;
   }  // if
-  fMn->SetFCN(Fcn2);  // Must set the function for Minuit to use
+  fMn.SetFCN(Fcn2);  // Must set the function for Minuit to use
   Int_t nPh = (Int_t)para[0];
   if (nPh != 2) {
     std::cerr << "number of photons must be 2 for special 2-photon cluster fitter \"Int_t FitTower::Fit2Pin1Clust(...)\"!";
     std::cerr << " Set it to be 2!" << "\n";
     nPh = 2;
   }  // if
-  fMn->mncler();  // Clear old parameters, so we can define the new parameters
+  fMn.mncler();  // Clear old parameters, so we can define the new parameters
   // The first parameter tells Minuit how many photons to fit!
   // It should be a fixed parameter, in this case 2
   Int_t ierflg = 0;
   Double_t nPhotons(nPh);  // Minuit needs a double argument
-  fMn->mnparm(0, "nph", nPhotons, 0, 1.5, 2.5, ierflg);
-  fMn->mnparm(1, "xPi"  , para[1], step[1], low[1], up[1], ierflg);
-  fMn->mnparm(2, "yPi"  , para[2], step[2], low[2], up[2], ierflg);
-  fMn->mnparm(3, "d_gg" , para[3], step[3], low[3], up[3], ierflg);
-  fMn->mnparm(4, "theta", para[4], step[4], low[4], up[4], ierflg);
-  fMn->mnparm(5, "z_gg" , para[5], step[5], low[5], up[5], ierflg);
-  fMn->mnparm(6, "E_gg" , para[6], step[6], low[6], up[6], ierflg);
+  fMn.mnparm(0, "nph", nPhotons, 0, 1.5, 2.5, ierflg);
+  fMn.mnparm(1, "xPi"  , para[1], step[1], low[1], up[1], ierflg);
+  fMn.mnparm(2, "yPi"  , para[2], step[2], low[2], up[2], ierflg);
+  fMn.mnparm(3, "d_gg" , para[3], step[3], low[3], up[3], ierflg);
+  fMn.mnparm(4, "theta", para[4], step[4], low[4], up[4], ierflg);
+  fMn.mnparm(5, "z_gg" , para[5], step[5], low[5], up[5], ierflg);
+  fMn.mnparm(6, "E_gg" , para[6], step[6], low[6], up[6], ierflg);
   // Fix E_total and theta, we don't want these to be free parameters
-  fMn->FixParameter(6);
-  fMn->FixParameter(4);
+  fMn.FixParameter(6);
+  fMn.FixParameter(4);
   Double_t arglist[10];
   arglist[0] = 1000;
   arglist[1] = 1.;
   ierflg = 0;
-  fMn->mnexcm("MIGRAD", arglist ,2,ierflg);
-  fMn->mnfree(0);  // Free fixed parameters before next use of fMn
-  if (0 == fMn->GetStatus() && photons) {
+  fMn.mnexcm("MIGRAD", arglist ,2,ierflg);
+  fMn.mnfree(0);  // Free fixed parameters before next use of fMn
+  if (0 == fMn.GetStatus() && photons) {
     // Get the fit results
     Double_t param[7];  // 3 * nPhotons + 1 parameters = 7 for 2 photons
     Double_t error[7];
-    fMn->GetParameter(0, param[0], error[0]);
+    fMn.GetParameter(0, param[0], error[0]);
     Int_t nPar = 3 * (Int_t)param[0] + 1;  // Should be 7
     for (Int_t ipar = 1; ipar < nPar; ipar++) {  // Get the remaining parameters
-      fMn->GetParameter(ipar, param[ipar], error[ipar]);
+      fMn.GetParameter(ipar, param[ipar], error[ipar]);
     }  // for
     // Put the fit result back in "clust". Need to translate the special
     // parameters for 2-photon fit into x, y, E, which looks a bit complicated!
@@ -304,7 +299,7 @@ Int_t FitTower::Fit2Pin1Clust(const Double_t *para, const Double_t *step,
     photons->push_back(PhotonHitFPD(x, y, E, xErr, yErr, EErr));
     // Evaluate the Chi-square function
     Int_t iflag = 1;  // Don't calculate 1st derivatives...
-    fMn->Eval(7, NULL, chiSq, param, iflag);  // ... so 2nd argument unneeded
+    fMn.Eval(7, NULL, chiSq, param, iflag);  // ... so 2nd argument unneeded
   }  // if
   return chiSq;
 }

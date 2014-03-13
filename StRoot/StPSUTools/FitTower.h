@@ -83,7 +83,6 @@ class FitTower : public TObject {
    \todo Provide LaTeX math function in documentation
    */
   static Double_t GGams(Double_t* x, Double_t* par);
-  TMinuit* fMn;  // Minuit fitter
   static const Int_t MAX_NUMB_PHOTONS = 7;
   Double_t step[3 * MAX_NUMB_PHOTONS + 1];
   static TObjArray* tow2Fit;
@@ -121,6 +120,7 @@ class FitTower : public TObject {
   void SetStep();
   Double_t fTWidthCM;  ///< width of one lead glass module
   Double_t fFitPara[3 * MAX_NUMB_PHOTONS + 1];  ///< Minuit fit parameter
+  TMinuit fMn;  // Minuit fitter
   static Float_t widLG[2];  ///< glass width X,Y
   ClassDef(FitTower,4);
 };  // class FitTower
