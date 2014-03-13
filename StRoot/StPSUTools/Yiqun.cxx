@@ -502,15 +502,14 @@ Double_t Yiqun::EnergyInTowerByPhoton(Double_t widthLG, TowerFPD *p_tower,
   return eSS;
 }
 
-Yiqun::Yiqun(TowerList* pEm,Geom* pgeom,Int_t iew,Int_t nstb) {
+Yiqun::Yiqun(Geom* pgeom,Int_t iew,Int_t nstb) {
   p_geom=pgeom;
   EW=iew;
   NSTB=nstb;
-  Y(pEm);
 }
 
-void Yiqun::Y(TowerList* pEm) {   
-  towers = pEm;   
+Bool_t Yiqun::cluster(TowerList* towerList) {
+  towers = towerList;
   NPh=0;
   NTower=0;
   NClusts=0;
@@ -522,7 +521,7 @@ void Yiqun::Y(TowerList* pEm) {
   if (p_geom->FMSGeom) {
     widLG[1] = (p_geom->FpdTowWid(EW, NSTB))[1];
   }  // if
-  NTower=pEm->size();
+  NTower = towers->size();
   if (NTower > 578) {
     printf("Too many towers for Fit\n");
     /** \todo Need to handle this more gracefully. We CANNOT exit during a
@@ -531,7 +530,7 @@ void Yiqun::Y(TowerList* pEm) {
   }  // if
   Int_t cnt = -1;
   tow_Arr = new TObjArray(NTower);
-  for (TowerList::iterator i = pEm->begin(); i != pEm->end(); ++i) {
+  for (TowerList::iterator i = towers->begin(); i != towers->end(); ++i) {
     if (i->hit()->energy() > 0.001) {
       tow_Arr->Add(&(*i));
     }  // if
@@ -564,6 +563,7 @@ void Yiqun::Y(TowerList* pEm) {
   fitter = new FitTower(p_geom,EW,NSTB);
   Bool_t badEvent(true);
   NPh = FitEvent(NTower, NClusts, NRealClusts, badEvent);
+  return !badEvent;  // Return true for success
 }
 
 Yiqun::~Yiqun() {

@@ -131,7 +131,11 @@ Int_t StFmsPointMaker::FindPoint() {
 		  Esum += i->hit()->energy();
 		}  // for
 		if(Esum==0||Esum>500) continue; //to remove LED trails, for pp500 GeV
-    Yiqun clustering(&towers, fmsgeom, 2, instb + 1);
+    Yiqun clustering(fmsgeom, 2, instb + 1);
+    // Perform tower clustering, skip this subdetector if an error occurs
+    if (!clustering.cluster(&towers)) {
+      continue;
+    }  // if
 		//Saved cluser info into StFmsCluster
 		Int_t iPh = 0;	//sequence # in Yiqun::photons[];
 		const ClusterList& clusters = clustering.clusters();

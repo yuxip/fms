@@ -44,9 +44,16 @@ class Yiqun: public TObject {
   Int_t FitEvent(Int_t nTows, Int_t &nClusts, Int_t &nRealClusts, Bool_t &junkyEvent);
   Double_t EnergyInClusterByPhoton(Double_t widthLG, HitCluster*, PhotonHitFPD*);
   Double_t EnergyInTowerByPhoton(Double_t, TowerFPD* , PhotonHitFPD* );
+  Yiqun(Geom* pgeom,Int_t iew ,Int_t nstb);
   typedef std::vector<TowerFPD> TowerList;
-  Yiqun(TowerList* pEm,Geom* pgeom,Int_t iew ,Int_t nstb);
-  void Y(TowerList*);
+  /**
+   Perform cluster finding and photon fitting on a list of towers
+   
+   Return true if photon fits to all clusters succeeds, or false if one or more
+   clusters have a photon fit with a chi-square exceeding the maximum allowed
+   value.
+   */
+  Bool_t cluster(TowerList* towers);
   ~Yiqun();
   Geom* p_geom;
   Int_t EW;
