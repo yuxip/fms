@@ -120,8 +120,6 @@ class FitTower : public TObject {
    */
   void SetStep();
   Double_t fTWidthCM;  ///< width of one lead glass module
-  Double_t fTXWidthCM;  ///< width of one lead glass module in X
-  Double_t fTYWidthCM;  ///< width of one lead glass module in Y
   Double_t fFitPara[3 * MAX_NUMB_PHOTONS + 1];  ///< Minuit fit parameter
   static Float_t widLG[2];  ///< glass width X,Y
   ClassDef(FitTower,4);
