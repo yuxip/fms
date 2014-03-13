@@ -1,7 +1,5 @@
 #include "Yiqun.h"
 
-#include <cassert>
-
 #include <TCanvas.h>
 #include <TRandom.h>  // For ROOT global random generator, gRandom
 
@@ -202,7 +200,6 @@ Float_t Yiqun::GlobalFit(const Int_t nPh, const Int_t nCl,
   for (ClusterIter cluster = first; cluster != end; ++cluster) {
     // Loop over all photons in cluster
     for (Int_t jp = 0; jp < cluster->GetNphoton(); jp++, ++photonIter) {
-      assert(jp < 2);
       cluster->photons()[jp] = *photonIter;
     }  // for loop over photons
   }  // for loop over clusters
