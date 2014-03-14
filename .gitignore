@@ -10,6 +10,12 @@ temp_gccflags.c
 # Ignore CVS-related directories
 **CVS
 
+# Ignore ROOT files
+*.root
+
+# Ignore DAQ files
+*.daq
+
 # Ignore everything in StRoot/StEvent except the few files we develop,
 # to keep from storing the whole of StEvent in out project. If on RCF,
 # checkout StEvent via CVS.
