@@ -15,13 +15,21 @@
 #include "TVector3.h"
 
 class fmsDetectorPosition_st;
+class StFmsDbMaker;
 
 namespace PSUGlobals {//$NMSPC
 class Geom : public TObject {
  public:
   Geom();
-  bool InitDBGeom();
   ~Geom();
+  /**
+   Initialise geometry from the FMS database
+   
+   If the argument is NULL, attempt to locate an StFmsDbMaker in the current
+   chain and use that.
+   Return true if the geometry is initialised, false if it is not.
+   */
+  Bool_t initialize(StFmsDbMaker* fmsDbMaker);
   Float_t z(Int_t detectorId) const;
   Float_t xOffset(Int_t detectorId) const;
   Float_t yOffset(Int_t detectorId) const;

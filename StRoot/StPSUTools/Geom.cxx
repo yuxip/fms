@@ -10,9 +10,7 @@ using namespace PSUGlobals;
 
 ClassImp(Geom)
 
-Geom::Geom() {
-  InitDBGeom();
-}
+Geom::Geom() { }
 
 Geom::~Geom() { }
 
@@ -62,9 +60,16 @@ std::vector<Float_t> Geom::towerWidths(Int_t detectorId) const {
   return widths;
 }
 
-bool Geom::InitDBGeom() {
-	StFmsDbMaker* fmsDbMaker = static_cast<StFmsDbMaker*>(
-	  StMaker::GetChain()->GetMaker("fmsDb"));
+Bool_t Geom::initialize(StFmsDbMaker* fmsDbMaker) {
+  // If no FMS database was provided, attempt to locate on in the current chain,
+  // if one exists
+  if (!fmsDbMaker) {
+    StMaker* chain = StMaker::GetChain();
+    if (chain) {
+      fmsDbMaker = static_cast<StFmsDbMaker*>(chain->GetMaker("fmsDb"));
+    }  // if
+  }  // if
+  // Bail out if no FMS database can be located
   if (!fmsDbMaker) {
     LOG_ERROR << "Geom unable to locate an StFmsDbMaker - geometry will not "
       << "be initialised!" << endm;

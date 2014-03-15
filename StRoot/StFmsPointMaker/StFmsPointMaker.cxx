@@ -85,16 +85,22 @@ Int_t StFmsPointMaker::Init() {
 	return StMaker::Init();
 }
 
-Int_t StFmsPointMaker::InitRun(Int_t runNumber){ //gStFmsDbMaker is filled after InitRun
-	//setting up Geom, CalibStr, there are all internal functions that help the default cluster finder origanize detector
-	//geometries and calibration tables, which would stay constant for each Run
-	//only allocate new space in the begining, not in between runs
-	if(!fmsgeom)fmsgeom = new Geom();
+Int_t StFmsPointMaker::InitRun(Int_t runNumber) {
 	// Ensure we can access database information
 	mFmsDbMaker = static_cast<StFmsDbMaker*>(GetMaker("fmsDb"));
 	if (!mFmsDbMaker) {
 	  return kStErr;
 	}  // if
+	// Set up geometry, which stays constant for each run
+	// Only allocate new space in the beginning, not in between runs
+	if (!fmsgeom) {
+	  fmsgeom = new Geom;
+	  if (!fmsgeom->initialize(mFmsDbMaker)) {
+  	  // Return an error if geometry initialization fails
+	    return kStErr;
+	  }  // if
+	}  // if
+	return StMaker::InitRun(runNumber);
 }
 
 Int_t StFmsPointMaker::Finish() {
