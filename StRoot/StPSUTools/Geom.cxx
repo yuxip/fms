@@ -16,7 +16,7 @@ Geom::Geom() : FMSGeom(true) {
 
 Geom::~Geom() { }
 
-fmsDetectorPosition_st* Geom::find(int detectorId) {
+fmsDetectorPosition_st* Geom::find(Int_t detectorId) {
   fmsDetectorPosition_st* positions(NULL);
   Table::iterator entry = mPositions.find(detectorId);
   if (entry != mPositions.end()) {

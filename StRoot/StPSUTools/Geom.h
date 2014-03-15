@@ -32,6 +32,13 @@ class Geom : public TObject {
   Float_t* xOffset(Int_t , Int_t );
   Float_t* yOffset(Int_t, Int_t );
   Float_t* FpdTowWid(Int_t , Int_t );
+  /**
+   Return the position information of a detector
+   
+   Return NULL if the detector ID is invalid, or database information is
+   unavailable.
+   */
+  fmsDetectorPosition_st* find(Int_t detectorId);
 
  private:
   /*
@@ -40,7 +47,6 @@ class Geom : public TObject {
    via detector ID instead of ew/nstb. Returns an ID in the range [8, 11].
    */
   int ewNstbToDetectorId(int ew, int nstb);
-  fmsDetectorPosition_st* find(int detectorId);
   typedef std::map<int, fmsDetectorPosition_st*> Table;
   Table mPositions;
   ClassDef(Geom,3);
