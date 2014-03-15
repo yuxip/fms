@@ -10,7 +10,7 @@ using namespace PSUGlobals;
 
 ClassImp(Geom)
 
-Geom::Geom() : FMSGeom(true) {
+Geom::Geom() {
   InitDBGeom();
 }
 

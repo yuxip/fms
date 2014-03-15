@@ -16,19 +16,12 @@
 
 class fmsDetectorPosition_st;
 
-/*
-  If the geom.txt file has 16 elements in the FpdTowWidth field it
-  will be assumed that the file corresponds to the FMS data set. 
-  FMSGeom will be set to true.
- */
 namespace PSUGlobals {//$NMSPC
 class Geom : public TObject {
  public:
   Geom();
   bool InitDBGeom();
   ~Geom();
-  Bool_t FMSGeom;  // Only retained for backward compatibility. Can be deleted
-                   // once other code's dependence on it is removed.
   Float_t z(Int_t detectorId) const;
   Float_t xOffset(Int_t detectorId) const;
   Float_t yOffset(Int_t detectorId) const;
