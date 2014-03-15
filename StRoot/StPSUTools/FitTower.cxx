@@ -1,6 +1,7 @@
 #include "FitTower.h"
 
 #include <iostream>
+#include <vector>
 
 #include <TF2.h>
 #include <TMath.h>
@@ -29,7 +30,7 @@ TF2* FitTower::GetFunctShowShape() {
 FitTower::FitTower(Geom* pgeom, Int_t detectorId)
     : fMn(3 * MAX_NUMB_PHOTONS + 1) {
   SetStep();
-  const Float_t* towerWidth = pgeom->FpdTowWid(detectorId);
+  std::vector<Float_t> towerWidth = pgeom->towerWidths(detectorId);
   fTWidthCM = towerWidth[0];
   FitTower::widLG[0] = towerWidth[0];
   FitTower::widLG[1] = towerWidth[1];

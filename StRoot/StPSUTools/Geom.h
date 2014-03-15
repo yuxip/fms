@@ -7,6 +7,7 @@
 
 #include <iostream>
 #include <map>
+#include <vector>
 
 #include "TObject.h"
 #include "TString.h"
@@ -31,7 +32,8 @@ class Geom : public TObject {
   Float_t z(Int_t detectorId) const;
   Float_t xOffset(Int_t detectorId) const;
   Float_t yOffset(Int_t detectorId) const;
-  const Float_t* FpdTowWid(Int_t detectorId) const;
+  /** Return [x, y] tower widths in cm */
+  std::vector<Float_t> towerWidths(Int_t detectorId) const;
   /**
    Return the position information of a detector
    

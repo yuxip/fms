@@ -515,10 +515,7 @@ Bool_t Yiqun::cluster(TowerList* towerList) {
   pTowerUtil=new TowerUtil();
   pTowerUtil->SetMomentEcutoff(.5);  
   tow_Arr=0;
-  widLG[0]=widLG[1]=(p_geom->FpdTowWid(mDetectorId))[0];
-  if (p_geom->FMSGeom) {
-    widLG[1] = (p_geom->FpdTowWid(mDetectorId))[1];
-  }  // if
+  widLG = p_geom->towerWidths(mDetectorId);
   NTower = towers->size();
   if (NTower > 578) {
     printf("Too many towers for Fit\n");

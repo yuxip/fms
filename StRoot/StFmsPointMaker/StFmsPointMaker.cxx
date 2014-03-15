@@ -154,9 +154,8 @@ Int_t StFmsPointMaker::FindPoint() {
 				LOG_ERROR << " StFmsPointMaker::Make() Geom missing! " << endm;
 				return kStErr;
 			}
-			Float_t widLG[2];
-			widLG[0] = (p_geom->FpdTowWid(clustering.mDetectorId))[0];//lead glass x width
-			widLG[1] = (p_geom->FpdTowWid(clustering.mDetectorId))[1];//lead glass y width
+			// Lead glass x and y widths
+			std::vector<Float_t> widLG = p_geom->towerWidths(clustering.mDetectorId);
 			TVector3 xyz;
 			xyz[2] = p_geom->z(clustering.mDetectorId);
 			xyz[0] = cluster->GetX0()*widLG[0];

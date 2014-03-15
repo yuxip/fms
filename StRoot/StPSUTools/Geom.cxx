@@ -49,15 +49,17 @@ Float_t Geom::yOffset(Int_t detectorId) const {
   return 0.;
 }
 
-const Float_t* Geom::FpdTowWid(Int_t detectorId) const {
+std::vector<Float_t> Geom::towerWidths(Int_t detectorId) const {
   // I don't like this implementation, returning a pointer to access two floats
   // It relies on the data being aligned OK and seems dangerous. We should add
   // a more robust solution e.g. return a pair or 2-element vector.
   const fmsDetectorPosition_st* geometry = find(detectorId);
+  std::vector<Float_t> widths(2, 0.);
   if (geometry) {
-    return &geometry->xwidth;
+    widths.at(0) = geometry->xwidth;
+    widths.at(1) = geometry->ywidth;
   }  // if
-  return NULL;
+  return widths;
 }
 
 bool Geom::InitDBGeom() {

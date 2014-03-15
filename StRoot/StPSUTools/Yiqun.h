@@ -2,6 +2,7 @@
 #define YIQUN_H
 
 #include <iostream>
+#include <vector>
 
 #ifndef __CINT__
 // http://www.boost.org/doc/libs/1_55_0/libs/ptr_container/doc/ptr_container.html
@@ -78,7 +79,7 @@ class Yiqun: public TObject {
   Float_t minRealClusterEne;
   Int_t maxHitsInRealCluster;
   Double_t step[3*FitTower::MAX_NUMB_PHOTONS+1];
-  Double_t widLG[2];
+  std::vector<Float_t> widLG;
   static TF1* EDepCorrection;
   /**
    Response function for nonlinear energy correction, based on cerenkov studies.
