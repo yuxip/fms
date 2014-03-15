@@ -25,28 +25,28 @@ const fmsDetectorPosition_st* Geom::find(Int_t detectorId) const {
   return positions;
 }
 
-const Float_t* Geom::ZFPD(Int_t detectorId) const {
+Float_t Geom::z(Int_t detectorId) const {
   const fmsDetectorPosition_st* geometry = find(detectorId);
   if (geometry) {
-    return &geometry->zoffset;
+    return geometry->zoffset;
   }  // if
-  return NULL;
+  return 0.;
 }
 
-const Float_t* Geom::xOffset(Int_t detectorId) const {
+Float_t Geom::xOffset(Int_t detectorId) const {
   const fmsDetectorPosition_st* geometry = find(detectorId);
   if (geometry) {
-    return &geometry->xoffset;
+    return geometry->xoffset;
   }  // if
-  return NULL;
+  return 0.;
 }
 
-const Float_t* Geom::yOffset(Int_t detectorId) const {
+Float_t Geom::yOffset(Int_t detectorId) const {
   const fmsDetectorPosition_st* geometry = find(detectorId);
   if (geometry) {
-    return &geometry->yoffset;
+    return geometry->yoffset;
   }  // if
-  return NULL;
+  return 0.;
 }
 
 const Float_t* Geom::FpdTowWid(Int_t detectorId) const {

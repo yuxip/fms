@@ -28,9 +28,9 @@ class Geom : public TObject {
   ~Geom();
   Bool_t FMSGeom;  // Only retained for backward compatibility. Can be deleted
                    // once other code's dependence on it is removed.
-  const Float_t* ZFPD(Int_t detectorId) const;
-  const Float_t* xOffset(Int_t detectorId) const;
-  const Float_t* yOffset(Int_t detectorId) const;
+  Float_t z(Int_t detectorId) const;
+  Float_t xOffset(Int_t detectorId) const;
+  Float_t yOffset(Int_t detectorId) const;
   const Float_t* FpdTowWid(Int_t detectorId) const;
   /**
    Return the position information of a detector

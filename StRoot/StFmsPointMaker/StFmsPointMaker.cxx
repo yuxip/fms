@@ -158,17 +158,17 @@ Int_t StFmsPointMaker::FindPoint() {
 			widLG[0] = (p_geom->FpdTowWid(clustering.mDetectorId))[0];//lead glass x width
 			widLG[1] = (p_geom->FpdTowWid(clustering.mDetectorId))[1];//lead glass y width
 			TVector3 xyz;
-			xyz[2] = *(p_geom->ZFPD(clustering.mDetectorId));
+			xyz[2] = p_geom->z(clustering.mDetectorId);
 			xyz[0] = cluster->GetX0()*widLG[0];
 			xyz[1] = cluster->GetY0()*widLG[1];
 			if (clustering.mDetectorId == 8 ||
 			    clustering.mDetectorId == 10) { //north, negative x axis
-        xyz[0] = (*(p_geom->xOffset(clustering.mDetectorId))) - xyz[0];
+        xyz[0] = p_geom->xOffset(clustering.mDetectorId) - xyz[0];
 			}
 			else{
-        xyz[0] = (*(p_geom->xOffset(clustering.mDetectorId))) + xyz[0]; //south, positive x axis
+        xyz[0] = p_geom->xOffset(clustering.mDetectorId) + xyz[0]; //south, positive x axis
 			}
-      xyz[1] = (*(p_geom->yOffset(clustering.mDetectorId))) - xyz[1];
+      xyz[1] = p_geom->yOffset(clustering.mDetectorId) - xyz[1];
 			Double_t dist = xyz.Mag();
 			TVector3 uvec(0.,0.,0.);
 			if(dist!=0)uvec=(1./dist)*xyz;
@@ -192,18 +192,18 @@ Int_t StFmsPointMaker::FindPoint() {
 			
 				//calculate photon 4 momentum;
 				TVector3 xyzph;
-				xyzph[2] = *(p_geom->ZFPD(clustering.mDetectorId));
+				xyzph[2] = p_geom->z(clustering.mDetectorId);
 				xyzph[0] = clpoint->GetXpos();	//in cm, towWidth*x0(fit)
 				xyzph[1] = clpoint->GetYpos();  
 				
         if (clustering.mDetectorId == 8 ||
             clustering.mDetectorId == 10) { //north, negative x axis
-          xyzph[0] = (*(p_geom->xOffset(clustering.mDetectorId))) - xyzph[0];
+          xyzph[0] = p_geom->xOffset(clustering.mDetectorId) - xyzph[0];
         }
 				else{
-					xyzph[0] = (*(p_geom->xOffset(clustering.mDetectorId))) + xyzph[0];
+					xyzph[0] = p_geom->xOffset(clustering.mDetectorId) + xyzph[0];
 				}
-				xyzph[1] = (*(p_geom->yOffset(clustering.mDetectorId))) - xyzph[1];
+				xyzph[1] = p_geom->yOffset(clustering.mDetectorId) - xyzph[1];
 					
 				clpoint->SetPointXYZLab(xyzph);
 				Double_t distph = xyzph.Mag();
