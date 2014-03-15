@@ -1,11 +1,10 @@
 #include "Geom.h"
 
 #include "St_base/StMessMgr.h"
+#include "StChain/StMaker.h"
 #include "StFmsDbMaker/StFmsDbMaker.h"
 #include "tables/St_fmsDetectorPosition_Table.h"
-#include "tables/St_fmsChannelGeometry_Table.h"
 
-using namespace std;
 using namespace PSUGlobals;
 
 ClassImp(Geom)

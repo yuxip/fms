@@ -1,18 +1,10 @@
 #ifndef Geom_
 #define Geom_
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <errno.h>
-
-#include <iostream>
 #include <map>
 #include <vector>
 
-#include "TObject.h"
-#include "TString.h"
-#include "TObjArray.h"
-#include "TVector3.h"
+#include <TObject.h>
 
 class fmsDetectorPosition_st;
 class StFmsDbMaker;
@@ -50,4 +42,3 @@ class Geom : public TObject {
 };
 }  // namespace PSUGlobals
 #endif
-
