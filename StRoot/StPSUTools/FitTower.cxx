@@ -29,7 +29,7 @@ TF2* FitTower::GetFunctShowShape() {
 FitTower::FitTower(Geom* pgeom,Int_t iew,Int_t nstb)
     : fMn(3 * MAX_NUMB_PHOTONS + 1) {
   SetStep();
-  Float_t* towerWidth = pgeom->FpdTowWid(iew, nstb);
+  const Float_t* towerWidth = pgeom->FpdTowWid(iew, nstb);
   fTWidthCM = towerWidth[0];
   FitTower::widLG[0] = towerWidth[0];
   FitTower::widLG[1] = towerWidth[1];

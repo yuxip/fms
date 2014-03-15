@@ -16,16 +16,16 @@ Geom::Geom() : FMSGeom(true) {
 
 Geom::~Geom() { }
 
-fmsDetectorPosition_st* Geom::find(Int_t detectorId) {
-  fmsDetectorPosition_st* positions(NULL);
-  Table::iterator entry = mPositions.find(detectorId);
+const fmsDetectorPosition_st* Geom::find(Int_t detectorId) const {
+  const fmsDetectorPosition_st* positions(NULL);
+  Table::const_iterator entry = mPositions.find(detectorId);
   if (entry != mPositions.end()) {
     positions = entry->second;
   }  // if
   return positions;
 }
 
-int Geom::ewNstbToDetectorId(int ew, int nstb) {
+int Geom::ewNstbToDetectorId(int ew, int nstb) const {
   int id(-1);
   // Only support FMS (ew == 2)
   // detector IDs are defined in the range [1, 14], with the 4 FMS subdetectors
@@ -36,35 +36,39 @@ int Geom::ewNstbToDetectorId(int ew, int nstb) {
   return id;
 }
 
-Float_t* Geom::ZFPD(Int_t ew, Int_t nstb) {
-  fmsDetectorPosition_st* geometry = find(ewNstbToDetectorId(ew, nstb));
+const Float_t* Geom::ZFPD(Int_t ew, Int_t nstb) const {
+  const fmsDetectorPosition_st* geometry =
+    find(ewNstbToDetectorId(ew, nstb));
   if (geometry) {
     return &geometry->zoffset;
   }  // if
   return NULL;
 }
 
-Float_t* Geom::xOffset(Int_t ew, Int_t nstb) {
-  fmsDetectorPosition_st* geometry = find(ewNstbToDetectorId(ew, nstb));
+const Float_t* Geom::xOffset(Int_t ew, Int_t nstb) const {
+  const fmsDetectorPosition_st* geometry =
+    find(ewNstbToDetectorId(ew, nstb));
   if (geometry) {
     return &geometry->xoffset;
   }  // if
   return NULL;
 }
 
-Float_t* Geom::yOffset(Int_t ew, Int_t nstb) {
-  fmsDetectorPosition_st* geometry = find(ewNstbToDetectorId(ew, nstb));
+const Float_t* Geom::yOffset(Int_t ew, Int_t nstb) const {
+  const fmsDetectorPosition_st* geometry =
+    find(ewNstbToDetectorId(ew, nstb));
   if (geometry) {
     return &geometry->yoffset;
   }  // if
   return NULL;
 }
 
-Float_t* Geom::FpdTowWid(Int_t ew, Int_t nstb) {
+const Float_t* Geom::FpdTowWid(Int_t ew, Int_t nstb) const {
   // I don't like this implementation, returning a pointer to access two floats
   // It relies on the data being aligned OK and seems dangerous. We should add
   // a more robust solution e.g. return a pair or 2-element vector.
-  fmsDetectorPosition_st* geometry = find(ewNstbToDetectorId(ew, nstb));
+  const fmsDetectorPosition_st* geometry =
+    find(ewNstbToDetectorId(ew, nstb));
   if (geometry) {
     return &geometry->xwidth;
   }  // if
