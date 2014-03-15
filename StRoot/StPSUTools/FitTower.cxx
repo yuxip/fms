@@ -26,10 +26,10 @@ TF2* FitTower::GetFunctShowShape() {
   return &showerShapeFitFunction;
 }
 
-FitTower::FitTower(Geom* pgeom,Int_t iew,Int_t nstb)
+FitTower::FitTower(Geom* pgeom, Int_t detectorId)
     : fMn(3 * MAX_NUMB_PHOTONS + 1) {
   SetStep();
-  const Float_t* towerWidth = pgeom->FpdTowWid(iew, nstb);
+  const Float_t* towerWidth = pgeom->FpdTowWid(detectorId);
   fTWidthCM = towerWidth[0];
   FitTower::widLG[0] = towerWidth[0];
   FitTower::widLG[1] = towerWidth[1];

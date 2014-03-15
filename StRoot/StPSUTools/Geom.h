@@ -28,10 +28,10 @@ class Geom : public TObject {
   ~Geom();
   Bool_t FMSGeom;  // Only retained for backward compatibility. Can be deleted
                    // once other code's dependence on it is removed.
-  const Float_t* ZFPD(Int_t, Int_t ) const;
-  const Float_t* xOffset(Int_t , Int_t ) const;
-  const Float_t* yOffset(Int_t, Int_t ) const;
-  const Float_t* FpdTowWid(Int_t , Int_t ) const;
+  const Float_t* ZFPD(Int_t detectorId) const;
+  const Float_t* xOffset(Int_t detectorId) const;
+  const Float_t* yOffset(Int_t detectorId) const;
+  const Float_t* FpdTowWid(Int_t detectorId) const;
   /**
    Return the position information of a detector
    
@@ -41,12 +41,6 @@ class Geom : public TObject {
   const fmsDetectorPosition_st* find(Int_t detectorId) const;
 
  private:
-  /*
-   This is a temporary function to get detector ID from east/west (1 or 2) and
-   nstb (1-4), until we change the rest of the code to work with subdetectors
-   via detector ID instead of ew/nstb. Returns an ID in the range [8, 11].
-   */
-  int ewNstbToDetectorId(int ew, int nstb) const;
   typedef std::map<int, fmsDetectorPosition_st*> Table;
   Table mPositions;
   ClassDef(Geom,3);

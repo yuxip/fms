@@ -25,7 +25,7 @@ class Geom;
 class FitTower : public TObject {
  public:
   /** Constructor using detector geometry */
-  FitTower(Geom* pgeom, Int_t iew, Int_t nstb);
+  FitTower(Geom* pgeom, Int_t detectorId);
   /** Default constructor */
   FitTower() { }
   /** Destructor */

@@ -25,50 +25,35 @@ const fmsDetectorPosition_st* Geom::find(Int_t detectorId) const {
   return positions;
 }
 
-int Geom::ewNstbToDetectorId(int ew, int nstb) const {
-  int id(-1);
-  // Only support FMS (ew == 2)
-  // detector IDs are defined in the range [1, 14], with the 4 FMS subdetectors
-  // being [9, 12], in the same order as nstb [1, 4]
-  if (ew == 2 && nstb > 0 && nstb < 5) {
-    id = nstb + 7;
-  }  // if
-  return id;
-}
-
-const Float_t* Geom::ZFPD(Int_t ew, Int_t nstb) const {
-  const fmsDetectorPosition_st* geometry =
-    find(ewNstbToDetectorId(ew, nstb));
+const Float_t* Geom::ZFPD(Int_t detectorId) const {
+  const fmsDetectorPosition_st* geometry = find(detectorId);
   if (geometry) {
     return &geometry->zoffset;
   }  // if
   return NULL;
 }
 
-const Float_t* Geom::xOffset(Int_t ew, Int_t nstb) const {
-  const fmsDetectorPosition_st* geometry =
-    find(ewNstbToDetectorId(ew, nstb));
+const Float_t* Geom::xOffset(Int_t detectorId) const {
+  const fmsDetectorPosition_st* geometry = find(detectorId);
   if (geometry) {
     return &geometry->xoffset;
   }  // if
   return NULL;
 }
 
-const Float_t* Geom::yOffset(Int_t ew, Int_t nstb) const {
-  const fmsDetectorPosition_st* geometry =
-    find(ewNstbToDetectorId(ew, nstb));
+const Float_t* Geom::yOffset(Int_t detectorId) const {
+  const fmsDetectorPosition_st* geometry = find(detectorId);
   if (geometry) {
     return &geometry->yoffset;
   }  // if
   return NULL;
 }
 
-const Float_t* Geom::FpdTowWid(Int_t ew, Int_t nstb) const {
+const Float_t* Geom::FpdTowWid(Int_t detectorId) const {
   // I don't like this implementation, returning a pointer to access two floats
   // It relies on the data being aligned OK and seems dangerous. We should add
   // a more robust solution e.g. return a pair or 2-element vector.
-  const fmsDetectorPosition_st* geometry =
-    find(ewNstbToDetectorId(ew, nstb));
+  const fmsDetectorPosition_st* geometry = find(detectorId);
   if (geometry) {
     return &geometry->xwidth;
   }  // if

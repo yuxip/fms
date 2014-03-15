@@ -501,10 +501,9 @@ Double_t Yiqun::EnergyInTowerByPhoton(Double_t widthLG, TowerFPD *p_tower,
   return eSS;
 }
 
-Yiqun::Yiqun(Geom* pgeom,Int_t iew,Int_t nstb) {
+Yiqun::Yiqun(Geom* pgeom, Int_t detectorId) {
   p_geom=pgeom;
-  EW=iew;
-  NSTB=nstb;
+  mDetectorId = detectorId;
 }
 
 Bool_t Yiqun::cluster(TowerList* towerList) {
@@ -516,9 +515,9 @@ Bool_t Yiqun::cluster(TowerList* towerList) {
   pTowerUtil=new TowerUtil();
   pTowerUtil->SetMomentEcutoff(.5);  
   tow_Arr=0;
-  widLG[0]=widLG[1]=(p_geom->FpdTowWid(EW,NSTB))[0];
+  widLG[0]=widLG[1]=(p_geom->FpdTowWid(mDetectorId))[0];
   if (p_geom->FMSGeom) {
-    widLG[1] = (p_geom->FpdTowWid(EW, NSTB))[1];
+    widLG[1] = (p_geom->FpdTowWid(mDetectorId))[1];
   }  // if
   NTower = towers->size();
   if (NTower > 578) {
@@ -554,12 +553,12 @@ Bool_t Yiqun::cluster(TowerList* towerList) {
   MaxChi2Catag2=10.;
   minRealClusterEne=2.0;
   maxHitsInRealCluster=49;
-  if(EW==2 && (NSTB==1 || NSTB==2)) {
+  if(mDetectorId == 8 || mDetectorId == 9) {
     maxHitsInRealCluster=10;
     minRealClusterEne=.75;
     maxHitsInRealCluster=25;
   }  // if
-  fitter = new FitTower(p_geom,EW,NSTB);
+  fitter = new FitTower(p_geom, mDetectorId);
   Bool_t badEvent(true);
   NPh = FitEvent(NTower, NClusts, NRealClusts, badEvent);
   return !badEvent;  // Return true for success

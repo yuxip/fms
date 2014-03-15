@@ -131,7 +131,8 @@ Int_t StFmsPointMaker::FindPoint() {
 		  Esum += i->hit()->energy();
 		}  // for
 		if(Esum==0||Esum>500) continue; //to remove LED trails, for pp500 GeV
-    Yiqun clustering(fmsgeom, 2, instb + 1);
+		Int_t detectorId = instb + 8;  // FMS IDs from 8 to 11
+    Yiqun clustering(fmsgeom, detectorId);
     // Perform tower clustering, skip this subdetector if an error occurs
     if (!clustering.cluster(&towers)) {
       continue;
@@ -142,9 +143,9 @@ Int_t StFmsPointMaker::FindPoint() {
 		for (ClusterCIter ci = clusters.begin(); ci != clusters.end(); ++ci) {
 			StFmsCluster* cluster = new StFmsCluster();
 			
-			Int_t cluid = 305 + 20*(clustering.NSTB-1) + iPh; //cluster id = id of the 1st photon, not necessarily the highE photon
+			Int_t cluid = 305 + 20*(instb) + iPh; //cluster id = id of the 1st photon, not necessarily the highE photon
 			
-			cluster->SetNstb(clustering.NSTB);
+			cluster->SetNstb(instb + 1);
 			
       ci->copyTo(cluster);
 			//calculate cluster four momentum
@@ -154,19 +155,20 @@ Int_t StFmsPointMaker::FindPoint() {
 				return kStErr;
 			}
 			Float_t widLG[2];
-			widLG[0] = (p_geom->FpdTowWid(2, clustering.NSTB))[0];//lead glass x width
-			widLG[1] = (p_geom->FpdTowWid(2, clustering.NSTB))[1];//lead glass y width
+			widLG[0] = (p_geom->FpdTowWid(clustering.mDetectorId))[0];//lead glass x width
+			widLG[1] = (p_geom->FpdTowWid(clustering.mDetectorId))[1];//lead glass y width
 			TVector3 xyz;
-			xyz[2] = *(p_geom->ZFPD(2, clustering.NSTB));
+			xyz[2] = *(p_geom->ZFPD(clustering.mDetectorId));
 			xyz[0] = cluster->GetX0()*widLG[0];
 			xyz[1] = cluster->GetY0()*widLG[1];
-			if ((clustering.NSTB) == 1 || (clustering.NSTB) == 3) { //north, negative x axis
-        xyz[0] = (*(p_geom->xOffset(2, clustering.NSTB))) - xyz[0];
+			if (clustering.mDetectorId == 8 ||
+			    clustering.mDetectorId == 10) { //north, negative x axis
+        xyz[0] = (*(p_geom->xOffset(clustering.mDetectorId))) - xyz[0];
 			}
 			else{
-        xyz[0] = (*(p_geom->xOffset(2, clustering.NSTB))) + xyz[0]; //south, positive x axis
+        xyz[0] = (*(p_geom->xOffset(clustering.mDetectorId))) + xyz[0]; //south, positive x axis
 			}
-      xyz[1] = (*(p_geom->yOffset(2, clustering.NSTB))) - xyz[1];
+      xyz[1] = (*(p_geom->yOffset(clustering.mDetectorId))) - xyz[1];
 			Double_t dist = xyz.Mag();
 			TVector3 uvec(0.,0.,0.);
 			if(dist!=0)uvec=(1./dist)*xyz;
@@ -184,23 +186,24 @@ Int_t StFmsPointMaker::FindPoint() {
 				clpoint->SetXpos(ci->photons()[np].xPos);//in cm
 				clpoint->SetYpos(ci->photons()[np].yPos);//in cm
 				
-				Int_t phid = 305 + 20*(clustering.NSTB - 1) + iPh;
+				Int_t phid = 305 + 20*(instb) + iPh;
 				clpoint->SetPhotonId(phid);
 				iPh++;
 			
 				//calculate photon 4 momentum;
 				TVector3 xyzph;
-				xyzph[2] = *(p_geom->ZFPD(2, clustering.NSTB));
+				xyzph[2] = *(p_geom->ZFPD(clustering.mDetectorId));
 				xyzph[0] = clpoint->GetXpos();	//in cm, towWidth*x0(fit)
 				xyzph[1] = clpoint->GetYpos();  
 				
-        if ((clustering.NSTB) == 1 || (clustering.NSTB) == 3) { //north, negative x axis
-          xyzph[0] = (*(p_geom->xOffset(2, clustering.NSTB))) - xyzph[0];
+        if (clustering.mDetectorId == 8 ||
+            clustering.mDetectorId == 10) { //north, negative x axis
+          xyzph[0] = (*(p_geom->xOffset(clustering.mDetectorId))) - xyzph[0];
         }
 				else{
-					xyzph[0] = (*(p_geom->xOffset(2, clustering.NSTB))) + xyzph[0];
+					xyzph[0] = (*(p_geom->xOffset(clustering.mDetectorId))) + xyzph[0];
 				}
-				xyzph[1] = (*(p_geom->yOffset(2, clustering.NSTB))) - xyzph[1];
+				xyzph[1] = (*(p_geom->yOffset(clustering.mDetectorId))) - xyzph[1];
 					
 				clpoint->SetPointXYZLab(xyzph);
 				Double_t distph = xyzph.Mag();
@@ -228,7 +231,7 @@ Int_t StFmsPointMaker::FindPoint() {
 			TIter next(ci->towers());
 			while(TowerFPD* tow = (TowerFPD*)next()){
 				if (tow->hit()->adc() >= 1) {			//minADC=1
-					Int_t snstb = clustering.NSTB; 	//starts from 1
+					Int_t snstb = instb + 1; 	//starts from 1
 					Int_t srow = (tow->row()) - 1;		//srow starts from 0
 					Int_t scol = (tow->column()) - 1;		//scol starts from 0
 					UInt_t adc = tow->hit()->adc();
