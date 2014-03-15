@@ -5,10 +5,7 @@
 #include "StFmsDbMaker/StFmsDbMaker.h"
 #include "tables/St_fmsDetectorPosition_Table.h"
 
-using namespace PSUGlobals;
-
-ClassImp(Geom)
-
+namespace PSUGlobals {
 Geom::Geom() { }
 
 Geom::~Geom() { }
@@ -88,3 +85,4 @@ Bool_t Geom::initialize(StFmsDbMaker* fmsDbMaker) {
   }  // if
   return false;
 }
+}  // namespace PSUGlobals
