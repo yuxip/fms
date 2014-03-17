@@ -120,11 +120,6 @@ Int_t StFmsPointMaker::FindPoint() {
       cluster->SetNstb(instb + 1);
       cluster->SetClusterId(305 + 20 * instb + iPh);
       ci->copyTo(cluster);
-      // Calculate cluster four momentum
-      if (!fmsgeom) {
-        LOG_ERROR << " StFmsPointMaker::Make() Geom missing! " << endm;
-        return kStErr;
-      }  // if
       // Skip clusters that don't have physically sensible coordinates
       if (!(cluster->GetX0() > 0. && cluster->GetY0() > 0.)) {
         continue;
