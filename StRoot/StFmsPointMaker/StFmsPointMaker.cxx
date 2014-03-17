@@ -115,7 +115,7 @@ Int_t StFmsPointMaker::FindPoint() {
     Int_t iPh = 0;  // Sequence # in Yiqun::photons[]
     const PSUGlobals::ClusterList& clusters = clustering.clusters();
     for (ClusterCIter ci = clusters.begin(); ci != clusters.end(); ++ci) {
-      StFmsCluster* cluster = new StFmsCluster();
+      StFmsCluster* cluster = new StFmsCluster;
       // Cluster id = id of the 1st photon, not necessarily the highE photon
       Int_t cluid = 305 + 20 * (instb) + iPh;
       cluster->SetNstb(instb + 1);
@@ -135,10 +135,9 @@ Int_t StFmsPointMaker::FindPoint() {
       cluster->SetFourMomentum(compute4Momentum(xyz, cluster->GetEnergy()));
       // Save photons reconstructed from this cluster
       for (Int_t np = 0; np < cluster->GetNphoton(); np++) {
-        StFmsPoint* clpoint = new StFmsPoint();
+        StFmsPoint* clpoint = new StFmsPoint;
         clpoint->SetEnergy(ci->photons()[np].energy);
-        Int_t phid = 305 + 20 * (instb) + iPh;
-        clpoint->SetPhotonId(phid);
+        clpoint->SetPhotonId(305 + 20 * instb + iPh);
         iPh++;
         // Calculate photon 4 momentum
         // Photon position is in local (x, y) cm coordinates
@@ -147,26 +146,20 @@ Int_t StFmsPointMaker::FindPoint() {
           clustering.mDetectorId);
         clpoint->SetPointXYZLab(xyzph);
         clpoint->SetFourMomentum(compute4Momentum(xyzph, clpoint->GetEnergy()));
-        Int_t cluid = cluster->GetClusterId();
-        clpoint->SetParentCluId(cluid);
-        Int_t nclph = cluster->GetNphoton();
-        clpoint->SetParentNclPh(nclph);
+        clpoint->SetParentCluId(cluster->GetClusterId());
+        clpoint->SetParentNclPh(cluster->GetNphoton());
         // Add it to StFmsCluster mPhotons
         cluster->GetPointCollection()->AddPoint(clpoint);
       }  // for
       // Save the tower hit info.
       TIter next(ci->towers());
+      UChar_t status = 0;  // No status code for now --04/01/2013          
       while (PSUGlobals::TowerFPD* tow = (PSUGlobals::TowerFPD*)next()){
         if (tow->hit()->adc() >= 1) {  // Min ADC = 1
-          Int_t snstb = instb + 1; // Starts from 1
-          Int_t srow = (tow->row()) - 1;  // Row starts from 0
-          Int_t scol = (tow->column()) - 1;  // Column starts from 0
-          UInt_t adc = tow->hit()->adc();
-          Float_t tenergy = tow->hit()->energy();
-          UChar_t status = 0;  // No status code for now --04/01/2013          
-          StFmsClHit* hit = new StFmsClHit(snstb, srow, scol, adc,
-                                           tenergy, status);  
-          cluster->GetClHitCollection()->AddHit(hit);
+          cluster->GetClHitCollection()->AddHit(
+            // NSTB starts from 1, row and column from 0
+            new StFmsClHit(instb + 1, tow->row() - 1, tow->column() - 1,
+                           tow->hit()->adc(), tow->hit()->energy(), status));
         }  // if
       }  // while
       mFmsClColl->AddCluster(cluster);
