@@ -5,6 +5,7 @@
 #include <vector>
 
 #include <TObject.h>
+#include <TVector3.h>
 
 class fmsDetectorPosition_st;
 class StFmsDbMaker;
@@ -96,6 +97,38 @@ class Geom : public TObject {
    uninitialized
    */
   const fmsDetectorPosition_st* find(Int_t detectorId) const;
+  /**
+   Convert local coordinates to global (x, y, z) coordinates in cm.
+   
+   Local coordinates are defined relative to the sub-detector in question, not
+   the STAR coordinate system e.g. x = 20 means 20cm from the edge of the
+   detector.
+   
+   Note that each detector counts "positive" from the beamline outward so e.g.
+   x = 20 cm for a NORTH detector is -20 (modulo offets) in the global system,
+   as north is negative in STAR coordinates, while south is positive.
+   
+   The z position corresponds to the front (beam-facing) plane of the detector.
+   
+   Returns (0, 0, 0) for an invalid detector ID, or if Geom is uninitialized.
+   */
+  TVector3 localToGlobalCoordinates(Double_t x, Double_t y,
+                                    Int_t detectorId) const;
+  /**
+   Convert local (column, row) coordinate position to global (x, y, z) in cm.
+   
+   Column and row are real numbers to allow fractional row/column positions
+   e.g. row = 2.6 means 60% of the way through the 2nd row (column and row
+   both count from 1, not 0).
+   
+   See also localToGlobalCoordinates().
+   */
+  TVector3 columnRowToGlobalCoordinates(Double_t column, Double_t row,
+                                        Int_t detectorId) const;
+  /**
+   Return true if the sub-system is a north detector
+   */
+  static Bool_t isNorth(Int_t detectorId);
 
  private:
   typedef std::map<int, fmsDetectorPosition_st*> Table;

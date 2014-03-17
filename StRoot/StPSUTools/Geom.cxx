@@ -85,4 +85,56 @@ Bool_t Geom::initialize(StFmsDbMaker* fmsDbMaker) {
   }  // if
   return false;
 }
+
+TVector3 Geom::localToGlobalCoordinates(Double_t x, Double_t y,
+                                        Int_t detectorId) const {
+  TVector3 global(0., 0., 0.);
+  const fmsDetectorPosition_st* detector = find(detectorId);
+  if (!detector) {
+    return global;  // Uninitialized Geom object or invalid detector ID
+  }  // if
+  if (isNorth(detectorId)) {
+    // Local coordinates are always positive numbers, but north
+    // detectors have negative global STAR coordinates hence "minus column".
+    // The offset is already stored in the database as a negative value.
+    global.SetX(detector->xoffset - x);
+  } else {
+    global.SetX(detector->xoffset + x);
+  }  // if
+  // y offset gives the *top* of the detector in the global system
+  // y offset is half the vertical height, as the detectors are centered about
+  // y = 0 i.e. y offset = nrows / 2 * row height
+  // Note the y coordinate has 0 at the *bottom*, which corresponds to
+  // maximally negative in the global system.
+  global.SetY(y - detector->yoffset);
+  global.SetZ(detector->zoffset);  // Detector face
+  return global;
+}
+
+TVector3 Geom::columnRowToGlobalCoordinates(Double_t column, Double_t row,
+                                            Int_t detectorId) const {
+  const fmsDetectorPosition_st* detector = find(detectorId);
+  if (detector) {
+    // Multiply column and row by tower widths to convert to cm then just call
+    // the normal local-to-global conversion
+    return localToGlobalCoordinates(column * detector->xwidth,
+                                    row * detector->ywidth, detectorId);
+  }  // if
+  return TVector3(0., 0., 0.);  // In case of no detector information
+}
+
+Bool_t Geom::isNorth(Int_t detectorId) {
+  switch (detectorId) {
+    case kFpdNorth:  // Deliberate fall-through
+    case kFpdNorthPreshower:  // Deliberate fall-through
+    case kFpdNorthShowerMaxVertical:  // Deliberate fall-through
+    case kFpdNorthShowerMaxHorizontal:  // Deliberate fall-through
+    case kFmsNorthLarge:  // Deliberate fall-through
+    case kFmsNorthSmall:  // Deliberate fall-through
+    case kFhcNorth:
+      return true;
+    default:
+      return false;
+  }  // switch
+}
 }  // namespace PSUGlobals
