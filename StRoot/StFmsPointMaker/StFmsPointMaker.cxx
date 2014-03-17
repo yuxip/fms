@@ -1,5 +1,7 @@
 #include "StFmsPointMaker.h"
 
+#include <TLorentzVector.h>
+
 #include "St_base/StMessMgr.h"
 #include "StEvent/StEvent.h"
 #include "StEvent/StFmsClHitCollection.h"
@@ -21,6 +23,15 @@
 #ifndef __CINT__
 typedef PSUGlobals::ClusterList::const_iterator ClusterCIter;
 #endif  // __CINT__
+
+namespace {
+// Calculate a 4 momentum from a direction/momentum vector and energy
+// assuming zero mass i.e. E = p
+TLorentzVector compute4Momentum(const TVector3& xyz, Double_t energy) {
+  TVector3 mom3 = xyz.Unit() * energy;  // Momentum vector with m = 0
+  return TLorentzVector(mom3, energy);
+}
+}  // unnamed namespace
 
 StFmsPointMaker::StFmsPointMaker(const char* name)
     : StMaker(name), mFmsDbMaker(NULL), mFmsClColl(NULL), fmsgeom(NULL) { }
@@ -121,15 +132,7 @@ Int_t StFmsPointMaker::FindPoint() {
       // Cluster locations are in column-row coordinates (not cm)
       TVector3 xyz = fmsgeom->columnRowToGlobalCoordinates(
         cluster->GetX0(), cluster->GetY0(), clustering.mDetectorId);
-      Double_t dist = xyz.Mag();
-      TVector3 uvec(0.,0.,0.);
-      if (dist != 0) {
-        uvec = (1. / dist) * xyz;
-      }  // if
-      Float_t clEnergy = cluster->GetEnergy();
-      TVector3 mom3 = clEnergy*uvec;
-      TLorentzVector mom4(mom3, clEnergy);
-      cluster->SetFourMomentum(mom4);
+      cluster->SetFourMomentum(compute4Momentum(xyz, cluster->GetEnergy()));
       // Save photons reconstructed from this cluster
       for (Int_t np = 0; np < cluster->GetNphoton(); np++) {
         StFmsPoint* clpoint = new StFmsPoint();
@@ -143,16 +146,7 @@ Int_t StFmsPointMaker::FindPoint() {
           ci->photons()[np].xPos, ci->photons()[np].yPos,
           clustering.mDetectorId);
         clpoint->SetPointXYZLab(xyzph);
-        Double_t distph = xyzph.Mag();
-        TVector3 uvecph(0.,0.,0.);
-        if (distph != 0) {
-          uvecph = (1. / distph) * xyzph;
-        }  // if
-        Float_t phEnergy = clpoint->GetEnergy();
-        TVector3 phmom3;
-        phmom3 = phEnergy*uvecph;
-        TLorentzVector phmom4(phmom3,phEnergy);
-        clpoint->SetFourMomentum(phmom4);
+        clpoint->SetFourMomentum(compute4Momentum(xyzph, clpoint->GetEnergy()));
         Int_t cluid = cluster->GetClusterId();
         clpoint->SetParentCluId(cluid);
         Int_t nclph = cluster->GetNphoton();
