@@ -164,20 +164,9 @@ Int_t StFmsPointMaker::FindPoint() {
       if (!(cluster->GetX0() > 0. && cluster->GetY0() > 0.)) {
         continue;
       }  // if
-			// Lead glass x and y widths
-			std::vector<Float_t> widLG = p_geom->towerWidths(clustering.mDetectorId);
-			TVector3 xyz;
-			xyz[2] = p_geom->z(clustering.mDetectorId);
-			xyz[0] = cluster->GetX0()*widLG[0];
-			xyz[1] = cluster->GetY0()*widLG[1];
-			if (clustering.mDetectorId == 8 ||
-			    clustering.mDetectorId == 10) { //north, negative x axis
-        xyz[0] = p_geom->xOffset(clustering.mDetectorId) - xyz[0];
-			}
-			else{
-        xyz[0] = p_geom->xOffset(clustering.mDetectorId) + xyz[0]; //south, positive x axis
-			}
-      xyz[1] = xyz[1] - p_geom->yOffset(clustering.mDetectorId);
+      // Cluster locations are in column-row coordinates (not cm)
+			TVector3 xyz = p_geom->columnRowToGlobalCoordinates(
+			  cluster->GetX0(), cluster->GetY0(), clustering.mDetectorId);
 			Double_t dist = xyz.Mag();
 			TVector3 uvec(0.,0.,0.);
 			if(dist!=0)uvec=(1./dist)*xyz;
@@ -200,20 +189,9 @@ Int_t StFmsPointMaker::FindPoint() {
 				iPh++;
 			
 				//calculate photon 4 momentum;
-				TVector3 xyzph;
-				xyzph[2] = p_geom->z(clustering.mDetectorId);
-				xyzph[0] = clpoint->GetXpos();	//in cm, towWidth*x0(fit)
-				xyzph[1] = clpoint->GetYpos();  
-				
-        if (clustering.mDetectorId == 8 ||
-            clustering.mDetectorId == 10) { //north, negative x axis
-          xyzph[0] = p_geom->xOffset(clustering.mDetectorId) - xyzph[0];
-        }
-				else{
-					xyzph[0] = p_geom->xOffset(clustering.mDetectorId) + xyzph[0];
-				}
-				xyzph[1] = xyzph[1] - p_geom->yOffset(clustering.mDetectorId);
-					
+				// Photon position is in local (x, y) cm coordinates
+				TVector3 xyzph = p_geom->localToGlobalCoordinates(
+	  		  clpoint->GetXpos(), clpoint->GetYpos(), clustering.mDetectorId);
 				clpoint->SetPointXYZLab(xyzph);
 				Double_t distph = xyzph.Mag();
 				TVector3 uvecph(0.,0.,0.);
