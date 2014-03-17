@@ -160,6 +160,10 @@ Int_t StFmsPointMaker::FindPoint() {
 				LOG_ERROR << " StFmsPointMaker::Make() Geom missing! " << endm;
 				return kStErr;
 			}
+			// Skip clusters that don't have physically sensible coordinates
+      if (!(cluster->GetX0() > 0. && cluster->GetY0() > 0.)) {
+        continue;
+      }  // if
 			// Lead glass x and y widths
 			std::vector<Float_t> widLG = p_geom->towerWidths(clustering.mDetectorId);
 			TVector3 xyz;
