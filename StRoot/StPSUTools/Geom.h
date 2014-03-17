@@ -11,6 +11,33 @@ class StFmsDbMaker;
 
 namespace PSUGlobals {//$NMSPC
 /**
+ Enumeration for FPD and FMS subdetectors.
+ 
+ The numerical values are defined for compatibility with the detector ID
+ values expected by StFmsHit i.e. these are the detector ID numbers defined by
+ StFmsChannelGeometry in the database.
+ */
+enum StFmsDetectorId {
+  // FPD: forward pion detector, with preshower and shower-maximum detector
+  kFpdNorth = 0,
+  kFpdSouth = 1,
+  kFpdNorthPreshower = 2,
+  kFpdSouthPreshower = 3,
+  kFpdNorthShowerMaxVertical = 4,
+  kFpdSouthShowerMaxVertical = 5,
+  kFpdNorthShowerMaxHorizontal = 6,
+  kFpdSouthShowerMaxHorizontal = 7,
+  // FMS: forward meson spectrometer, with four subregions
+  kFmsNorthLarge = 8,
+  kFmsSouthLarge = 9,
+  kFmsNorthSmall = 10,
+  kFmsSouthSmall = 11,
+  // FHC: forward hadronic calorimeter (future detector)
+  kFhcNorth = 12,
+  kFhcSouth = 13,
+  kFmsInvalidDetectorId = -1
+};
+/**
  Wrapper around FMS detector geometry database information
  
  Provides convenience functions to access fmsDetectorPosition_st and its
