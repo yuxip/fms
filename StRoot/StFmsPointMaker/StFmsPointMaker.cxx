@@ -117,8 +117,8 @@ Int_t StFmsPointMaker::FindPoint() {
     for (ClusterCIter ci = clusters.begin(); ci != clusters.end(); ++ci) {
       StFmsCluster* cluster = new StFmsCluster;
       // Cluster id = id of the 1st photon, not necessarily the highE photon
-      Int_t cluid = 305 + 20 * (instb) + iPh;
       cluster->SetNstb(instb + 1);
+      cluster->SetClusterId(305 + 20 * instb + iPh);
       ci->copyTo(cluster);
       // Calculate cluster four momentum
       if (!fmsgeom) {
