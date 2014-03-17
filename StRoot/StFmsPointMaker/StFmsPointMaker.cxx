@@ -173,7 +173,7 @@ Int_t StFmsPointMaker::FindPoint() {
 			else{
         xyz[0] = p_geom->xOffset(clustering.mDetectorId) + xyz[0]; //south, positive x axis
 			}
-      xyz[1] = p_geom->yOffset(clustering.mDetectorId) - xyz[1];
+      xyz[1] = xyz[1] - p_geom->yOffset(clustering.mDetectorId);
 			Double_t dist = xyz.Mag();
 			TVector3 uvec(0.,0.,0.);
 			if(dist!=0)uvec=(1./dist)*xyz;
@@ -208,7 +208,7 @@ Int_t StFmsPointMaker::FindPoint() {
 				else{
 					xyzph[0] = p_geom->xOffset(clustering.mDetectorId) + xyzph[0];
 				}
-				xyzph[1] = p_geom->yOffset(clustering.mDetectorId) - xyzph[1];
+				xyzph[1] = xyzph[1] - p_geom->yOffset(clustering.mDetectorId);
 					
 				clpoint->SetPointXYZLab(xyzph);
 				Double_t distph = xyzph.Mag();

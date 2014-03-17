@@ -19,15 +19,6 @@ Bool_t TowerFPD::initialize(StFmsDbMaker* database) {
   // Get row and column from the database
   mRow = database->getRowNumber(mHit->detectorId(), mHit->channel());
   mColumn = database->getColumnNumber(mHit->detectorId(), mHit->channel());
-  // The database counts row number starting at the bottom, but the internals
-  // of this code are set up to count from the top-down (for historical reasons)
-  // so recalculate the row number. Valid FMS detector IDs are [8, 11]
-  if (mHit->detectorId() > 7 && mHit->detectorId() < 12) {
-    // Add 1 to maintain [1, N] row range rather than [0, N-1]
-    mRow = database->nRow(mHit->detectorId()) - mRow + 1;
-  } else {  // Invalid detector ID, reset to invalid values
-    mRow = mColumn = -1;
-  }  // if
   return mRow > -1 && mColumn > -1;
 }
 
