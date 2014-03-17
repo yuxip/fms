@@ -1,54 +1,54 @@
-//Call Yiqun class to find FMS clusters and
-//fit clusters with photon hypothesis (shower fit)
-//adapted from PSU code by Yuxi Pan --03/31/2013
-
 #ifndef StFmsPointMaker_HH
 #define StFmsPointMaker_HH
 
 #include <vector>
 
-#include <TMatrix.h>
+#include "StChain/StMaker.h"
 
-#ifndef StMaker_H
-#define StMaker_H
-#include "StMaker.h"
-#endif
-#include "StPSUTools/Yiqun.h"
 #include "StPSUTools/TowerFPD.h"
-#include "StPSUTools/Geom.h"
-using namespace std;
-using namespace PSUGlobals;
 
 class StFmsDbMaker;
-class StFmsHitMaker;
 class StFmsClusterCollection;
 class StFmsPointCollection;
+namespace PSUGlobals { class Geom; }
+
+/**
+ Call Yiqun class to find FMS clusters and
+ fit clusters with photon hypothesis (shower fit)
+ adapted from PSU code by Yuxi Pan --03/31/2013
+ */
 class StFmsPointMaker : public StMaker {
+ public:
+  /** Constructor */
+  StFmsPointMaker(const char* name = "StFmsPointMaker");
+  /** Destructor */
+  ~StFmsPointMaker();
+  /** Called at the start to perform one-time initialization steps */
+  Int_t Init();
+  /** Called by StMaker when switch to a new run number */
+  Int_t InitRun(Int_t runNumber);
+  /** Called once per event to process the event */
+  Int_t Make();
+  /** Called after each event to reset values */
+  void Clear(Option_t* option = "");
+  /** Called at the end to perform one-time cleanup steps */
+  Int_t Finish();
 
-public:
-	StFmsPointMaker(const char* name);
-	~StFmsPointMaker();
-	
-	void  Clear(const char* opt="");
-	Int_t Init();
-	Int_t InitRun(Int_t runNumber);    //called by StMaker when switch to a new run#
-	Int_t Make();
-	Int_t Finish();
-
-
-private:
-
-	Int_t FindPoint();			//  --interface to the actual photon reconstruction
+ private:
+  /** Interface to the actual photon reconstruction */
+  Int_t FindPoint();
+  /** Return true if a detector/row/column number physically exists */
   Bool_t Legal(Int_t iew, Int_t nstb, Int_t row0, Int_t col0);
-
-  StFmsDbMaker* mFmsDbMaker;
-	typedef std::vector<PSUGlobals::TowerFPD> TowerList;
-	std::vector<TowerList> mTowers;  // One for each of four subdetectors
-	Bool_t populateTowerLists();
-	StFmsClusterCollection* mFmsClColl;	//! --clusters (and points within cluster) to be added to TDataSet
-	//StFmsPointCollection*   mFmsPtsColl;	//! --all the points (photons) extracted from clusters
-	Geom* fmsgeom;
-	
-	ClassDef(StFmsPointMaker,0)
+  StFmsDbMaker* mFmsDbMaker;  //!< Access to FMS database information
+  typedef std::vector<PSUGlobals::TowerFPD> TowerList;
+  std::vector<TowerList> mTowers; ///< One for each of four FMS sub-detectors
+  /** Read hits from StEvent and prepare them for clustering */
+  Bool_t populateTowerLists();
+  /** clusters (and points within cluster) to be added to TDataSet */
+  StFmsClusterCollection* mFmsClColl;  //!
+  /** all the points (photons) extracted from clusters */
+  //StFmsPointCollection*   mFmsPtsColl;  //!
+  PSUGlobals::Geom* fmsgeom;  //!< Access to current FMS geometry information
+  ClassDef(StFmsPointMaker, 0)
 };
 #endif
