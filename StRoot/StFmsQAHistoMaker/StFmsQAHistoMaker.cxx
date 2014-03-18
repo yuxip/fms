@@ -4,7 +4,6 @@
 #include <string>
 
 #include "StEvent/StFmsClusterCollection.h"
-#include "StEvent/StFmsClHitCollection.h"
 #include "StEvent/StFmsPointCollection.h"
 
 #include "TObjArray.h"
@@ -148,11 +147,6 @@ Int_t StFmsQAHistoMaker::Init() {
       oss << "Row vs. column, NSTB = " << nstb;
       hfmsy0x0[nstb]->SetTitle(oss.str().c_str());
     }  // for
-    // Histogram of energies for hits from StFmsHit vector vs. corresponding
-    // hits from StFmsClHitCollection to ensure they give the same results
-    hfmshit1Evshit2E = new TH2F("hfmshit1Evshit2E",
-                                "E from hit list 1 vs. E from hit list 2",
-  	                            100, -2., 3., 100, -2., 3.);
 	}
 	if(mEmcQA){
 	//	hemcNhitvsevt = new TH2F("hemcNhitvsevt","EMC #towers vs event number",2e3,0,2e6,5520,0,5520);
@@ -283,16 +277,6 @@ Int_t StFmsQAHistoMaker::Make() {
         hfmsphoEvseta->Fill(photonEta,photonE);
         hfmsphoEvsphi->Fill(photonPhi,photonE);
       }
-      // Iterate over both versions of the hit list
-      // These should be in the same order, so giving the same energies
-      StPtrVecFmsClHit& hits1 = (*iclu)->GetClHitCollection()->hits();
-      std::vector<StFmsHit*>& hits2 = (*iclu)->hits();
-      StPtrVecFmsClHit::iterator h1iter = hits1.begin();
-      std::vector<StFmsHit*>::iterator h2iter = hits2.begin();
-      for ( ; h1iter != hits1.end(); ++h1iter, ++h2iter) {
-        hfmshit1Evshit2E->Fill(TMath::Log10((*h1iter)->GetEnergy()),
-                               TMath::Log10((*h2iter)->energy()));
-      }  // for
 		}
 		hfmsNhitvsevt->Fill(ievt,nhits);
 		hfmsNphovsevt->Fill(ievt,nphotons);

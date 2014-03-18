@@ -18,7 +18,6 @@ using std::vector;
 //class that represents a tower cluster
 //Yuxi Pan 03/31/2013
 
-class StFmsClHitCollection;
 class StFmsPointCollection;
 
 class StFmsCluster : public StObject {
@@ -45,7 +44,6 @@ public:
 	TLorentzVector GetFourMomentum() const { return mFourMomentum; }
 
 	StFmsPointCollection* GetPointCollection() { return mPhotons; }
-	StFmsClHitCollection* GetClHitCollection() { return mClhits; }	
 	
 	
 	void SetNstb( Int_t nstb )		{ mNstb = nstb; }	
@@ -82,7 +80,6 @@ protected:
 
 	StFmsPointCollection*	mPhotons; 	//->
 						//fitted points (photons) in the cluster
-	StFmsClHitCollection*	mClhits;	//->
 	std::vector<StFmsHit*> mHits;  // Pointers 
 
 						//an array of tower hits of the current cluster

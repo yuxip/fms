@@ -7,7 +7,6 @@
 
 #include "St_base/StMessMgr.h"
 #include "StEvent/StEvent.h"
-#include "StEvent/StFmsClHitCollection.h"
 #include "StEvent/StFmsClusterCollection.h"
 #include "StEvent/StFmsCollection.h"
 #include "StEvent/StFmsHit.h"
@@ -167,18 +166,12 @@ Int_t StFmsPointMaker::FindPoint() {
       UChar_t status = 0;  // No status code for now --04/01/2013          
       while (PSUGlobals::TowerFPD* tow = (PSUGlobals::TowerFPD*)next()){
         if (tow->hit()->adc() >= 1) {  // Min ADC = 1
-          cluster->GetClHitCollection()->AddHit(
-            // NSTB starts from 1, row and column from 0
-            new StFmsClHit(instb + 1, tow->row() - 1, tow->column() - 1,
-                           tow->hit()->adc(), tow->hit()->energy(), status));
           cluster->hits().push_back(tow->hit());
           // Make sure the hit is in the original collection
           assert(std::find(fmsCollection->hits().begin(),
                            fmsCollection->hits().end(),
                            cluster->hits().back()) !=
                  fmsCollection->hits().end());
-          assert(cluster->GetClHitCollection()->hits().back()->GetAdc() ==
-                 cluster->hits().back()->adc());
         }  // if
       }  // while
       fmsCollection->addCluster(cluster);
