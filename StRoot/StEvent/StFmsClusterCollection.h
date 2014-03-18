@@ -6,6 +6,7 @@
 #include "StObject.h"
 #include "TDataSet.h"
 
+#include "StEvent/StContainers.h"
 #include "StFmsCluster.h"
 
 class StFmsClusterCollection : public TDataSet {

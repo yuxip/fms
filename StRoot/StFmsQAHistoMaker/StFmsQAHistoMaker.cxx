@@ -242,7 +242,7 @@ Int_t StFmsQAHistoMaker::Make() {
 	
 		Int_t nphotons = 0;
 		Int_t nhits = 0;
-		for(StFmsClusterConstIterator iclu = fmsclusters->clusters().begin(); iclu != fmsclusters->clusters().end(); iclu++){
+		for(StPtrVecFmsClusterConstIterator iclu = fmsclusters->clusters().begin(); iclu != fmsclusters->clusters().end(); iclu++){
 			StFmsPointCollection* fmspoints = (*iclu)->GetPointCollection();
 			nphotons += fmspoints->NumberOfPoints();
 			nhits += (*iclu)->GetNTower();

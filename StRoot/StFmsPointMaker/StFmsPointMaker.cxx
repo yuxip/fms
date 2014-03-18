@@ -96,6 +96,18 @@ Int_t StFmsPointMaker::Make() {
   
 Int_t StFmsPointMaker::FindPoint() {
   LOG_DEBUG << " StFmsPointMaker::FindPoint() " << endm;
+  StEvent* event = static_cast<StEvent*>(GetDataSet("StEvent"));
+  if (!event) {
+    LOG_ERROR << "StFmsPointMaker::populateTowerLists() did not find "
+      << "an StEvent" << endm;
+      return false;
+  }  // if
+  StFmsCollection* fmsCollection = event->fmsCollection();
+  if (!fmsCollection) {
+    LOG_ERROR << "StFmsPointMaker::populateTowerLists() did not find "
+      << "an StFmsCollection in StEvent" << endm;
+      return false;
+  }  // if
   for (Int_t instb = 0; instb < 4; instb++) {
     TowerList& towers = mTowers.at(instb);
     Float_t Esum = 0.f;
@@ -155,11 +167,13 @@ Int_t StFmsPointMaker::FindPoint() {
             // NSTB starts from 1, row and column from 0
             new StFmsClHit(instb + 1, tow->row() - 1, tow->column() - 1,
                            tow->hit()->adc(), tow->hit()->energy(), status));
+          cluster.mHits.push_back(tow->hit());
         }  // if
       }  // while
       mFmsClColl->AddCluster(cluster);
     }  // for loop over clusters
   }  // for loop over NSTB
+  event->setFmsCollection(fmsCollection);
   LOG_DEBUG << "StFmsPointMaker::FindPoint() --StFmsCluster collections filled "
     << endm;
   LOG_DEBUG << "nClusters = " << this->mFmsClColl->NumberOfClusters() << endm;

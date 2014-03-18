@@ -5,6 +5,8 @@
 #include "Stiostream.h"
 #include "TLorentzVector.h"
 
+#include "StEvent/StFmsHit.h"
+
 #include <vector>
 
 #ifndef ST_NO_NAMESPACES
@@ -59,6 +61,7 @@ public:
 	void SetChi2NdfPh2(Float_t chi2ndfph2)	{ mChi2NdfPh2 = chi2ndfph2; }
 	void SetClusterId ( Float_t cluid )	{ mCluId = cluid; }
 	void SetFourMomentum ( TLorentzVector p4 ) { mFourMomentum = p4; }
+	std::vector<StFmsHit*>mHits;  // Pointers 
 
 protected:
 	
@@ -87,8 +90,8 @@ protected:
 
 ostream& operator<<(ostream&, const StFmsCluster&);
 
-typedef vector<StFmsCluster*> StPtrVecFmsCluster;
-typedef StPtrVecFmsCluster::iterator StFmsClusterIterator;
-typedef StPtrVecFmsCluster::const_iterator StFmsClusterConstIterator;
+//typedef vector<StFmsCluster*> StPtrVecFmsCluster;
+//typedef StPtrVecFmsCluster::iterator StFmsClusterIterator;
+//typedef StPtrVecFmsCluster::const_iterator StFmsClusterConstIterator;
 
 #endif

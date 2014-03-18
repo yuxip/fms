@@ -32,7 +32,7 @@ void StFmsClusterCollection::Print( Option_t *option ) const {
 
         LOG_INFO << "+++++ StFmsClusterCollection--NumberOfClusters: " << this->NumberOfClusters() << endm;
 
-        for(StFmsClusterConstIterator iclu = mClusters.begin(); iclu != mClusters.end(); iclu++){
+        for(StPtrVecFmsClusterConstIterator iclu = mClusters.begin(); iclu != mClusters.end(); iclu++){
                 (*iclu)->Print();
         }
 
