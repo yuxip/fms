@@ -30,6 +30,8 @@ StRoot/StEvent/*
 !StRoot/StEvent/StFmsClusterCollection.h
 !StRoot/StEvent/StFmsCluster.cxx
 !StRoot/StEvent/StFmsCluster.h
+!StRoot/StEvent/StFmsCollection.cxx
+!StRoot/StEvent/StFmsCollection.h
 !StRoot/StEvent/StFmsPointCollection.cxx
 !StRoot/StEvent/StFmsPointCollection.h
 !StRoot/StEvent/StFmsPoint.cxx
