@@ -237,23 +237,23 @@ Int_t StFmsQAHistoMaker::Make() {
 
 	if(mFmsQA){
 
-		//access fms points
-		StFmsClusterCollection* fmsclusters = (StFmsClusterCollection*)StMaker::GetChain()->GetDataSet("StFmsClusterCollection");
-		if(!fmsclusters){
-			LOG_ERROR << "No StFmsClusterCollection " << endm;
-			return kStErr;
-		}
-		StEvent *mEvent = static_cast<StEvent*>(this->GetDataSet("StEvent"));
-		if(!mEvent){
+		StEvent *event = static_cast<StEvent*>(GetDataSet("StEvent"));
+		if(!event){
 			LOG_ERROR << " no StEvent " << endm;
 			return kStErr;
 		}		
-		
-		hfmsNcluvsevt->Fill(ievt,fmsclusters->NumberOfClusters());
+    StFmsCollection* fmsCollection = event->fmsCollection();
+    if (!fmsCollection) {
+      LOG_ERROR << "StFmsPointMaker::populateTowerLists() did not find "
+        << "an StFmsCollection in StEvent" << endm;
+        return false;
+    }  // if
+		const std::vector<StFmsCluster*>& fmsclusters = fmsCollection->clusters();
+		hfmsNcluvsevt->Fill(ievt,fmsclusters.size());
 	
 		Int_t nphotons = 0;
 		Int_t nhits = 0;
-		for(StPtrVecFmsClusterConstIterator iclu = fmsclusters->clusters().begin(); iclu != fmsclusters->clusters().end(); iclu++){
+		for(std::vector<StFmsCluster*>::const_iterator iclu = fmsclusters.begin(); iclu != fmsclusters.end(); iclu++){
 			StFmsPointCollection* fmspoints = (*iclu)->GetPointCollection();
 			nphotons += fmspoints->NumberOfPoints();
 			nhits += (*iclu)->GetNTower();
@@ -270,8 +270,8 @@ Int_t StFmsQAHistoMaker::Make() {
         }  // if
       }  // if
       //loop over hits
-      for(StFmsClHitConstIterator ihit = (*iclu)->GetClHitCollection()->hits().begin(); ihit != (*iclu)->GetClHitCollection()->hits().end(); ihit++){
-        Float_t hitE = (*ihit)->GetEnergy();
+      for(std::vector<StFmsHit*>::const_iterator ihit = (*iclu)->hits().begin(); ihit != (*iclu)->hits().end(); ihit++){
+        Float_t hitE = (*ihit)->energy();
         hfmshitEvsevt->Fill(ievt,hitE);
       }
       for(StFmsPointConstIterator ipts = fmspoints->points().begin(); ipts != fmspoints->points().end(); ipts++){

@@ -181,10 +181,10 @@ Int_t StFmsPointMaker::FindPoint() {
                  cluster->hits().back()->adc());
         }  // if
       }  // while
+      fmsCollection->addCluster(cluster);
       mFmsClColl->AddCluster(cluster);
     }  // for loop over clusters
   }  // for loop over NSTB
-  event->setFmsCollection(fmsCollection);
   LOG_DEBUG << "StFmsPointMaker::FindPoint() --StFmsCluster collections filled "
     << endm;
   LOG_DEBUG << "nClusters = " << this->mFmsClColl->NumberOfClusters() << endm;
