@@ -72,7 +72,7 @@ private:
 	TH2F* hfmsphoEvseta;
 	TH2F* hfmsphoEvsphi;
   std::map<int, TH2F*> hfmsy0x0;
-	
+	TH2F* hfmshit1Evshit2E;
 	
 	//EmcQA
 	//TH2F* hemchitEtavsevt = new TH2F("hemchitEtavsevt","emc hit #eta vs evt",2e4,0,2e6,100,-1,1);

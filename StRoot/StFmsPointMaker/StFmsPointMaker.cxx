@@ -1,5 +1,8 @@
 #include "StFmsPointMaker.h"
 
+#include <algorithm>
+#include <cassert>
+
 #include <TLorentzVector.h>
 
 #include "St_base/StMessMgr.h"
@@ -169,6 +172,13 @@ Int_t StFmsPointMaker::FindPoint() {
             new StFmsClHit(instb + 1, tow->row() - 1, tow->column() - 1,
                            tow->hit()->adc(), tow->hit()->energy(), status));
           cluster->hits().push_back(tow->hit());
+          // Make sure the hit is in the original collection
+          assert(std::find(fmsCollection->hits().begin(),
+                           fmsCollection->hits().end(),
+                           cluster->hits().back()) !=
+                 fmsCollection->hits().end());
+          assert(cluster->GetClHitCollection()->hits().back()->GetAdc() ==
+                 cluster->hits().back()->adc());
         }  // if
       }  // while
       mFmsClColl->AddCluster(cluster);

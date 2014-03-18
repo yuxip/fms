@@ -40,7 +40,7 @@ unsigned int StFmsCollection::nClusters() const { return mClusters.size(); }
 //unsigned int StFmsCollection::nPoints() const { return mPoints.size(); }
 void StFmsCollection::addCluster(StFmsCluster* cluster){mClusters.push_back(cluster);}
 //void StFmsCollection::addPoint(StFmsPoint* point){mPoints.push_back(point);}
-StSPtrVecFmsCluster& StFmsCollection::clusters() {return mClusters;}
-const StSPtrVecFmsCluster& StFmsCollection::clusters() const {return mClusters;}
+std::vector<StFmsCluster*>& StFmsCollection::clusters() {return mClusters;}
+const std::vector<StFmsCluster*>& StFmsCollection::clusters() const {return mClusters;}
 //StSPtrVecFmsPoint& StFmsCollection::points() {return mPoints;}
 //const StSPtrVecFmsPoint& StFmsCollection::points() const {return mPoints;}

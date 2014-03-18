@@ -40,14 +40,14 @@ public:
     StSPtrVecFmsHit&              hits();
     const StSPtrVecFmsHit&        hits() const;
     
-    StSPtrVecFmsCluster&        clusters();
-    const StSPtrVecFmsCluster&  clusters() const;
+    std::vector<StFmsCluster*>&        clusters();
+    const std::vector<StFmsCluster*>&  clusters() const;
     //StSPtrVecFmsPoint&          points();
     //const StSPtrVecFmsPoint&    points() const;
     
 private:
     StSPtrVecFmsHit mHits;
-    StSPtrVecFmsCluster mClusters;
+    std::vector<StFmsCluster*> mClusters;
     //StSPtrVecFmsPoint mPoints;
     
     ClassDef(StFmsCollection,1)
