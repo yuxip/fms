@@ -20,6 +20,8 @@ temp_gccflags.c
 # to keep from storing the whole of StEvent in out project. If on RCF,
 # checkout StEvent via CVS.
 StRoot/StEvent/*
+!StRoot/StEvent/StContainers.cxx
+!StRoot/StEvent/StContainers.h
 !StRoot/StEvent/StFmsClHitCollection.cxx
 !StRoot/StEvent/StFmsClHitCollection.h
 !StRoot/StEvent/StFmsClHit.cxx
