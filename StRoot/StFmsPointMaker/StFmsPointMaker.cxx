@@ -21,6 +21,7 @@
 #include "StPSUTools/Yiqun.h"
 
 #ifndef __CINT__
+typedef PSUGlobals::ClusterList::iterator ClusterIter;
 typedef PSUGlobals::ClusterList::const_iterator ClusterCIter;
 #endif  // __CINT__
 
@@ -125,8 +126,8 @@ Int_t StFmsPointMaker::FindPoint() {
     }  // if
     // Saved cluser info into StFmsCluster
     Int_t iPh = 0;  // Sequence # in Yiqun::photons[]
-    const PSUGlobals::ClusterList& clusters = clustering.clusters();
-    for (ClusterCIter ci = clusters.begin(); ci != clusters.end(); ++ci) {
+    PSUGlobals::ClusterList& clusters = clustering.clusters();
+    for (ClusterIter ci = clusters.begin(); ci != clusters.end(); ++ci) {
       StFmsCluster* cluster = new StFmsCluster;
       // Cluster id = id of the 1st photon, not necessarily the highE photon
       cluster->SetNstb(instb + 1);
@@ -167,7 +168,7 @@ Int_t StFmsPointMaker::FindPoint() {
             // NSTB starts from 1, row and column from 0
             new StFmsClHit(instb + 1, tow->row() - 1, tow->column() - 1,
                            tow->hit()->adc(), tow->hit()->energy(), status));
-          cluster.mHits.push_back(tow->hit());
+          cluster->hits().push_back(tow->hit());
         }  // if
       }  // while
       mFmsClColl->AddCluster(cluster);
@@ -198,9 +199,9 @@ Bool_t StFmsPointMaker::populateTowerLists() {
       return false;
   }  // if
   mTowers.assign(4, TowerList());
-  const StSPtrVecFmsHit& hits = fmsCollection->hits();
-  for (StSPtrVecFmsHitConstIterator i = hits.begin(); i != hits.end(); ++i) {
-    const StFmsHit* hit = *i;
+  StSPtrVecFmsHit& hits = fmsCollection->hits();
+  for (StSPtrVecFmsHitIterator i = hits.begin(); i != hits.end(); ++i) {
+    StFmsHit* hit = *i;
     Int_t row = mFmsDbMaker->getRowNumber(hit->detectorId(), hit->channel());
     Int_t column = mFmsDbMaker->getColumnNumber(hit->detectorId(),
                                                 hit->channel());

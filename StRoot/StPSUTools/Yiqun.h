@@ -40,6 +40,7 @@ class Yiqun: public TObject {
   Float_t GlobalFit(const Int_t, const Int_t, ClusterIter);
   Float_t Fit2PhotonClust(ClusterIter);
   bool validate2ndPhoton(ClusterIter cluster);
+  ClusterList& clusters() { return mClusters; }
   const ClusterList& clusters() const { return mClusters; }
 #endif  // __CINT__
   Int_t FitEvent(Int_t nTows, Int_t &nClusts, Int_t &nRealClusts, Bool_t &junkyEvent);

@@ -33,7 +33,7 @@ class TowerFPD : public TObject {
 	 Initialize with an StFmsHit, which the TowerFPD does *now* own. It should
 	 therefore have longer lifetime that the TowerFPD.
 	 */
-	TowerFPD(const StFmsHit* fmsHit);
+	TowerFPD(StFmsHit* fmsHit);
 	/** Destructor */
 	~TowerFPD();
 	/**
@@ -59,6 +59,8 @@ class TowerFPD : public TObject {
 	 */
 	Bool_t IsNeighbor(TowerFPD* tower);
 	/** Returns the hit information for this tower (NULL if unknown) */
+	StFmsHit* hit();
+	/** Returns the hit information for this tower (NULL if unknown) */
 	const StFmsHit* hit() const;
 	/** Returns the row of this tower (-1 if unknown) */
 	Int_t column() const;
@@ -70,7 +72,7 @@ class TowerFPD : public TObject {
 	Int_t setCluster(Int_t cluster);
 
  protected:
-  const StFmsHit* mHit;  //!< Hit information, not owned by TowerFPD
+  StFmsHit* mHit;  //!< Hit information, not owned by TowerFPD
 	Int_t mColumn;  ///< Column number, starts at 0, horizontal (STAR x-coord)
 	Int_t mRow;  ///< Row number, starts at 0, vertical (STAR y-coord)
 	Int_t mCluster;  ///< Index of cluster the tower is associated with
@@ -78,6 +80,8 @@ class TowerFPD : public TObject {
 };
 
 inline Bool_t TowerFPD::IsSortable() const { return kTRUE; }
+
+inline StFmsHit* TowerFPD::hit() { return mHit; }
 
 inline const StFmsHit* TowerFPD::hit() const { return mHit; }
 

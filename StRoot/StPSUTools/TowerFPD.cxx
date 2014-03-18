@@ -7,7 +7,7 @@ namespace PSUGlobals {
 TowerFPD::TowerFPD()
     : mHit(NULL), mColumn(-1), mRow(-1), mCluster(-1) { }
 
-TowerFPD::TowerFPD(const StFmsHit* fmsHit)
+TowerFPD::TowerFPD(StFmsHit* fmsHit)
     : mHit(fmsHit), mColumn(-1), mRow(-1), mCluster(-1) { }
 
 TowerFPD::~TowerFPD() { }

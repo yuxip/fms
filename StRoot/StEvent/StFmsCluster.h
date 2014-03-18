@@ -61,7 +61,7 @@ public:
 	void SetChi2NdfPh2(Float_t chi2ndfph2)	{ mChi2NdfPh2 = chi2ndfph2; }
 	void SetClusterId ( Float_t cluid )	{ mCluId = cluid; }
 	void SetFourMomentum ( TLorentzVector p4 ) { mFourMomentum = p4; }
-	std::vector<StFmsHit*>mHits;  // Pointers 
+  std::vector<StFmsHit*>& hits() { return mHits; }
 
 protected:
 	
@@ -83,6 +83,7 @@ protected:
 	StFmsPointCollection*	mPhotons; 	//->
 						//fitted points (photons) in the cluster
 	StFmsClHitCollection*	mClhits;	//->
+	std::vector<StFmsHit*> mHits;  // Pointers 
 
 						//an array of tower hits of the current cluster
 	ClassDef(StFmsCluster,1)
