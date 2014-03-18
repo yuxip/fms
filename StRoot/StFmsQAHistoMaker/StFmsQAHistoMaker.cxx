@@ -268,7 +268,7 @@ Int_t StFmsQAHistoMaker::Make() {
         Float_t hitE = (*ihit)->energy();
         hfmshitEvsevt->Fill(ievt,hitE);
       }
-      for(StFmsPointConstIterator ipts = fmspoints->points().begin(); ipts != fmspoints->points().end(); ipts++){
+      for(StPtrVecFmsPointConstIterator ipts = fmspoints->points().begin(); ipts != fmspoints->points().end(); ipts++){
         //(*ipts)->Print();
         Float_t photonE = (*ipts)->GetEnergy();
         hfmsphoEvsevt->Fill(ievt,photonE);

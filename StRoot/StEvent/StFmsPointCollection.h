@@ -3,6 +3,7 @@
 #ifndef StFmsPointCollection_HH
 #define StFmsPointCollection_HH
 
+#include "StEvent/StContainers.h"  // For StPtrVecFmsPoint
 #include "StObject.h"
 #include "TDataSet.h"
 

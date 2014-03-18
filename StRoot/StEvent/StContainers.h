@@ -137,6 +137,7 @@ class StEmcCluster;
 class StEmcPoint;
 class StFmsHit;
 class StFmsCluster;
+class StFmsPoint;
 class StTofHit;
 class StTofSlat;
 class StTofCell;
@@ -195,6 +196,7 @@ StCollectionDef(EmcCluster)
 StCollectionDef(EmcPoint)
 StCollectionDef(FmsHit)
 StCollectionDef(FmsCluster)
+StCollectionDef(FmsPoint)
 StCollectionDef(TofHit)
 StCollectionDef(TofSlat)
 StCollectionDef(TofCell)

@@ -28,7 +28,7 @@ void StFmsPointCollection::Print( Option_t *option ) const {
 
         LOG_INFO << "----- StFmsPointCollection--NumberOfPoints: " << this->NumberOfPoints() << endm;
 
-        for(StFmsPointConstIterator ipts = mPoints.begin(); ipts != mPoints.end(); ipts++){
+        for(StPtrVecFmsPointConstIterator ipts = mPoints.begin(); ipts != mPoints.end(); ipts++){
                 (*ipts)->Print();
         }
 

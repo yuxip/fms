@@ -117,6 +117,7 @@
 #include "StEmcPoint.h"
 #include "StFmsHit.h"
 #include "StFmsCluster.h"
+#include "StFmsPoint.h"
 #include "StTofHit.h"
 #include "StTofSlat.h"
 #include "StTofCell.h"
@@ -175,6 +176,7 @@ StCollectionImp(EmcCluster)
 StCollectionImp(EmcPoint)
 StCollectionImp(FmsHit)
 StCollectionImp(FmsCluster)
+StCollectionImp(FmsPoint)
 StCollectionImp(TofHit)
 StCollectionImp(TofSlat)
 StCollectionImp(TofCell)

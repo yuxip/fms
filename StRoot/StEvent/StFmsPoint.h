@@ -62,8 +62,4 @@ private:
 
 ostream& operator<<(ostream&, const StFmsPoint&);
 
-typedef vector<StFmsPoint*> StPtrVecFmsPoint; 
-typedef StPtrVecFmsPoint::iterator StFmsPointIterator;
-typedef StPtrVecFmsPoint::const_iterator StFmsPointConstIterator;
-
 #endif
