@@ -6,6 +6,7 @@
 #include "TLorentzVector.h"
 
 #include "StEvent/StFmsHit.h"
+#include "StEvent/StFmsPoint.h"
 
 #include <vector>
 
@@ -17,8 +18,6 @@ using std::vector;
 
 //class that represents a tower cluster
 //Yuxi Pan 03/31/2013
-
-class StFmsPointCollection;
 
 class StFmsCluster : public StObject {
 	
@@ -42,10 +41,6 @@ public:
 	Float_t GetChi2NdfPh2()	const { return mChi2NdfPh2; }
 	Int_t GetClusterId()	const { return mCluId; }
 	TLorentzVector GetFourMomentum() const { return mFourMomentum; }
-
-	StFmsPointCollection* GetPointCollection() { return mPhotons; }
-	
-	
 	void SetNstb( Int_t nstb )		{ mNstb = nstb; }	
 	void SetCatag( Int_t catag )		{ mCatag = catag; }
 	void SetNumbTower( Int_t numbTower )	{ mNumbTower = numbTower; }
@@ -60,6 +55,7 @@ public:
 	void SetClusterId ( Float_t cluid )	{ mCluId = cluid; }
 	void SetFourMomentum ( TLorentzVector p4 ) { mFourMomentum = p4; }
   std::vector<StFmsHit*>& hits() { return mHits; }
+	std::vector<StFmsPoint*>& points() { return mPhotons; }
 
 protected:
 	
@@ -78,7 +74,7 @@ protected:
 
 	TLorentzVector  mFourMomentum;		// cluster four momentum;
 
-	StFmsPointCollection*	mPhotons; 	//->
+	std::vector<StFmsPoint*> mPhotons;
 						//fitted points (photons) in the cluster
 	std::vector<StFmsHit*> mHits;  // Pointers 
 
@@ -87,9 +83,5 @@ protected:
 };
 
 ostream& operator<<(ostream&, const StFmsCluster&);
-
-//typedef vector<StFmsCluster*> StPtrVecFmsCluster;
-//typedef StPtrVecFmsCluster::iterator StFmsClusterIterator;
-//typedef StPtrVecFmsCluster::const_iterator StFmsClusterConstIterator;
 
 #endif

@@ -3,8 +3,8 @@
 #include <sstream>
 #include <string>
 
-#include "StEvent/StFmsClusterCollection.h"
-#include "StEvent/StFmsPointCollection.h"
+#include "StEvent/StFmsCluster.h"
+#include "StEvent/StFmsPoint.h"
 
 #include "TObjArray.h"
 #include "TFile.h"
@@ -248,8 +248,8 @@ Int_t StFmsQAHistoMaker::Make() {
 		Int_t nphotons = 0;
 		Int_t nhits = 0;
 		for(std::vector<StFmsCluster*>::const_iterator iclu = fmsclusters.begin(); iclu != fmsclusters.end(); iclu++){
-			StFmsPointCollection* fmspoints = (*iclu)->GetPointCollection();
-			nphotons += fmspoints->NumberOfPoints();
+			std::vector<StFmsPoint*>& fmspoints = (*iclu)->points();
+			nphotons += fmspoints.size();
 			nhits += (*iclu)->GetNTower();
 			Float_t clusterE = (*iclu)->GetEnergy();
       hfmscluEvsevt->Fill(ievt,clusterE);
@@ -268,7 +268,7 @@ Int_t StFmsQAHistoMaker::Make() {
         Float_t hitE = (*ihit)->energy();
         hfmshitEvsevt->Fill(ievt,hitE);
       }
-      for(StPtrVecFmsPointConstIterator ipts = fmspoints->points().begin(); ipts != fmspoints->points().end(); ipts++){
+      for(std::vector<StFmsPoint*>::const_iterator ipts = fmspoints.begin(); ipts != fmspoints.end(); ipts++){
         //(*ipts)->Print();
         Float_t photonE = (*ipts)->GetEnergy();
         hfmsphoEvsevt->Fill(ievt,photonE);

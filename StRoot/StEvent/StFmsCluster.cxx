@@ -1,4 +1,3 @@
-#include "StFmsPointCollection.h"
 #include "StFmsCluster.h"
 #include "StMessMgr.h"
 
@@ -19,24 +18,21 @@ StFmsCluster::StFmsCluster():StObject() {
         mCluId           = 0;
         mChi2NdfPh1      = -1;
         mChi2NdfPh2      = -1;
-	
-	mPhotons = new StFmsPointCollection();
-	
 }
 
 StFmsCluster::~StFmsCluster() {
 	
 	LOG_DEBUG << " StFmsCluster destructor " << endm;
-	if(mPhotons){
-		mPhotons->Clear();
-		delete mPhotons;
-		mPhotons = 0;
-	}
+	for (unsigned i(0); i < mPhotons.size(); ++i) {
+	  if (mPhotons.at(i)) {
+	    delete mPhotons.at(i);
+	    mPhotons.at(i) = NULL;
+	  }  // if
+	}  // for
 }
 
 void StFmsCluster::Clear( const char* opt ) {
 
-	if(mPhotons)mPhotons->Clear();
 }
 
 ostream& operator<<(ostream& os, const StFmsCluster& v){
@@ -59,7 +55,6 @@ ostream& operator<<(ostream& os, const StFmsCluster& v){
 void StFmsCluster::Print(Option_t *option) const {
 
 	LOG_INFO << *this << endm;
-	mPhotons->Print();
 }
 
 Bool_t StFmsCluster::SetNphoton( Int_t nPhoton ){

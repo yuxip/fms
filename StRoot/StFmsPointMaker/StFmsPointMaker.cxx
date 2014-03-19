@@ -10,7 +10,7 @@
 #include "StEvent/StFmsClusterCollection.h"
 #include "StEvent/StFmsCollection.h"
 #include "StEvent/StFmsHit.h"
-#include "StEvent/StFmsPointCollection.h"
+#include "StEvent/StFmsPoint.h"
 #include "StEvent/StTriggerData.h"
 #include "StFmsDbMaker/StFmsDbMaker.h"
 #include "StMuDSTMaker/COMMON/StMuDst.h"
@@ -159,7 +159,7 @@ Int_t StFmsPointMaker::FindPoint() {
         clpoint->SetParentCluId(cluster->GetClusterId());
         clpoint->SetParentNclPh(cluster->GetNphoton());
         // Add it to StFmsCluster mPhotons
-        cluster->GetPointCollection()->AddPoint(clpoint);
+        cluster->points().push_back(clpoint);
       }  // for
       // Save the tower hit info.
       TIter next(ci->towers());
