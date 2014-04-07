@@ -5,7 +5,7 @@
 
 #include "StChain/StMaker.h"
 
-#include "StPSUTools/TowerFPD.h"
+#include "StPSUTools/StFmsTower.h"
 
 class StFmsDbMaker;
 class StFmsPointCollection;

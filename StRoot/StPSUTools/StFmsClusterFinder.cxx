@@ -14,7 +14,7 @@
 #include "StEvent/StFmsCluster.h"
 #include "StEvent/StFmsHit.h"
 
-#include "StPSUTools/TowerFPD.h"
+#include "StPSUTools/StFmsTower.h"
 #include "StPSUTools/HitCluster.h"
 
 namespace {

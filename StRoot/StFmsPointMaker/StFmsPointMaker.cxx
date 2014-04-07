@@ -18,7 +18,7 @@
 
 #include "StPSUTools/StFmsGeometry.h"
 #include "StPSUTools/HitCluster.h"
-#include "StPSUTools/TowerFPD.h"
+#include "StPSUTools/StFmsTower.h"
 #include "StPSUTools/StFmsClusterFinder.h"  // Defines ClusterList
 #include "StPSUTools/StFmsEventClusterer.h"
 

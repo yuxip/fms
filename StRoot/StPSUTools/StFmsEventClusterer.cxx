@@ -11,7 +11,7 @@
 #include "StEvent/StFmsCluster.h"
 #include "StEvent/StFmsHit.h"
 
-#include "StPSUTools/TowerFPD.h"
+#include "StPSUTools/StFmsTower.h"
 
 using namespace std;
 using namespace PSUGlobals;

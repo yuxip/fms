@@ -9,7 +9,7 @@
 #include "StEvent/StFmsHit.h"
 
 #include "StPSUTools/StFmsGeometry.h"
-#include "StPSUTools/TowerFPD.h"
+#include "StPSUTools/StFmsTower.h"
 
 namespace {
 Int_t numbPara = 10;
