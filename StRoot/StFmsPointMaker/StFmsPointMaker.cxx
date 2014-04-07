@@ -7,7 +7,7 @@
 
 #include "St_base/StMessMgr.h"
 #include "StEvent/StEvent.h"
-#include "StEvent/StFmsClusterCollection.h"
+#include "StEvent/StFmsCluster.h"
 #include "StEvent/StFmsCollection.h"
 #include "StEvent/StFmsHit.h"
 #include "StEvent/StFmsPoint.h"
@@ -37,7 +37,7 @@ TLorentzVector compute4Momentum(const TVector3& xyz, Double_t energy) {
 }  // unnamed namespace
 
 StFmsPointMaker::StFmsPointMaker(const char* name)
-    : StMaker(name), mFmsDbMaker(NULL), mFmsClColl(NULL), fmsgeom(NULL) { }
+    : StMaker(name), mFmsDbMaker(NULL), fmsgeom(NULL) { }
 
 StFmsPointMaker::~StFmsPointMaker() {
   LOG_DEBUG << "StFmsPointMaker:: destructor " << endm;
@@ -45,11 +45,6 @@ StFmsPointMaker::~StFmsPointMaker() {
 
 void StFmsPointMaker::Clear(Option_t* option) {
   LOG_DEBUG << "StFmsPointMaker::Clear() " << endm;
-  if (mFmsClColl) {
-    mFmsClColl->Clear();
-    delete mFmsClColl;
-    mFmsClColl = 0;
-  }  // if
   LOG_DEBUG << "after StFmsPointMaker::Clear()" << endm;
   StMaker::Clear(option);
 }
@@ -84,7 +79,6 @@ Int_t StFmsPointMaker::Finish() {
 
 Int_t StFmsPointMaker::Make() {
   LOG_DEBUG << "StFmsPointMaker::Make() " << endm;
-  mFmsClColl  = new StFmsClusterCollection();
   if (!populateTowerLists()) {
     LOG_ERROR << "StFmsPointMaker::Make() - failed to initialise tower " <<
       "lists for the event" << endm;
@@ -177,11 +171,6 @@ Int_t StFmsPointMaker::FindPoint() {
     }  // for loop over clusters
   }  // for loop over NSTB
   LOG_DEBUG << "StFmsPointMaker::FindPoint() --StFmsCluster collections filled "
-    << endm;
-  LOG_DEBUG << "nClusters = " << this->mFmsClColl->NumberOfClusters() << endm;
-  AddData(mFmsClColl);
-  LOG_DEBUG <<
-    "StFmsPointMaker::FindPoint() --StFmsClusterCollection added to TDataSet "
     << endm;
   return kStOk;
 }

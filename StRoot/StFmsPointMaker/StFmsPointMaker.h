@@ -8,7 +8,6 @@
 #include "StPSUTools/TowerFPD.h"
 
 class StFmsDbMaker;
-class StFmsClusterCollection;
 class StFmsPointCollection;
 namespace PSUGlobals { class Geom; }
 
@@ -44,8 +43,6 @@ class StFmsPointMaker : public StMaker {
   std::vector<TowerList> mTowers; ///< One for each of four FMS sub-detectors
   /** Read hits from StEvent and prepare them for clustering */
   Bool_t populateTowerLists();
-  /** clusters (and points within cluster) to be added to TDataSet */
-  StFmsClusterCollection* mFmsClColl;  //!
   /** all the points (photons) extracted from clusters */
   //StFmsPointCollection*   mFmsPtsColl;  //!
   PSUGlobals::Geom* fmsgeom;  //!< Access to current FMS geometry information
