@@ -130,11 +130,10 @@ Int_t StFmsPointMaker::FindPoint() {
     Int_t iPh = 0;  // Sequence # in Yiqun::photons[]
     PSUGlobals::ClusterList& clusters = clustering.clusters();
     for (ClusterIter ci = clusters.begin(); ci != clusters.end(); ++ci) {
-      StFmsCluster* cluster = new StFmsCluster;
+      StFmsCluster* cluster = ci->cluster();
       // Cluster id = id of the 1st photon, not necessarily the highE photon
       cluster->SetNstb(instb + 1);
       cluster->SetClusterId(305 + 20 * instb + iPh);
-      ci->copyTo(cluster);
       // Skip clusters that don't have physically sensible coordinates
       if (!(cluster->GetX0() > 0. && cluster->GetY0() > 0.)) {
         continue;

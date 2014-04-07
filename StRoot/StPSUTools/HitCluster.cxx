@@ -1,9 +1,12 @@
 #include "StPSUTools/HitCluster.h"
 
+#include <cmath>
+
 #include <TMath.h>
 #include <TObjArray.h>
 #include <TVector2.h>
 
+#include "StEvent/StFmsCluster.h"
 #include "StEvent/StFmsHit.h"
 
 #include "StPSUTools/TowerFPD.h"
@@ -11,7 +14,8 @@
 #include "StPSUTools/Yiqun.h"
 
 namespace PSUGlobals {
-HitCluster::HitCluster() : mTowers(NULL), Ecutoff(0.5) {
+HitCluster::HitCluster(StFmsCluster* cluster)
+    : mTowers(NULL),  mCluster(cluster), Ecutoff(0.5) {
   Clear();
 }
 
@@ -52,8 +56,8 @@ void HitCluster::FindClusterAxis() {
 	while (mThetaAxis < -(myPi / 2.0)) {
 		mThetaAxis += myPi;
 	}  // while
-	mSigmaMin = GetSigma(mThetaAxis);
-	mSigmaMax = GetSigma(mThetaAxis - TMath::Pi() / 2.0);
+	mCluster->SetSigmaMin(GetSigma(mThetaAxis));
+	mCluster->SetSigmaMax(GetSigma(mThetaAxis - TMath::Pi() / 2.0));
 }
 
 // Calculate sigma w.r.t the axis going through the "center" and of an angle
@@ -69,7 +73,8 @@ Double_t HitCluster::GetSigma(Double_t theta) {
 		oneTower = (TowerFPD *)mTowers->At(it);
 		// the 2-d vector from the "center" of cluster to tower
 		// "center" are at 0.5, 1.5, etc! Need shift of 0.5
-		TVector2 v1(oneTower->column() - 0.5 - mX0, oneTower->row() - 0.5 - mY0);
+		TVector2 v1(oneTower->column() - 0.5 - mCluster->GetX0(),
+		            oneTower->row() - 0.5 - mCluster->GetY0());
 		// perpendicular distance to the axis = length of the component of vector
 		// "v1" that is norm to "vaxis"
 		Double_t dis = (v1.Norm(vaxis)).Mod();
@@ -103,33 +108,19 @@ void HitCluster::CalClusterMoment(Float_t Ecoff) {
     sigy += mtmp * yyy * yyy;
     sigXY += mtmp * xxx * yyy;
   }  // while
-  mEnergy = w0;
+  mCluster->SetClusterEnergy(w0);
   if (w1 > 0) {
-    mX0 = mx / w1;
-    mY0 = my / w1;
-    mSigmaX = sqrt(fabs(sigx / w1 - mX0 * mX0));
-    mSigmaY = sqrt(fabs(sigy / w1 - mY0 * mY0));
-    mSigmaXY = sigXY / w1 - mX0 * mY0;
+    mCluster->SetX0(mx / w1);
+    mCluster->SetY0(my / w1);
+    mSigmaX = sqrt(fabs(sigx / w1 - std::pow(mCluster->GetX0(), 2.)));
+    mSigmaY = sqrt(fabs(sigy / w1 - std::pow(mCluster->GetY0(), 2.)));
+    mSigmaXY = sigXY / w1 - mCluster->GetX0() * mCluster->GetY0();
   } else {
-    mX0 = 0;
-    mY0 = 0;
+    mCluster->SetX0(0.);
+    mCluster->SetY0(0.);
     mSigmaX = 0;
     mSigmaY = 0;
     mSigmaXY = 0;
   }  // if
-}
-
-void HitCluster::copyTo(StFmsCluster* cluster) const {
-  cluster->SetCatag(mCatag);
-  cluster->SetNumbTower(mNumbTower);
-  cluster->SetNphoton(mNphoton);
-  cluster->SetClusterEnergy(mEnergy);
-  cluster->SetX0(mX0);
-  cluster->SetY0(mY0);
-  cluster->SetSigmaMax(mSigmaMax);
-  cluster->SetSigmaMin(mSigmaMin);
-  //	cluster->SetChi2NdfPh1(Chi2NdfPh1);
-  //	--no such funtion in SH's package --Yuxi
-  //	cluster->SetChi2NdfPh2(Chi2NdfPh2);
 }
 }  // namespace PSUGlobals

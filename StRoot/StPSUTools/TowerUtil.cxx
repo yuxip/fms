@@ -11,6 +11,7 @@
 #include <TCollection.h>
 #include <TObjArray.h>
 
+#include "StEvent/StFmsCluster.h"
 #include "StEvent/StFmsHit.h"
 
 #include "StPSUTools/TowerFPD.h"
@@ -222,8 +223,10 @@ class TowerClusterAssociation : public TObject {
       return separation(peak);
     } else {
       // Use calculated cluster center (x0, y0)
-      return sqrt(pow(cluster->GetX0() - (mTower->column() - 0.5), 2.) +
-                  pow(cluster->GetY0() - (mTower->row() - 0.5), 2.));
+      return sqrt(pow(cluster->cluster()->GetX0() - (mTower->column() - 0.5),
+                      2.) +
+                  pow(cluster->cluster()->GetY0() - (mTower->row() - 0.5),
+                      2.));
     }  // if
   }
   /*
@@ -349,7 +352,7 @@ unsigned TowerUtil::locateClusterSeeds(TowerList* towers, TowerList* neighbors,
     if (couldBePeakTower(high, neighbors)) {
       // Add "high" to cluster and move towers neighboring "high" to "neighbor"
       high->setCluster(nClusts);
-      clusters->push_back(new HitCluster);
+      clusters->push_back(new HitCluster(new StFmsCluster));
       clusters->back().setIndex(nClusts);
       clusters->back().towers()->Add(high);
       nClusts++ ;
@@ -585,35 +588,37 @@ void TowerUtil::CalClusterMoment(HitCluster *cluster) {
   if (cluster) {
     cluster->CalClusterMoment(Ecutoff);
   }  // if
-  cluster->SetNumbTower(cluster->towers()->GetEntriesFast());
+  cluster->cluster()->SetNumbTower(cluster->towers()->GetEntriesFast());
 }
 
 /* Categorise a cluster */
 Int_t TowerUtil::CatagBySigmXY(HitCluster* cluster) {
   // If the number of towers in a cluster is less than "minTowerCatag02"
   // always consider the cluster a one-photon cluster
-  if (cluster->GetNTower() < minTowerCatag02) {
-    cluster->SetCatag(k1PhotonCluster);
+  if (cluster->cluster()->GetNTower() < minTowerCatag02) {
+    cluster->cluster()->SetCatag(k1PhotonCluster);
   } else {
     // Categorise cluster based on its properties
-    Float_t sMaxEc = cluster->GetSigmaMax() * cluster->GetEnergy();
-    if (cluster->GetEnergy() < cutEcSigma[0][0] * (sMaxEc - cutEcSigma[0][1])) {
+    Float_t sMaxEc = cluster->cluster()->GetSigmaMax() *
+                     cluster->cluster()->GetEnergy();
+    if (cluster->cluster()->GetEnergy() < cutEcSigma[0][0] *
+        (sMaxEc - cutEcSigma[0][1])) {
       if (sMaxEc > minEcSigma2Ph) {
-        cluster->SetCatag(k2PhotonCluster);
+        cluster->cluster()->SetCatag(k2PhotonCluster);
       } else {
-        cluster->SetCatag(kAmbiguousCluster);
+        cluster->cluster()->SetCatag(kAmbiguousCluster);
       }  // if
-    } else if (cluster->GetEnergy() >
+    } else if (cluster->cluster()->GetEnergy() >
                cutEcSigma[1][0] * (sMaxEc - cutEcSigma[1][1])) {
       if (sMaxEc < maxEcSigma1Ph) {
-        cluster->SetCatag(k1PhotonCluster);
+        cluster->cluster()->SetCatag(k1PhotonCluster);
       } else {
-        cluster->SetCatag(kAmbiguousCluster);
+        cluster->cluster()->SetCatag(kAmbiguousCluster);
       }  // if
     } else {
-      cluster->SetCatag(kAmbiguousCluster);
+      cluster->cluster()->SetCatag(kAmbiguousCluster);
     }  // if (cluster->hit->energy()...)
   } // if (cluster->numbTower...)
-  return cluster->GetCatag();
+  return cluster->cluster()->GetCatag();
 }
 }  // namespace PSUGlobals

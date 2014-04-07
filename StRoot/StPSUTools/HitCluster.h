@@ -3,10 +3,10 @@
 
 #include <TObject.h>
 
-#include "StEvent/StFmsCluster.h"
 #include "StPSUTools/PhotonHitFPD.h"
 
 class TObjArray;
+class StFmsCluster;
 
 /*
  http://google-styleguide.googlecode.com/svn/trunk/cppguide.xml#Copy_Constructors
@@ -39,9 +39,9 @@ enum EClusterCategory {
  This is an elaborated version of the simple StFmsCluster class, storing extra
  information needed during the clustering process.
  */
-class HitCluster : public StFmsCluster {
+class HitCluster {
  public:
-  HitCluster();
+  explicit HitCluster(StFmsCluster* cluster);
   ~HitCluster();
   void CalClusterMoment(Float_t Ecoff);
   void Clear(const char* optionNotUsed = "");
@@ -63,8 +63,10 @@ class HitCluster : public StFmsCluster {
   PhotonHitFPD* photons();
   /** \overload */
   const PhotonHitFPD* photons() const;
-  /** Update an StFmsCluster with values from this cluster */
-  void copyTo(StFmsCluster*) const;
+  /** Return the StEvent cluster structure */
+  StFmsCluster* cluster();
+  /** \overload */
+  const StFmsCluster* cluster() const;
 
  protected:
   Int_t mIndex;  ///< cluster number in an event, counts from 0
@@ -75,6 +77,7 @@ class HitCluster : public StFmsCluster {
                       ///< of least-2nd-sigma axis
   Float_t mChiSquare;  ///< Chi-square of the fitting
   TObjArray* mTowers;  //!<  TowerFPD objects that make the cluster
+  StFmsCluster* mCluster;  //!< Pointer to StEvent cluster structure
   static const int mMaxPhotonsPerCluster = 2;
   PhotonHitFPD mPhotons[mMaxPhotonsPerCluster];  ///< Photon-Hits in the cluster
 
@@ -101,6 +104,10 @@ inline Float_t HitCluster::thetaAxis() const { return mThetaAxis; }
 inline TObjArray* HitCluster::towers() { return mTowers; }
 
 inline const TObjArray* HitCluster::towers() const { return mTowers; }
+
+inline StFmsCluster* HitCluster::cluster() { return mCluster; }
+
+inline const StFmsCluster* HitCluster::cluster() const { return mCluster; }
 
 inline PhotonHitFPD* HitCluster::photons() { return mPhotons; }
 
