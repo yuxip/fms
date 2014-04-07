@@ -6,7 +6,7 @@
 #include <TMinuit.h>
 #include <TObject.h>
 
-#include "StPSUTools/PhotonHitFPD.h"
+#include "StPSUTools/StFmsFittedPhoton.h"
 
 class TF2;
 

@@ -19,7 +19,7 @@
 #include "StFmsGeometry.h"
 #include "StFmsClusterFitter.h"
 #include "StFmsTowerCluster.h"
-#include "PhotonHitFPD.h"
+#include "StFmsFittedPhoton.h"
 #include "StFmsClusterFinder.h"
 
 #define MAX_NUMER_CLUSTERS 6

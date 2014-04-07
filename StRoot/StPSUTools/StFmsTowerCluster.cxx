@@ -10,7 +10,7 @@
 #include "StEvent/StFmsHit.h"
 
 #include "StPSUTools/StFmsTower.h"
-#include "StPSUTools/PhotonHitFPD.h"
+#include "StPSUTools/StFmsFittedPhoton.h"
 
 namespace PSUGlobals {
 HitCluster::HitCluster(StFmsCluster* cluster)

@@ -1,4 +1,4 @@
-#include "PhotonHitFPD.h"
+#include "StFmsFittedPhoton.h"
 
 namespace PSUGlobals {
 PhotonHitFPD::PhotonHitFPD(const Float_t x, const Float_t y,
