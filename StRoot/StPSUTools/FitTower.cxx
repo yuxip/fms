@@ -8,7 +8,7 @@
 
 #include "StEvent/StFmsHit.h"
 
-#include "StPSUTools/Geom.h"
+#include "StPSUTools/StFmsGeometry.h"
 #include "StPSUTools/TowerFPD.h"
 
 namespace {

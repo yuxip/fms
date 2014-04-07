@@ -17,7 +17,7 @@
 #include "TRandom.h"
 #include "TVector3.h"
 
-#include "Geom.h"
+#include "StFmsGeometry.h"
 #include "FitTower.h"
 #include "HitCluster.h"
 #include "PhotonHitFPD.h"

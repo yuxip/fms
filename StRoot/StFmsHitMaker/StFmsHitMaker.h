@@ -28,7 +28,6 @@ class RunDepCor;
 class CellTDep;
 */
 
-#include "StPSUTools/Geom.h"
 #include "StPSUTools/FitTower.h"
 
 #include "TMatrix.h"

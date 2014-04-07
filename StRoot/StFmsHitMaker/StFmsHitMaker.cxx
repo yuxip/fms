@@ -16,7 +16,7 @@
 #include "StTriggerData2009.h"
 
 // PSU-FMS package
-#include "StPSUTools/Geom.h"
+#include "StPSUTools/StFmsGeometry.h"
 #include "StPSUTools/FitTower.h"
 
 #include <iostream>
