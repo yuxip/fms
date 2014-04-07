@@ -20,7 +20,7 @@
 #include "StPSUTools/HitCluster.h"
 #include "StPSUTools/TowerFPD.h"
 #include "StPSUTools/TowerUtil.h"  // Defines ClusterList
-#include "StPSUTools/Yiqun.h"
+#include "StPSUTools/StFmsEventClusterer.h"
 
 #ifndef __CINT__
 typedef PSUGlobals::ClusterList::iterator ClusterIter;

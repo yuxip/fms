@@ -11,7 +11,6 @@
 
 #include "StPSUTools/TowerFPD.h"
 #include "StPSUTools/PhotonHitFPD.h"
-#include "StPSUTools/Yiqun.h"
 
 namespace PSUGlobals {
 HitCluster::HitCluster(StFmsCluster* cluster)
