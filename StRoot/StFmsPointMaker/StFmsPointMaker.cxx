@@ -17,7 +17,7 @@
 #include "StMuDSTMaker/COMMON/StMuEvent.h"
 
 #include "StPSUTools/StFmsGeometry.h"
-#include "StPSUTools/HitCluster.h"
+#include "StPSUTools/StFmsTowerCluster.h"
 #include "StPSUTools/StFmsTower.h"
 #include "StPSUTools/StFmsClusterFinder.h"  // Defines ClusterList
 #include "StPSUTools/StFmsEventClusterer.h"

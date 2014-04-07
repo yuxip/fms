@@ -1,4 +1,4 @@
-#include "StPSUTools/HitCluster.h"
+#include "StPSUTools/StFmsTowerCluster.h"
 
 #include <cmath>
 

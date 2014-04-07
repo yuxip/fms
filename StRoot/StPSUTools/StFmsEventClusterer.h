@@ -18,7 +18,7 @@
 
 #include "StFmsGeometry.h"
 #include "StFmsClusterFitter.h"
-#include "HitCluster.h"
+#include "StFmsTowerCluster.h"
 #include "PhotonHitFPD.h"
 #include "StFmsClusterFinder.h"
 
