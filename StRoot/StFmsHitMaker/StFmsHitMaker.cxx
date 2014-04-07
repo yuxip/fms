@@ -17,7 +17,7 @@
 
 // PSU-FMS package
 #include "StPSUTools/StFmsGeometry.h"
-#include "StPSUTools/FitTower.h"
+#include "StPSUTools/StFmsClusterFitter.h"
 
 #include <iostream>
 #include <fstream>

@@ -18,7 +18,7 @@
 #include "TVector3.h"
 
 #include "StFmsGeometry.h"
-#include "FitTower.h"
+#include "StFmsClusterFitter.h"
 #include "HitCluster.h"
 #include "PhotonHitFPD.h"
 #include "TowerUtil.h"

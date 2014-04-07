@@ -28,12 +28,10 @@ class RunDepCor;
 class CellTDep;
 */
 
-#include "StPSUTools/FitTower.h"
-
 #include "TMatrix.h"
 #include "StMaker.h"
 using namespace std;
-using namespace PSUGlobals;
+namespace PSUGlobals { } using namespace PSUGlobals;
 
 class StFmsHitMaker : public StMaker {
 public:
