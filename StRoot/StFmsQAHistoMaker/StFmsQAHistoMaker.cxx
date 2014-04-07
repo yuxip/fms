@@ -242,12 +242,12 @@ Int_t StFmsQAHistoMaker::Make() {
         << "an StFmsCollection in StEvent" << endm;
         return false;
     }  // if
-		const std::vector<StFmsCluster*>& fmsclusters = fmsCollection->clusters();
+		const StSPtrVecFmsCluster& fmsclusters = fmsCollection->clusters();
 		hfmsNcluvsevt->Fill(ievt,fmsclusters.size());
 	
 		Int_t nphotons = 0;
 		Int_t nhits = 0;
-		for(std::vector<StFmsCluster*>::const_iterator iclu = fmsclusters.begin(); iclu != fmsclusters.end(); iclu++){
+		for(StSPtrVecFmsClusterConstIterator iclu = fmsclusters.begin(); iclu != fmsclusters.end(); iclu++){
 			StPtrVecFmsPoint& fmspoints = (*iclu)->points();
 			nphotons += fmspoints.size();
 			nhits += (*iclu)->GetNTower();

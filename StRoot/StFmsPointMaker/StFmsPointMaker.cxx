@@ -174,7 +174,6 @@ Int_t StFmsPointMaker::FindPoint() {
         }  // if
       }  // while
       fmsCollection->addCluster(cluster);
-      mFmsClColl->AddCluster(cluster);
     }  // for loop over clusters
   }  // for loop over NSTB
   LOG_DEBUG << "StFmsPointMaker::FindPoint() --StFmsCluster collections filled "
