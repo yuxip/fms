@@ -5,6 +5,7 @@
 #include "Stiostream.h"
 #include "TLorentzVector.h"
 
+#include "StEvent/StContainers.h"
 #include "StEvent/StFmsHit.h"
 #include "StEvent/StFmsPoint.h"
 
@@ -54,8 +55,8 @@ public:
 	void SetChi2NdfPh2(Float_t chi2ndfph2)	{ mChi2NdfPh2 = chi2ndfph2; }
 	void SetClusterId ( Float_t cluid )	{ mCluId = cluid; }
 	void SetFourMomentum ( TLorentzVector p4 ) { mFourMomentum = p4; }
-  std::vector<StFmsHit*>& hits() { return mHits; }
-	std::vector<StFmsPoint*>& points() { return mPhotons; }
+  StPtrVecFmsHit& hits() { return mHits; }
+	StPtrVecFmsPoint& points() { return mPhotons; }
 
 protected:
 	
@@ -74,9 +75,9 @@ protected:
 
 	TLorentzVector  mFourMomentum;		// cluster four momentum;
 
-	std::vector<StFmsPoint*> mPhotons;
+	StPtrVecFmsPoint mPhotons;
 						//fitted points (photons) in the cluster
-	std::vector<StFmsHit*> mHits;  // Pointers 
+	StPtrVecFmsHit mHits;  // Pointers 
 
 						//an array of tower hits of the current cluster
 	ClassDef(StFmsCluster,1)

@@ -248,7 +248,7 @@ Int_t StFmsQAHistoMaker::Make() {
 		Int_t nphotons = 0;
 		Int_t nhits = 0;
 		for(std::vector<StFmsCluster*>::const_iterator iclu = fmsclusters.begin(); iclu != fmsclusters.end(); iclu++){
-			std::vector<StFmsPoint*>& fmspoints = (*iclu)->points();
+			StPtrVecFmsPoint& fmspoints = (*iclu)->points();
 			nphotons += fmspoints.size();
 			nhits += (*iclu)->GetNTower();
 			Float_t clusterE = (*iclu)->GetEnergy();
@@ -264,11 +264,11 @@ Int_t StFmsQAHistoMaker::Make() {
         }  // if
       }  // if
       //loop over hits
-      for(std::vector<StFmsHit*>::const_iterator ihit = (*iclu)->hits().begin(); ihit != (*iclu)->hits().end(); ihit++){
+      for(StPtrVecFmsHitConstIterator ihit = (*iclu)->hits().begin(); ihit != (*iclu)->hits().end(); ihit++){
         Float_t hitE = (*ihit)->energy();
         hfmshitEvsevt->Fill(ievt,hitE);
       }
-      for(std::vector<StFmsPoint*>::const_iterator ipts = fmspoints.begin(); ipts != fmspoints.end(); ipts++){
+      for(StPtrVecFmsPointConstIterator ipts = fmspoints.begin(); ipts != fmspoints.end(); ipts++){
         //(*ipts)->Print();
         Float_t photonE = (*ipts)->GetEnergy();
         hfmsphoEvsevt->Fill(ievt,photonE);
