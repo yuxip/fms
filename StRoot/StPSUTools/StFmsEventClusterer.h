@@ -10,7 +10,6 @@
 #endif  // __CINT__
 
 #include "TF2.h"
-#include "TowerUtil.h"
 #include "TLorentzVector.h"
 #include "TMath.h"
 #include "TObjArray.h"
@@ -21,7 +20,7 @@
 #include "StFmsClusterFitter.h"
 #include "HitCluster.h"
 #include "PhotonHitFPD.h"
-#include "TowerUtil.h"
+#include "StFmsClusterFinder.h"
 
 #define MAX_NUMER_CLUSTERS 6
 
@@ -35,7 +34,7 @@ class Yiqun: public TObject {
 #ifndef __CINT__
   ClusterList mClusters;
   Float_t FitOnePhoton(HitCluster*);
-  // ClusterList is defined in TowerUtil.h
+  // ClusterList is defined in StFmsClusterFinder.h
   typedef ClusterList::iterator ClusterIter;
   Float_t GlobalFit(const Int_t, const Int_t, ClusterIter);
   Float_t Fit2PhotonClust(ClusterIter);
