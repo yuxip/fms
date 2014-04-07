@@ -42,5 +42,5 @@ void StFmsCollection::addCluster(StFmsCluster* cluster){mClusters.push_back(clus
 //void StFmsCollection::addPoint(StFmsPoint* point){mPoints.push_back(point);}
 StSPtrVecFmsCluster& StFmsCollection::clusters() {return mClusters;}
 const StSPtrVecFmsCluster& StFmsCollection::clusters() const {return mClusters;}
-//StSPtrVecFmsPoint& StFmsCollection::points() {return mPoints;}
-//const StSPtrVecFmsPoint& StFmsCollection::points() const {return mPoints;}
+StSPtrVecFmsPoint& StFmsCollection::points() {return mPoints;}
+const StSPtrVecFmsPoint& StFmsCollection::points() const {return mPoints;}

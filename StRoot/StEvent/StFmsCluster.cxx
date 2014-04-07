@@ -21,14 +21,6 @@ StFmsCluster::StFmsCluster():StObject() {
 }
 
 StFmsCluster::~StFmsCluster() {
-	
-	LOG_DEBUG << " StFmsCluster destructor " << endm;
-	for (unsigned i(0); i < mPhotons.size(); ++i) {
-	  if (mPhotons.at(i)) {
-	    delete mPhotons.at(i);
-	    mPhotons.at(i) = NULL;
-	  }  // if
-	}  // for
 }
 
 void StFmsCluster::Clear( const char* opt ) {

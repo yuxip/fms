@@ -244,12 +244,11 @@ Int_t StFmsQAHistoMaker::Make() {
     }  // if
 		const StSPtrVecFmsCluster& fmsclusters = fmsCollection->clusters();
 		hfmsNcluvsevt->Fill(ievt,fmsclusters.size());
+		const StSPtrVecFmsPoint& fmspoints = fmsCollection->points();
 	
-		Int_t nphotons = 0;
+		Int_t nphotons = fmspoints.size();
 		Int_t nhits = 0;
 		for(StSPtrVecFmsClusterConstIterator iclu = fmsclusters.begin(); iclu != fmsclusters.end(); iclu++){
-			StPtrVecFmsPoint& fmspoints = (*iclu)->points();
-			nphotons += fmspoints.size();
 			nhits += (*iclu)->GetNTower();
 			Float_t clusterE = (*iclu)->GetEnergy();
       hfmscluEvsevt->Fill(ievt,clusterE);
@@ -268,16 +267,16 @@ Int_t StFmsQAHistoMaker::Make() {
         Float_t hitE = (*ihit)->energy();
         hfmshitEvsevt->Fill(ievt,hitE);
       }
-      for(StPtrVecFmsPointConstIterator ipts = fmspoints.begin(); ipts != fmspoints.end(); ipts++){
-        //(*ipts)->Print();
-        Float_t photonE = (*ipts)->GetEnergy();
-        hfmsphoEvsevt->Fill(ievt,photonE);
-        Float_t photonEta = ((*ipts)->fourMomentum()).Eta();
-        Float_t photonPhi = ((*ipts)->fourMomentum()).Phi();
-        hfmsphoEvseta->Fill(photonEta,photonE);
-        hfmsphoEvsphi->Fill(photonPhi,photonE);
-      }
 		}
+    for(StSPtrVecFmsPointConstIterator ipts = fmspoints.begin(); ipts != fmspoints.end(); ipts++){
+      //(*ipts)->Print();
+      Float_t photonE = (*ipts)->GetEnergy();
+      hfmsphoEvsevt->Fill(ievt,photonE);
+      Float_t photonEta = ((*ipts)->fourMomentum()).Eta();
+      Float_t photonPhi = ((*ipts)->fourMomentum()).Phi();
+      hfmsphoEvseta->Fill(photonEta,photonE);
+      hfmsphoEvsphi->Fill(photonPhi,photonE);
+    }
 		hfmsNhitvsevt->Fill(ievt,nhits);
 		hfmsNphovsevt->Fill(ievt,nphotons);
 	}//mFmsQA

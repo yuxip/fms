@@ -151,7 +151,9 @@ Int_t StFmsPointMaker::FindPoint() {
         clpoint->SetFourMomentum(compute4Momentum(xyzph, clpoint->GetEnergy()));
         clpoint->SetParentCluId(cluster->GetClusterId());
         clpoint->SetParentNclPh(cluster->GetNphoton());
-        // Add it to StFmsCluster mPhotons
+        // Add it to both the StFmsCollection and StFmsCluster
+        // StFmsCollection owns the pointer, the cluster merely references it
+        fmsCollection->points().push_back(clpoint);
         cluster->points().push_back(clpoint);
       }  // for
       // Save the tower hit info.

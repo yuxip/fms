@@ -42,13 +42,13 @@ public:
     
     StSPtrVecFmsCluster&        clusters();
     const StSPtrVecFmsCluster&  clusters() const;
-    //StSPtrVecFmsPoint&          points();
-    //const StSPtrVecFmsPoint&    points() const;
+    StSPtrVecFmsPoint&          points();
+    const StSPtrVecFmsPoint&    points() const;
     
 private:
     StSPtrVecFmsHit mHits;
     StSPtrVecFmsCluster mClusters;
-    //StSPtrVecFmsPoint mPoints;
+    StSPtrVecFmsPoint mPoints;
     
     ClassDef(StFmsCollection,1)
 };
