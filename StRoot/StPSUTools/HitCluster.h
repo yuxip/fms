@@ -26,13 +26,6 @@ class StFmsCluster;
   void operator=(const TypeName&)
 
 namespace PSUGlobals {//$NMSPC
-enum EClusterCategory {
-  kAmbiguousCluster = 0,  // Could be 1- or 2-photon, needs to be fitted
-  k1PhotonCluster = 1,  // A cluster created by 1 photon
-  k2PhotonCluster = 2,  // A cluster created by 2 photons
-  kInvalidClusterCategory
-};  // enum EClusterCategory
-
 /**
  A cluster of FMS towers
  

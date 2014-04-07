@@ -8,6 +8,13 @@
 
 #include "StEvent/StContainers.h"  // StPtrVecFmsHit, StPtrVecFmsPoint
 
+enum EFmsClusterCategory {
+  kAmbiguousCluster = 0,  // Could be 1- or 2-photon, needs to be fitted
+  k1PhotonCluster = 1,  // A cluster created by 1 photon
+  k2PhotonCluster = 2,  // A cluster created by 2 photons
+  kInvalidClusterCategory
+};  // enum EFmsClusterCategory
+
 /** Represents a cluster of a group of towers */
 class StFmsCluster : public StObject {
  public:
@@ -19,7 +26,7 @@ class StFmsCluster : public StObject {
   void Print(Option_t* optionNotUsed = "") const;
   /** Sub-detector */
   Int_t GetNstb() const { return mNstb; }
-  /** Cluster category (see EClusterCategory) */
+  /** Cluster category (see EFmsClusterCategory) */
   Int_t GetCatag() const { return mCatag; }
   /** Number of towers (hits) in this cluster */
   Int_t GetNTower() const { return mNumbTower; }
@@ -45,7 +52,7 @@ class StFmsCluster : public StObject {
   TLorentzVector GetFourMomentum() const { return mFourMomentum; }
   /** Set sub-detector */
   void SetNstb(Int_t nstb) { mNstb = nstb; }
-  /** Set cluster category (see EClusterCategory) */
+  /** Set cluster category (see EFmsClusterCategory) */
   void SetCatag(Int_t catag) { mCatag = catag; }
   /** Set number of towers (hits) in this cluster */
   void SetNumbTower(Int_t numbTower) { mNumbTower = numbTower; }
@@ -76,7 +83,7 @@ class StFmsCluster : public StObject {
 
  protected:
   Int_t mNstb;  ///< Nstb starts from 1
-  Int_t mCatag;  ///< catagory of cluster (see EClusterCategory)
+  Int_t mCatag;  ///< catagory of cluster (see EFmsClusterCategory)
   Int_t mNumbTower;  ///< Number of non_zero towers in the cluster
   Int_t mNphoton;  ///< Number of photons contained in this cluster
   Float_t mEnergy;  ///< Total energy  contained in this cluster (0th moment)
