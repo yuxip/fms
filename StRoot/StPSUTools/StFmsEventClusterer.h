@@ -28,7 +28,7 @@ namespace PSUGlobals {//$NMSPC
 class ToweFPD;
 class Yiqun: public TObject {
  public:
-  TowerUtil* pTowerUtil;
+  StFmsClusterFinder* pTowerUtil;
   Int_t nrows;
   Int_t ncols;
 #ifndef __CINT__

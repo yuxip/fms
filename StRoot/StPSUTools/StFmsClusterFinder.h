@@ -1,5 +1,5 @@
-#ifndef TOWER_UTIL_H
-#define TOWER_UTIL_H
+#ifndef STFMSCLUSTERFINDER_H
+#define STFMSCLUSTERFINDER_H
 
 #include <list>
 
@@ -18,11 +18,11 @@ class StFmsTower;
 #ifndef __CINT__
 typedef boost::ptr_list<StFmsTowerCluster> ClusterList;
 #endif  // __CINT__
-class TowerUtil {
+class StFmsClusterFinder {
  public:
   typedef std::list<StFmsTower*> TowerList;
-  TowerUtil();
-  ~TowerUtil();
+  StFmsClusterFinder();
+  ~StFmsClusterFinder();
 #ifndef __CINT__
   Int_t FindTowerCluster(TowerList* towers, ClusterList* clusters);
 #endif  // __CINT__
@@ -51,7 +51,7 @@ class TowerUtil {
   unsigned associateSubThresholdTowersWithClusters(TowerList* towers,
                                                    ClusterList* clusters);
 #endif  // __CINT__
-  ClassDef(TowerUtil,3);
+  ClassDef(StFmsClusterFinder,3);
 };
 }  // namespace PSUGlobals
 #endif

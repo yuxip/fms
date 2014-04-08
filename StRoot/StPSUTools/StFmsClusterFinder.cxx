@@ -33,7 +33,7 @@ const Float_t minRatioPeakTower = 1.6;
 // Extreme distance between towers (no distance can be this large!)
 const Float_t ExtremelyFaraway = 99999 ;
 
-typedef PSUGlobals::TowerUtil::TowerList TowerList;
+typedef PSUGlobals::StFmsClusterFinder::TowerList TowerList;
 typedef TowerList::iterator TowerIter;
 typedef TowerList::reverse_iterator TowerRIter;
 typedef PSUGlobals::ClusterList::iterator ClusterIter;
@@ -342,8 +342,9 @@ class TowerClusterAssociation : public TObject {
   std::list<StFmsTowerCluster*> mClusters;
 };
 
-unsigned TowerUtil::locateClusterSeeds(TowerList* towers, TowerList* neighbors,
-                                       ClusterList* clusters) {
+unsigned StFmsClusterFinder::locateClusterSeeds(TowerList* towers,
+                                                TowerList* neighbors,
+                                                ClusterList* clusters) {
   while (!towers->empty() && nClusts < maxNClusters) {
     // By design, this tower is the highest tower remaining in towers, but it
     // could be lower than a tower in neighbors
@@ -405,9 +406,9 @@ unsigned TowerUtil::locateClusterSeeds(TowerList* towers, TowerList* neighbors,
  Return the number of neighbors either associated with clusters or placed in the
  valley i.e. the number removed from the neighbor list.
  */
-unsigned TowerUtil::associateTowersWithClusters(TowerList* neighbors,
-                                                ClusterList* clusters,
-                                                TObjArray* valleys) {
+unsigned StFmsClusterFinder::associateTowersWithClusters(TowerList* neighbors,
+                                                         ClusterList* clusters,
+                                                         TObjArray* valleys) {
   TowerList associated;  // Store neighbors we associate
   // Towers are sorted in ascending energy, so use reverse iterator to go from
   // highest to lowest energy
@@ -448,8 +449,9 @@ unsigned TowerUtil::associateTowersWithClusters(TowerList* neighbors,
  
  Return the number of neighbors associated with clusters.
  */
-unsigned TowerUtil::associateResidualTowersWithClusters(TowerList* neighbors,
-                                                        ClusterList* clusters) {
+unsigned StFmsClusterFinder::associateResidualTowersWithClusters(
+    TowerList* neighbors,
+    ClusterList* clusters) {
   TowerList associated;
   TowerRIter tower;
   for (tower = neighbors->rbegin(); tower != neighbors->rend(); ++tower) {
@@ -485,9 +487,10 @@ unsigned TowerUtil::associateResidualTowersWithClusters(TowerList* neighbors,
  
  Return the number of valley neighbors moved to clusters.
  */
-unsigned TowerUtil::associateValleyTowersWithClusters(TowerList* neighbors,
-                                                      ClusterList* clusters,
-                                                      TObjArray* valleys) {
+unsigned StFmsClusterFinder::associateValleyTowersWithClusters(
+    TowerList* neighbors,
+    ClusterList* clusters,
+    TObjArray* valleys) {
   unsigned size = neighbors->size();
   for (Int_t i(0); i < valleys->GetEntriesFast(); ++i) {
     TowerClusterAssociation* association =
@@ -513,7 +516,7 @@ unsigned TowerUtil::associateValleyTowersWithClusters(TowerList* neighbors,
  These towers serve the purpose of preventing the creation of bogus peaks,
  where there is no energy deposited at the tower
  */
-unsigned TowerUtil::associateSubThresholdTowersWithClusters(
+unsigned StFmsClusterFinder::associateSubThresholdTowersWithClusters(
     TowerList* towers, ClusterList* clusters) {
   TowerIter tower;
   for (tower = towers->begin(); tower != towers->end(); ++tower) {
@@ -531,15 +534,15 @@ unsigned TowerUtil::associateSubThresholdTowersWithClusters(
   }  // for
 }
 
-TowerUtil::TowerUtil() : nClusts(0) {
+StFmsClusterFinder::StFmsClusterFinder() : nClusts(0) {
   SetMomentEcutoff();
 }
 
-TowerUtil::~TowerUtil() {
+StFmsClusterFinder::~StFmsClusterFinder() {
 }
 
-Int_t TowerUtil::FindTowerCluster(TowerList* towers,
-                                  ClusterList* clusters) {
+Int_t StFmsClusterFinder::FindTowerCluster(TowerList* towers,
+                                           ClusterList* clusters) {
   // Remove towers below energy threshold, but save them for later use
   TowerList belowThreshold = filterTowersBelowEnergyThreshold(towers);
   // the neighbor TObjArray
@@ -587,7 +590,7 @@ Int_t TowerUtil::FindTowerCluster(TowerList* towers,
 }
 
 /* Calculate moments of a cluster (position, sigma...) */
-void TowerUtil::CalClusterMoment(StFmsTowerCluster *cluster) {
+void StFmsClusterFinder::CalClusterMoment(StFmsTowerCluster *cluster) {
   if (cluster) {
     cluster->CalClusterMoment(Ecutoff);
   }  // if
@@ -595,7 +598,7 @@ void TowerUtil::CalClusterMoment(StFmsTowerCluster *cluster) {
 }
 
 /* Categorise a cluster */
-Int_t TowerUtil::CatagBySigmXY(StFmsTowerCluster* cluster) {
+Int_t StFmsClusterFinder::CatagBySigmXY(StFmsTowerCluster* cluster) {
   // If the number of towers in a cluster is less than "minTowerCatag02"
   // always consider the cluster a one-photon cluster
   if (cluster->cluster()->GetNTower() < minTowerCatag02) {

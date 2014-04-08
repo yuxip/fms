@@ -368,7 +368,7 @@ Int_t Yiqun::FitEvent(Int_t nTows, Int_t &nClusts, Int_t &nRealClusts,
                       Bool_t &junkyEvent) {
   // Possible alternative clusters for 1-photon fit: for catagory 0
   nClusts = 0 ;
-  TowerUtil::TowerList towerList;
+  StFmsClusterFinder::TowerList towerList;
   std::vector<StFmsTower>::iterator towerIter;
   for (towerIter = towers->begin(); towerIter != towers->end(); ++towerIter) {
     towerList.push_back(&(*towerIter));
@@ -524,7 +524,7 @@ Bool_t Yiqun::cluster(TowerList* towerList) {
   NTower=0;
   NClusts=0;
   NRealClusts=0;
-  pTowerUtil=new TowerUtil();
+  pTowerUtil=new StFmsClusterFinder();
   pTowerUtil->SetMomentEcutoff(.5);  
   tow_Arr=0;
   widLG = p_geom->towerWidths(mDetectorId);
