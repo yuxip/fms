@@ -75,8 +75,6 @@ class StFmsEventClusterer: public TObject {
   Float_t maxHTEneOverPhoton;
   Float_t maxRatioSpill;
   Float_t MaxChi2Catag2;
-  Float_t minRealClusterEne;
-  Int_t maxHitsInRealCluster;
   Double_t step[3*StFmsClusterFitter::MAX_NUMB_PHOTONS+1];
   std::vector<Float_t> widLG;
   static TF1* EDepCorrection;

@@ -376,7 +376,11 @@ Int_t StFmsEventClusterer::FitEvent(Int_t nTows, Int_t &nClusts,
   }  // for
   nClusts = pTowerUtil->FindTowerCluster(&towerList, &mClusters);
   // Cluster energy should be at least 2 GeV (parameter "minRealClusterEne")
-  mClusters.erase_if(IsBadCluster(minRealClusterEne, maxHitsInRealCluster));
+  if (mDetectorId == 8 || mDetectorId == 9) {
+    mClusters.erase_if(IsBadCluster(0.75, 25));
+  } else {
+    mClusters.erase_if(IsBadCluster(2.0, 49));  // Different cuts for small cell
+  }  // if
   // Must do moment analysis before catagorization
   for (ClusterIter i = mClusters.begin(); i != mClusters.end(); ++i) {
     i->FindClusterAxis(pTowerUtil->GetMomentEcutoff());
@@ -565,13 +569,6 @@ Bool_t StFmsEventClusterer::cluster(TowerList* towerList) {
   maxHTEneOverPhoton=1.5;
   maxRatioSpill=0.2;
   MaxChi2Catag2=10.;
-  minRealClusterEne=2.0;
-  maxHitsInRealCluster=49;
-  if(mDetectorId == 8 || mDetectorId == 9) {
-    maxHitsInRealCluster=10;
-    minRealClusterEne=.75;
-    maxHitsInRealCluster=25;
-  }  // if
   fitter = new StFmsClusterFitter(p_geom, mDetectorId);
   Bool_t badEvent(true);
   NPh = FitEvent(NTower, NClusts, NRealClusts, badEvent);
