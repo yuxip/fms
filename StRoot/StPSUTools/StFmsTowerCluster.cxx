@@ -13,18 +13,18 @@
 #include "StPSUTools/StFmsFittedPhoton.h"
 
 namespace PSUGlobals {
-HitCluster::HitCluster(StFmsCluster* cluster)
+StFmsTowerCluster::StFmsTowerCluster(StFmsCluster* cluster)
     : mTowers(NULL),  mCluster(cluster), Ecutoff(0.5) {
   Clear();
 }
 
-HitCluster::~HitCluster() {
+StFmsTowerCluster::~StFmsTowerCluster() {
   if (mTowers) {
     delete mTowers;
   }  // if
 }
 
-void HitCluster::Clear(const char* /* unused option inherited from TObject */) { 
+void StFmsTowerCluster::Clear(const char* /* option */) { 
   mSigmaX = mSigmaY = mSigmaXY = mChiSquare = -1.;
   mThetaAxis = -10;
   for (Int_t i(0); i < mMaxPhotonsPerCluster; ++i) {
@@ -36,7 +36,7 @@ void HitCluster::Clear(const char* /* unused option inherited from TObject */) {
   mTowers = new TObjArray(50);
 }
 
-void HitCluster::FindClusterAxis() {
+void StFmsTowerCluster::FindClusterAxis() {
   Double_t dSigma2, aA, bB;
   dSigma2 = mSigmaX * mSigmaX - mSigmaY * mSigmaY;
   aA = sqrt(dSigma2 * dSigma2 + 4.0 * mSigmaXY * mSigmaXY) + dSigma2;
@@ -61,7 +61,7 @@ void HitCluster::FindClusterAxis() {
 
 // Calculate sigma w.r.t the axis going through the "center" and of an angle
 // "theta" in x-y plane
-Double_t HitCluster::GetSigma(Double_t theta) {
+Double_t StFmsTowerCluster::GetSigma(Double_t theta) {
 	Double_t sigma = 0;
 	// 2-d vector vaxis define the axis
 	TVector2 vaxis(cos(theta), sin(theta));
@@ -87,7 +87,7 @@ Double_t HitCluster::GetSigma(Double_t theta) {
 	return wnew > 0 ? sqrt(sigma / wnew) : 0;
 }
 
-void HitCluster::CalClusterMoment(Float_t Ecoff) {
+void StFmsTowerCluster::CalClusterMoment(Float_t Ecoff) {
   Ecutoff=Ecoff;
   Float_t w0, w1, mtmp, mx, my, sigx, sigy, sigXY;
   w0 = w1 = mtmp = mx = my = sigx = sigy = sigXY = 0;

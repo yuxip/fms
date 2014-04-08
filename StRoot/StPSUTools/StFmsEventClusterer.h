@@ -33,7 +33,7 @@ class Yiqun: public TObject {
   Int_t ncols;
 #ifndef __CINT__
   ClusterList mClusters;
-  Float_t FitOnePhoton(HitCluster*);
+  Float_t FitOnePhoton(StFmsTowerCluster*);
   // ClusterList is defined in StFmsClusterFinder.h
   typedef ClusterList::iterator ClusterIter;
   Float_t GlobalFit(const Int_t, const Int_t, ClusterIter);
@@ -43,7 +43,7 @@ class Yiqun: public TObject {
   const ClusterList& clusters() const { return mClusters; }
 #endif  // __CINT__
   Int_t FitEvent(Int_t nTows, Int_t &nClusts, Int_t &nRealClusts, Bool_t &junkyEvent);
-  Double_t EnergyInClusterByPhoton(Double_t widthLG, HitCluster*, PhotonHitFPD*);
+  Double_t EnergyInClusterByPhoton(Double_t widthLG, StFmsTowerCluster*, PhotonHitFPD*);
   Double_t EnergyInTowerByPhoton(Double_t, TowerFPD* , PhotonHitFPD* );
   Yiqun(StFmsGeometry* pgeom, Int_t detectorId);
   typedef std::vector<TowerFPD> TowerList;

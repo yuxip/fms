@@ -13,10 +13,10 @@
 class TObjArray;
 
 namespace PSUGlobals {//$NMSPC
-class HitCluster;
+class StFmsTowerCluster;
 class TowerFPD;
 #ifndef __CINT__
-typedef boost::ptr_list<HitCluster> ClusterList;
+typedef boost::ptr_list<StFmsTowerCluster> ClusterList;
 #endif  // __CINT__
 class TowerUtil {
  public:
@@ -26,8 +26,8 @@ class TowerUtil {
 #ifndef __CINT__
   Int_t FindTowerCluster(TowerList* towers, ClusterList* clusters);
 #endif  // __CINT__
-  void CalClusterMoment(HitCluster* cluster);
-  Int_t CatagBySigmXY(HitCluster* cluster);
+  void CalClusterMoment(StFmsTowerCluster* cluster);
+  Int_t CatagBySigmXY(StFmsTowerCluster* cluster);
   void SetMomentEcutoff(Float_t ecoff=0.5) { Ecutoff=ecoff; }
   Float_t GetMomentEcutoff() { return Ecutoff; }
  private:

@@ -196,7 +196,7 @@ class TowerClusterAssociation : public TObject {
   /* Returns this tower */
   TowerFPD* tower() { return mTower; }
   /* Returns the list of potential associate clusters */
-  std::list<HitCluster*>* clusters() { return &mClusters; }
+  std::list<StFmsTowerCluster*>* clusters() { return &mClusters; }
   /*
    Calculate the separation between this tower and another.
    
@@ -217,7 +217,8 @@ class TowerClusterAssociation : public TObject {
    The separation is in local row-column coordinates i.e. the distance is in
    number of towers, not in cm.
    */
-  double separation(HitCluster* cluster, const ETowerClusterDistance distance) {
+  double separation(StFmsTowerCluster* cluster,
+                    const ETowerClusterDistance distance) {
     if (kPeakTower == distance) {
       TowerFPD* peak = static_cast<TowerFPD*>(cluster->towers()->First());
       return separation(peak);
@@ -242,7 +243,7 @@ class TowerClusterAssociation : public TObject {
    class to determine the (single) cluster that this tower is actually part of,
    in the case that there is more than one potential associate.
    */
-  bool canAssociate(HitCluster* cluster) {
+  bool canAssociate(StFmsTowerCluster* cluster) {
     // The peak tower in a cluster is always the first
     TowerFPD* peak = static_cast<TowerFPD*>(cluster->towers()->First());
     // Make sure that this tower has lower energy than the peak, but be careful;
@@ -278,11 +279,11 @@ class TowerClusterAssociation : public TObject {
    i.e. at any time there can only be clusters of the same (minimal) separation
    from the tower, but there can be multiple clusters of identical separation.
 
-   See separation(HitCluster*) for the meaning of the distance argument.
+   See separation(StFmsTowerCluster*) for the meaning of the distance argument.
    
    Return true if the new cluster is added, false if not.
    */
-  bool add(HitCluster* cluster, const ETowerClusterDistance distance) {
+  bool add(StFmsTowerCluster* cluster, const ETowerClusterDistance distance) {
     bool inserted(false);
     if (canAssociate(cluster)) {
       if (mClusters.empty()) {
@@ -315,15 +316,15 @@ class TowerClusterAssociation : public TObject {
    Calculate the nearest cluster out of the list of potential associates.
    
    The distance is that between this tower and the cluster centre, (x0, y0),
-   therefore HitCluster::CalClusterMoment() must have been called before doing
-   this in order to calculate x0 and y0 of the cluster.
+   therefore StFmsTowerCluster::CalClusterMoment() must have been called before
+   doing this in order to calculate x0 and y0 of the cluster.
    
    Returns NULL if there are no clusters in the list.
    */
-  HitCluster* nearestCluster() {
-    HitCluster* nearest(NULL);
+  StFmsTowerCluster* nearestCluster() {
+    StFmsTowerCluster* nearest(NULL);
     double minDist = ExtremelyFaraway;
-    std::list<HitCluster*>::iterator i;
+    std::list<StFmsTowerCluster*>::iterator i;
     for (i = mClusters.begin(); i != mClusters.end(); ++i) {
       float distance = separation(*i, kClusterCenter);
       // Check if the distance to the "center" of this cluster is smaller
@@ -336,7 +337,7 @@ class TowerClusterAssociation : public TObject {
   }
  private:
   TowerFPD* mTower;
-  std::list<HitCluster*> mClusters;
+  std::list<StFmsTowerCluster*> mClusters;
 };
 
 unsigned TowerUtil::locateClusterSeeds(TowerList* towers, TowerList* neighbors,
@@ -352,7 +353,7 @@ unsigned TowerUtil::locateClusterSeeds(TowerList* towers, TowerList* neighbors,
     if (couldBePeakTower(high, neighbors)) {
       // Add "high" to cluster and move towers neighboring "high" to "neighbor"
       high->setCluster(nClusts);
-      clusters->push_back(new HitCluster(new StFmsCluster));
+      clusters->push_back(new StFmsTowerCluster(new StFmsCluster));
       clusters->back().setIndex(nClusts);
       clusters->back().towers()->Add(high);
       nClusts++ ;
@@ -459,7 +460,7 @@ unsigned TowerUtil::associateResidualTowersWithClusters(TowerList* neighbors,
       association.add(&(*i), kClusterCenter);
     }  // loop over all clusters
     if (!association.clusters()->empty()) {
-      HitCluster* cluster = association.clusters()->front();
+      StFmsTowerCluster* cluster = association.clusters()->front();
       (*tower)->setCluster(cluster->index());
       cluster->towers()->Add(*tower);
       associated.push_back(*tower);
@@ -489,7 +490,7 @@ unsigned TowerUtil::associateValleyTowersWithClusters(TowerList* neighbors,
   for (Int_t i(0); i < valleys->GetEntriesFast(); ++i) {
     TowerClusterAssociation* association =
       static_cast<TowerClusterAssociation*>(valleys->At(i));
-    HitCluster* cluster = association->nearestCluster();
+    StFmsTowerCluster* cluster = association->nearestCluster();
     if (cluster) {
       // Move the tower to the appropriate cluster
       association->tower()->setCluster(cluster->index());
@@ -519,7 +520,7 @@ unsigned TowerUtil::associateSubThresholdTowersWithClusters(
     for (ClusterIter i = clusters->begin(); i != clusters->end(); ++i) {
       association.add(&(*i), kPeakTower);
     }  // for
-    HitCluster* cluster = association.nearestCluster();
+    StFmsTowerCluster* cluster = association.nearestCluster();
     if (cluster &&
         association.separation(cluster, kClusterCenter) < maxDistanceFromPeak) {
       (*tower)->setCluster(cluster->index());
@@ -563,7 +564,7 @@ Int_t TowerUtil::FindTowerCluster(TowerList* towers,
   // Calculate the moments of clusters. We need to do this before calling
   // TowerClusterAssociation::nearestCluster, which uses the cluster moment
   // to determine tower-cluster separations for the valley towers.
-  BOOST_FOREACH(HitCluster& i, *clusters) {
+  BOOST_FOREACH(StFmsTowerCluster& i, *clusters) {
     CalClusterMoment(&i);
   }  // BOOST_FOREACH
   // Ambiguous "valley" towers that were equally spaced between clusters can
@@ -584,7 +585,7 @@ Int_t TowerUtil::FindTowerCluster(TowerList* towers,
 }
 
 /* Calculate moments of a cluster (position, sigma...) */
-void TowerUtil::CalClusterMoment(HitCluster *cluster) {
+void TowerUtil::CalClusterMoment(StFmsTowerCluster *cluster) {
   if (cluster) {
     cluster->CalClusterMoment(Ecutoff);
   }  // if
@@ -592,7 +593,7 @@ void TowerUtil::CalClusterMoment(HitCluster *cluster) {
 }
 
 /* Categorise a cluster */
-Int_t TowerUtil::CatagBySigmXY(HitCluster* cluster) {
+Int_t TowerUtil::CatagBySigmXY(StFmsTowerCluster* cluster) {
   // If the number of towers in a cluster is less than "minTowerCatag02"
   // always consider the cluster a one-photon cluster
   if (cluster->cluster()->GetNTower() < minTowerCatag02) {

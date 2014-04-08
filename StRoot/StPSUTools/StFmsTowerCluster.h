@@ -1,5 +1,5 @@
-#ifndef HITCLUSTER_H
-#define HITCLUSTER_H
+#ifndef STFMSTOWERCLUSTER_H
+#define STFMSTOWERCLUSTER_H
 
 #include <TObject.h>
 
@@ -32,10 +32,10 @@ namespace PSUGlobals {//$NMSPC
  This is an elaborated version of the simple StFmsCluster class, storing extra
  information needed during the clustering process.
  */
-class HitCluster {
+class StFmsTowerCluster {
  public:
-  explicit HitCluster(StFmsCluster* cluster);
-  ~HitCluster();
+  explicit StFmsTowerCluster(StFmsCluster* cluster);
+  ~StFmsTowerCluster();
   void CalClusterMoment(Float_t Ecoff);
   void Clear(const char* optionNotUsed = "");
   void FindClusterAxis(Float_t Ecoff);
@@ -75,38 +75,42 @@ class HitCluster {
   PhotonHitFPD mPhotons[mMaxPhotonsPerCluster];  ///< Photon-Hits in the cluster
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(HitCluster);
+  DISALLOW_COPY_AND_ASSIGN(StFmsTowerCluster);
   void FindClusterAxis();
   Double_t GetSigma(Double_t theta);
   Float_t Ecutoff;
-  ClassDef(HitCluster, 7)
-};  // class HitCluster
+  ClassDef(StFmsTowerCluster, 7)
+};  // class StFmsTowerCluster
 
-inline Int_t HitCluster::index() const { return mIndex; }
+inline Int_t StFmsTowerCluster::index() const { return mIndex; }
 
-inline void HitCluster::setIndex(Int_t index) { mIndex = index; }
+inline void StFmsTowerCluster::setIndex(Int_t index) { mIndex = index; }
 
-inline Float_t HitCluster::chiSquare() const { return mChiSquare; }
+inline Float_t StFmsTowerCluster::chiSquare() const { return mChiSquare; }
 
-inline void HitCluster::setChiSquare(Float_t chi2) {
+inline void StFmsTowerCluster::setChiSquare(Float_t chi2) {
   mChiSquare = chi2;
 }
 
-inline Float_t HitCluster::thetaAxis() const { return mThetaAxis; }
+inline Float_t StFmsTowerCluster::thetaAxis() const { return mThetaAxis; }
 
-inline TObjArray* HitCluster::towers() { return mTowers; }
+inline TObjArray* StFmsTowerCluster::towers() { return mTowers; }
 
-inline const TObjArray* HitCluster::towers() const { return mTowers; }
+inline const TObjArray* StFmsTowerCluster::towers() const { return mTowers; }
 
-inline StFmsCluster* HitCluster::cluster() { return mCluster; }
+inline StFmsCluster* StFmsTowerCluster::cluster() { return mCluster; }
 
-inline const StFmsCluster* HitCluster::cluster() const { return mCluster; }
+inline const StFmsCluster* StFmsTowerCluster::cluster() const {
+  return mCluster;
+}
 
-inline PhotonHitFPD* HitCluster::photons() { return mPhotons; }
+inline PhotonHitFPD* StFmsTowerCluster::photons() { return mPhotons; }
 
-inline const PhotonHitFPD* HitCluster::photons() const { return mPhotons; }
+inline const PhotonHitFPD* StFmsTowerCluster::photons() const {
+  return mPhotons;
+}
 
-inline void HitCluster::FindClusterAxis(Float_t Ecoff) {
+inline void StFmsTowerCluster::FindClusterAxis(Float_t Ecoff) {
   Ecutoff = Ecoff;
   FindClusterAxis();
 }

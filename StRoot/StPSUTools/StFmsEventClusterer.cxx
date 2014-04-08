@@ -18,16 +18,17 @@ using namespace PSUGlobals;
 
 namespace {
 /* Helper function to add numbers of photons using std::accumulate */
-int accumulatePhotons(int nPhotons, const HitCluster& cluster) {
+int accumulatePhotons(int nPhotons, const StFmsTowerCluster& cluster) {
   return nPhotons + cluster.cluster()->GetNphoton();
 }
 
 /* Unary predicate for selecting bad clusters. */
-struct IsBadCluster : public std::unary_function<const HitCluster&, bool> {
+struct IsBadCluster
+    : public std::unary_function<const StFmsTowerCluster&, bool> {
   // Set minimum allowed cluster energy and maximum number of towers
   IsBadCluster(double minEnergy, int maxTowers)
       : energy(minEnergy), towers(maxTowers) { }
-  bool operator()(const HitCluster& cluster) const {
+  bool operator()(const StFmsTowerCluster& cluster) const {
     return cluster.cluster()->GetEnergy() <= energy ||
            cluster.towers()->GetEntries() > towers;
   }
@@ -41,7 +42,7 @@ struct IsBadCluster : public std::unary_function<const HitCluster&, bool> {
  Assumes the cluster is either 1- or 2-photon
  Returns NULL if there is no photon in the cluster
  */
-PhotonHitFPD* findLowestEnergyPhoton(HitCluster* cluster) {
+PhotonHitFPD* findLowestEnergyPhoton(StFmsTowerCluster* cluster) {
   PhotonHitFPD* photon(NULL);
   switch (cluster->cluster()->GetNphoton()) {
     case 1:
@@ -64,7 +65,8 @@ PhotonHitFPD* findLowestEnergyPhoton(HitCluster* cluster) {
  
  Return a pointer to the matching tower if one is found, NULL otherwise.
  */
-TowerFPD* searchClusterTowers(int row, int column, const HitCluster& cluster) {
+TowerFPD* searchClusterTowers(int row, int column,
+                              const StFmsTowerCluster& cluster) {
   TowerFPD* match(NULL);
   for (Int_t i(0); i < cluster.cluster()->GetNTower(); ++i) {
     TowerFPD* tower = static_cast<TowerFPD*>(cluster.towers()->At(i));
@@ -80,7 +82,7 @@ TowerFPD* searchClusterTowers(int row, int column, const HitCluster& cluster) {
 // Static members
 TF1* Yiqun::EDepCorrection(NULL);
 
-Float_t Yiqun::FitOnePhoton(HitCluster* p_clust) {
+Float_t Yiqun::FitOnePhoton(StFmsTowerCluster* p_clust) {
   // 4 parameters are passed to the fitting routine: nPhotons, cluster x
   // position, cluster y position and cluster energy. Set the starting points
   // for the fitting routine, plus lower and upper bounds on allowed values.
@@ -152,8 +154,9 @@ Float_t Yiqun::GlobalFit(const Int_t nPh, const Int_t nCl,
   Int_t totPh = 0;
   // Loop over all clusters
   /** \todo Improve this implementation? This approach is necessary because the
-            original code uses a pointer to a HitCluster in the fitting routines
-            as both a pointer to a single cluster, and an array of clusters .*/
+            original code uses a pointer to a StFmsTowerCluster in the fitting
+            routines as both a pointer to a single cluster, and an array of
+            clusters .*/
   ClusterIter end = first;
   std::advance(end, nCl);
   for (ClusterIter cluster = first; cluster != end; ++cluster) {
@@ -484,7 +487,8 @@ Int_t Yiqun::FitEvent(Int_t nTows, Int_t &nClusts, Int_t &nRealClusts,
  Calculate the energy deposit in a cluster by a photon from shower-shape
  function. In this case, we only need to consider non-zero towers.
  */
-Double_t Yiqun::EnergyInClusterByPhoton(Double_t widthLG, HitCluster *p_clust,
+Double_t Yiqun::EnergyInClusterByPhoton(Double_t widthLG,
+                                        StFmsTowerCluster *p_clust,
                                         PhotonHitFPD *p_photon) {
   Double_t eSS = 0;
   // Sum depositions by the photon in all towers of this cluster
