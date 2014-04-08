@@ -374,7 +374,7 @@ Int_t StFmsEventClusterer::FitEvent(Int_t nTows, Int_t &nClusts,
   for (towerIter = towers->begin(); towerIter != towers->end(); ++towerIter) {
     towerList.push_back(&(*towerIter));
   }  // for
-  nClusts = pTowerUtil->FindTowerCluster(&towerList, &mClusters);
+  nClusts = mClusterFinder.FindTowerCluster(&towerList, &mClusters);
   // Cluster energy should be at least 2 GeV (parameter "minRealClusterEne")
   if (mDetectorId == 8 || mDetectorId == 9) {
     mClusters.erase_if(IsBadCluster(0.75, 25));
@@ -383,14 +383,14 @@ Int_t StFmsEventClusterer::FitEvent(Int_t nTows, Int_t &nClusts,
   }  // if
   // Must do moment analysis before catagorization
   for (ClusterIter i = mClusters.begin(); i != mClusters.end(); ++i) {
-    i->FindClusterAxis(pTowerUtil->GetMomentEcutoff());
+    i->FindClusterAxis(mClusterFinder.GetMomentEcutoff());
   }  // for
   // Loop over clusters, catagorize, guess the photon locations for cat 0 or 2
   // clusters then fit, compare, and choose the best fit
   junkyEvent = false;  // Bad event?
   for (ClusterIter cluster = mClusters.begin(); cluster != mClusters.end();
        ++cluster) {
-    Int_t clustCatag = pTowerUtil->CatagBySigmXY(&(*cluster));
+    Int_t clustCatag = mClusterFinder.CatagBySigmXY(&(*cluster));
     // point to the real TObjArray that contains the towers to be fitted
     // it is the same tower array for the cluster or all alternative clusters
     fitter->tow2Fit = cluster->towers();
@@ -533,8 +533,7 @@ Bool_t StFmsEventClusterer::cluster(TowerList* towerList) {
   NTower=0;
   NClusts=0;
   NRealClusts=0;
-  pTowerUtil=new StFmsClusterFinder();
-  pTowerUtil->SetMomentEcutoff(.5);  
+  mClusterFinder.SetMomentEcutoff(.5);  
   tow_Arr=0;
   widLG = p_geom->towerWidths(mDetectorId);
   NTower = towers->size();
@@ -578,9 +577,6 @@ Bool_t StFmsEventClusterer::cluster(TowerList* towerList) {
 StFmsEventClusterer::~StFmsEventClusterer() {
   if (fitter) {
     delete fitter;
-  }  // if
-  if (pTowerUtil) {
-    delete pTowerUtil;
   }  // if
   if (tow_Arr) {
     delete tow_Arr;
