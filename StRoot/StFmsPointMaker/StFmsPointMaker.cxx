@@ -115,13 +115,13 @@ Int_t StFmsPointMaker::FindPoint() {
       continue;  // To remove LED trails, for pp500 GeV
     }  // if
     Int_t detectorId = instb + 8;  // FMS IDs from 8 to 11
-    PSUGlobals::Yiqun clustering(fmsgeom, detectorId);
+    PSUGlobals::StFmsEventClusterer clustering(fmsgeom, detectorId);
     // Perform tower clustering, skip this subdetector if an error occurs
     if (!clustering.cluster(&towers)) {
       continue;
     }  // if
     // Saved cluser info into StFmsCluster
-    Int_t iPh = 0;  // Sequence # in Yiqun::photons[]
+    Int_t iPh = 0;  // Sequence # in StFmsEventClusterer::photons[]
     PSUGlobals::ClusterList& clusters = clustering.clusters();
     for (ClusterIter ci = clusters.begin(); ci != clusters.end(); ++ci) {
       StFmsCluster* cluster = ci->cluster();

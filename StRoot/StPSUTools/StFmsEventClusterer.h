@@ -1,5 +1,5 @@
-#ifndef YIQUN_H
-#define YIQUN_H
+#ifndef STFMSEVENTCLUSTERER_H
+#define STFMSEVENTCLUSTERER_H
 
 #include <iostream>
 #include <vector>
@@ -26,7 +26,7 @@
 
 namespace PSUGlobals {//$NMSPC
 class ToweFPD;
-class Yiqun: public TObject {
+class StFmsEventClusterer: public TObject {
  public:
   StFmsClusterFinder* pTowerUtil;
   Int_t nrows;
@@ -45,7 +45,7 @@ class Yiqun: public TObject {
   Int_t FitEvent(Int_t nTows, Int_t &nClusts, Int_t &nRealClusts, Bool_t &junkyEvent);
   Double_t EnergyInClusterByPhoton(Double_t widthLG, StFmsTowerCluster*, StFmsFittedPhoton*);
   Double_t EnergyInTowerByPhoton(Double_t, StFmsTower* , StFmsFittedPhoton* );
-  Yiqun(StFmsGeometry* pgeom, Int_t detectorId);
+  StFmsEventClusterer(StFmsGeometry* pgeom, Int_t detectorId);
   typedef std::vector<StFmsTower> TowerList;
   /**
    Perform cluster finding and photon fitting on a list of towers
@@ -55,7 +55,7 @@ class Yiqun: public TObject {
    value.
    */
   Bool_t cluster(TowerList* towers);
-  ~Yiqun();
+  ~StFmsEventClusterer();
   StFmsGeometry* p_geom;
   Int_t mDetectorId;
   Int_t NTower;
@@ -85,7 +85,7 @@ class Yiqun: public TObject {
    Response function for nonlinear energy correction, based on cerenkov studies.
    */
   static TF1* GetEDepCorrection();
-  ClassDef(Yiqun,7);
+  ClassDef(StFmsEventClusterer,7);
 };
 }  // namespace PSUGlobals
 #endif

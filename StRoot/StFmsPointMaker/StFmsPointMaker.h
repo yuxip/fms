@@ -12,8 +12,7 @@ class StFmsPointCollection;
 namespace PSUGlobals { class StFmsGeometry; }
 
 /**
- Call Yiqun class to find FMS clusters and
- fit clusters with photon hypothesis (shower fit)
+ Find FMS clusters and fit clusters with photon hypothesis (shower fit)
  adapted from PSU code by Yuxi Pan --03/31/2013
  */
 class StFmsPointMaker : public StMaker {

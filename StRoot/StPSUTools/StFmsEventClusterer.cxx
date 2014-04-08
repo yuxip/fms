@@ -80,9 +80,9 @@ StFmsTower* searchClusterTowers(int row, int column,
 }  // unnamed namespace
 
 // Static members
-TF1* Yiqun::EDepCorrection(NULL);
+TF1* StFmsEventClusterer::EDepCorrection(NULL);
 
-Float_t Yiqun::FitOnePhoton(StFmsTowerCluster* p_clust) {
+Float_t StFmsEventClusterer::FitOnePhoton(StFmsTowerCluster* p_clust) {
   // 4 parameters are passed to the fitting routine: nPhotons, cluster x
   // position, cluster y position and cluster energy. Set the starting points
   // for the fitting routine, plus lower and upper bounds on allowed values.
@@ -128,8 +128,8 @@ Float_t Yiqun::FitOnePhoton(StFmsTowerCluster* p_clust) {
   nCl - number of clusters containing those photons
   p_clust - cluster array
  */
-Float_t Yiqun::GlobalFit(const Int_t nPh, const Int_t nCl,
-                         ClusterIter first) {
+Float_t StFmsEventClusterer::GlobalFit(const Int_t nPh, const Int_t nCl,
+                                       ClusterIter first) {
   // By design, we can only fit up to "MAX_NUMB_PHOTONS" (currently 4) photons
   if (nPh > StFmsClusterFitter::MAX_NUMB_PHOTONS || nPh < 2) {
     std::cout << "Global fit! Can not fit " << nPh << " photons! ERROR!" << "\n";
@@ -218,7 +218,7 @@ Float_t Yiqun::GlobalFit(const Int_t nPh, const Int_t nCl,
  
  Cluster moments must have been calculated first
  */
-Float_t Yiqun::Fit2PhotonClust(ClusterIter p_clust) {
+Float_t StFmsEventClusterer::Fit2PhotonClust(ClusterIter p_clust) {
   const Double_t step2[7] = {0, 0.02, 0.02, 0.01, 0.01, 0.01, 0.1} ;
   Double_t ratioSigma = p_clust->cluster()->GetSigmaMin() /
                         p_clust->cluster()->GetSigmaMax();
@@ -322,7 +322,7 @@ Float_t Yiqun::Fit2PhotonClust(ClusterIter p_clust) {
   - clusterIndex: index of cluster to test
   - nRealClusters: total number of clusters in the event
  */
-bool Yiqun::validate2ndPhoton(ClusterIter cluster) {
+bool StFmsEventClusterer::validate2ndPhoton(ClusterIter cluster) {
   // Select the lower-energy of the two photons
   StFmsFittedPhoton* photon = findLowestEnergyPhoton(&(*cluster));
   // Tower row and column where the fitted photon of lower energy should hit
@@ -364,8 +364,8 @@ bool Yiqun::validate2ndPhoton(ClusterIter cluster) {
   return true;  // The photon passed all tests; it's real
 }
 
-Int_t Yiqun::FitEvent(Int_t nTows, Int_t &nClusts, Int_t &nRealClusts,
-                      Bool_t &junkyEvent) {
+Int_t StFmsEventClusterer::FitEvent(Int_t nTows, Int_t &nClusts,
+                                    Int_t &nRealClusts, Bool_t &junkyEvent) {
   // Possible alternative clusters for 1-photon fit: for catagory 0
   nClusts = 0 ;
   StFmsClusterFinder::TowerList towerList;
@@ -487,9 +487,10 @@ Int_t Yiqun::FitEvent(Int_t nTows, Int_t &nClusts, Int_t &nRealClusts,
  Calculate the energy deposit in a cluster by a photon from shower-shape
  function. In this case, we only need to consider non-zero towers.
  */
-Double_t Yiqun::EnergyInClusterByPhoton(Double_t widthLG,
-                                        StFmsTowerCluster *p_clust,
-                                        StFmsFittedPhoton *p_photon) {
+Double_t StFmsEventClusterer::EnergyInClusterByPhoton(
+    Double_t widthLG,
+    StFmsTowerCluster *p_clust,
+    StFmsFittedPhoton *p_photon) {
   Double_t eSS = 0;
   // Sum depositions by the photon in all towers of this cluster
   for(Int_t it=0; it<p_clust->cluster()->GetNTower(); it++) {
@@ -504,8 +505,10 @@ Double_t Yiqun::EnergyInClusterByPhoton(Double_t widthLG,
  Calculate the energy deposit in a tower by a photon from shower-shape
  function.
  */
-Double_t Yiqun::EnergyInTowerByPhoton(Double_t widthLG, StFmsTower *p_tower,
-                                      StFmsFittedPhoton* p_photon) {
+Double_t StFmsEventClusterer::EnergyInTowerByPhoton(
+    Double_t widthLG,
+    StFmsTower *p_tower,
+    StFmsFittedPhoton* p_photon) {
   Double_t xx = ((Double_t)p_tower->column() - 0.5) * widLG[0] - p_photon->xPos;
   Double_t yy = ((Double_t)p_tower->row() - 0.5) * widLG[1] - p_photon->yPos;
   Double_t eSS = p_photon->energy *
@@ -513,12 +516,13 @@ Double_t Yiqun::EnergyInTowerByPhoton(Double_t widthLG, StFmsTower *p_tower,
   return eSS;
 }
 
-Yiqun::Yiqun(StFmsGeometry* pgeom, Int_t detectorId) {
+StFmsEventClusterer::StFmsEventClusterer(StFmsGeometry* pgeom,
+                                         Int_t detectorId) {
   p_geom=pgeom;
   mDetectorId = detectorId;
 }
 
-Bool_t Yiqun::cluster(TowerList* towerList) {
+Bool_t StFmsEventClusterer::cluster(TowerList* towerList) {
   towers = towerList;
   NPh=0;
   NTower=0;
@@ -573,7 +577,7 @@ Bool_t Yiqun::cluster(TowerList* towerList) {
   return !badEvent;  // Return true for success
 }
 
-Yiqun::~Yiqun() {
+StFmsEventClusterer::~StFmsEventClusterer() {
   if (fitter) {
     delete fitter;
   }  // if
@@ -585,17 +589,16 @@ Yiqun::~Yiqun() {
   }  // if
 }
 
-TF1* Yiqun::GetEDepCorrection() {
-  if (!Yiqun::EDepCorrection) {
+TF1* StFmsEventClusterer::GetEDepCorrection() {
+  if (!StFmsEventClusterer::EDepCorrection) {
     // This instantiation would seemingly leak memory, as it is not freed
     // anywhere. However, ROOT stores all functions in a global function list,
     // accessible via gROOT->GetListOfFunctions(). Therefore the ROOT
     // environment should take care of deleting it.
-    Yiqun::EDepCorrection = new TF1("EDepCorrection",
-                                    "(1.3-.15*exp(-(x)/[0])-.6*exp(-(x)/[1]))",
-                                    1, 250);
-    Yiqun::EDepCorrection->SetParameter(0, 10.);
-    Yiqun::EDepCorrection->SetParameter(1, 70.);
+    StFmsEventClusterer::EDepCorrection = new TF1("EDepCorrection",
+      "(1.3-.15*exp(-(x)/[0])-.6*exp(-(x)/[1]))", 1, 250);
+    StFmsEventClusterer::EDepCorrection->SetParameter(0, 10.);
+    StFmsEventClusterer::EDepCorrection->SetParameter(1, 70.);
   }  // if
-  return Yiqun::EDepCorrection;
+  return StFmsEventClusterer::EDepCorrection;
 }
