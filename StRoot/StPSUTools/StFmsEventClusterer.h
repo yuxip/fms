@@ -72,8 +72,6 @@ class StFmsEventClusterer: public TObject {
   Double_t EnergyInClusterByPhoton(Double_t widthLG, StFmsTowerCluster*, StFmsFittedPhoton*);
   Double_t EnergyInTowerByPhoton(Double_t, StFmsTower* , StFmsFittedPhoton* );
   StFmsClusterFinder mClusterFinder;
-  Int_t nrows;
-  Int_t ncols;
   StFmsGeometry* p_geom;
   Int_t mDetectorId;
   Int_t NTower;
