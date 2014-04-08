@@ -53,9 +53,9 @@ class StFmsTowerCluster {
   /** \overload */
   const TObjArray* towers() const;
   /** Return the array of photons creating this cluster */
-  PhotonHitFPD* photons();
+  StFmsFittedPhoton* photons();
   /** \overload */
-  const PhotonHitFPD* photons() const;
+  const StFmsFittedPhoton* photons() const;
   /** Return the StEvent cluster structure */
   StFmsCluster* cluster();
   /** \overload */
@@ -72,7 +72,7 @@ class StFmsTowerCluster {
   TObjArray* mTowers;  //!<  TowerFPD objects that make the cluster
   StFmsCluster* mCluster;  //!< Pointer to StEvent cluster structure
   static const int mMaxPhotonsPerCluster = 2;
-  PhotonHitFPD mPhotons[mMaxPhotonsPerCluster];  ///< Photon-Hits in the cluster
+  StFmsFittedPhoton mPhotons[mMaxPhotonsPerCluster];  ///< Photons in cluster
 
  private:
   DISALLOW_COPY_AND_ASSIGN(StFmsTowerCluster);
@@ -104,9 +104,9 @@ inline const StFmsCluster* StFmsTowerCluster::cluster() const {
   return mCluster;
 }
 
-inline PhotonHitFPD* StFmsTowerCluster::photons() { return mPhotons; }
+inline StFmsFittedPhoton* StFmsTowerCluster::photons() { return mPhotons; }
 
-inline const PhotonHitFPD* StFmsTowerCluster::photons() const {
+inline const StFmsFittedPhoton* StFmsTowerCluster::photons() const {
   return mPhotons;
 }
 

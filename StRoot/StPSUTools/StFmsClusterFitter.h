@@ -11,7 +11,7 @@
 class TF2;
 
 namespace PSUGlobals {//$NMSPC
-typedef std::list<PhotonHitFPD> PhotonList;
+typedef std::list<StFmsFittedPhoton> PhotonList;
 class StFmsGeometry;
 /**
  \todo

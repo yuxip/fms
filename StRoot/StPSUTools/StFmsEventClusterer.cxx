@@ -42,8 +42,8 @@ struct IsBadCluster
  Assumes the cluster is either 1- or 2-photon
  Returns NULL if there is no photon in the cluster
  */
-PhotonHitFPD* findLowestEnergyPhoton(StFmsTowerCluster* cluster) {
-  PhotonHitFPD* photon(NULL);
+StFmsFittedPhoton* findLowestEnergyPhoton(StFmsTowerCluster* cluster) {
+  StFmsFittedPhoton* photon(NULL);
   switch (cluster->cluster()->GetNphoton()) {
     case 1:
       photon = &(cluster->photons()[0]);
@@ -324,7 +324,7 @@ Float_t Yiqun::Fit2PhotonClust(ClusterIter p_clust) {
  */
 bool Yiqun::validate2ndPhoton(ClusterIter cluster) {
   // Select the lower-energy of the two photons
-  PhotonHitFPD* photon = findLowestEnergyPhoton(&(*cluster));
+  StFmsFittedPhoton* photon = findLowestEnergyPhoton(&(*cluster));
   // Tower row and column where the fitted photon of lower energy should hit
   int column = 1 + (Int_t)(photon->xPos / widLG[0]);
   int row = 1 + (Int_t)(photon->yPos / widLG[1]);
@@ -403,7 +403,7 @@ Int_t Yiqun::FitEvent(Int_t nTows, Int_t &nClusts, Int_t &nRealClusts,
       // try 2-photon fit, and find the best fit (including 1-photon fit).
       Bool_t is2Photon = true;
       double chiSq1 = FitOnePhoton(&(*cluster));
-      const PhotonHitFPD photon = cluster->photons()[0];  // Cache the photon
+      const StFmsFittedPhoton photon = cluster->photons()[0];  // Cache photon
       double chiSq2(NAN);  // Only set if do 2-photon fit
       // Decide if this 1-photon fit is good enough
       if (chiSq1 < maxGood1PhChi2NDF) {
@@ -489,7 +489,7 @@ Int_t Yiqun::FitEvent(Int_t nTows, Int_t &nClusts, Int_t &nRealClusts,
  */
 Double_t Yiqun::EnergyInClusterByPhoton(Double_t widthLG,
                                         StFmsTowerCluster *p_clust,
-                                        PhotonHitFPD *p_photon) {
+                                        StFmsFittedPhoton *p_photon) {
   Double_t eSS = 0;
   // Sum depositions by the photon in all towers of this cluster
   for(Int_t it=0; it<p_clust->cluster()->GetNTower(); it++) {
@@ -504,7 +504,7 @@ Double_t Yiqun::EnergyInClusterByPhoton(Double_t widthLG,
  function.
  */
 Double_t Yiqun::EnergyInTowerByPhoton(Double_t widthLG, TowerFPD *p_tower,
-                                      PhotonHitFPD* p_photon) {
+                                      StFmsFittedPhoton* p_photon) {
   Double_t xx = ((Double_t)p_tower->column() - 0.5) * widLG[0] - p_photon->xPos;
   Double_t yy = ((Double_t)p_tower->row() - 0.5) * widLG[1] - p_photon->yPos;
   Double_t eSS = p_photon->energy *

@@ -43,8 +43,8 @@ class Yiqun: public TObject {
   const ClusterList& clusters() const { return mClusters; }
 #endif  // __CINT__
   Int_t FitEvent(Int_t nTows, Int_t &nClusts, Int_t &nRealClusts, Bool_t &junkyEvent);
-  Double_t EnergyInClusterByPhoton(Double_t widthLG, StFmsTowerCluster*, PhotonHitFPD*);
-  Double_t EnergyInTowerByPhoton(Double_t, TowerFPD* , PhotonHitFPD* );
+  Double_t EnergyInClusterByPhoton(Double_t widthLG, StFmsTowerCluster*, StFmsFittedPhoton*);
+  Double_t EnergyInTowerByPhoton(Double_t, TowerFPD* , StFmsFittedPhoton* );
   Yiqun(StFmsGeometry* pgeom, Int_t detectorId);
   typedef std::vector<TowerFPD> TowerList;
   /**

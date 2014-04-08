@@ -200,9 +200,9 @@ Double_t StFmsClusterFitter::Fit(const Double_t* para, const Double_t* step,
       fMn.GetParameter(i, param[i], error[i]);
     }  // for
     for (Int_t par(1); par < nPar; par += 3) {  // Fill photons from parameters
-      photons->push_back(
-        PhotonHitFPD(param[par], param[par + 1], param[par + 2],  // x, y, E
-                     error[par], error[par + 1], error[par + 2]));
+      photons->push_back(  // x, y, E, error x, error y, error E
+        StFmsFittedPhoton(param[par], param[par + 1], param[par + 2],
+                          error[par], error[par + 1], error[par + 2]));
     }  // for
     // Evaluate chi-square (*not* chi-square per degree of freedom)
     Int_t iflag = 1;  // Don't calculate 1st derivatives, 2nd argument unneeded
@@ -294,7 +294,7 @@ Int_t StFmsClusterFitter::Fit2Pin1Clust(const Double_t* para,
     double yErr = error[2] + (sin(param[4])*error[3]+error[4]*cos(param[4])*param[3])*(1-param[5])/2 - sin(param[4])*param[3]*error[5]/2.0;
     double E = param[6] * (1 + param[5]) / 2.0;
     double EErr = error[6]*(1+param[5])/2.0 + param[6]*error[5]/2.0;
-    photons->push_back(PhotonHitFPD(x, y, E, xErr, yErr, EErr));
+    photons->push_back(StFmsFittedPhoton(x, y, E, xErr, yErr, EErr));
     // Second photon
     x = param[1] - cos(param[4]) * param[3] * (1 + param[5]) / 2.0;
     xErr = error[1] + (-cos(param[4])*error[3]+error[4]*sin(param[4])*param[3])*(1+param[5])/2 - cos(param[4])*param[3]*error[5]/2.0;
@@ -302,7 +302,7 @@ Int_t StFmsClusterFitter::Fit2Pin1Clust(const Double_t* para,
     yErr = error[2] + (sin(param[4])*error[3]-error[4]*cos(param[4])*param[3])*(1+param[5])/2 - sin(param[4])*param[3]*error[5]/2.0;
     E = param[6] * (1 - param[5]) / 2.0;
     EErr = error[6]*(1-param[5])/2.0 - param[6]*error[5]/2.0;
-    photons->push_back(PhotonHitFPD(x, y, E, xErr, yErr, EErr));
+    photons->push_back(StFmsFittedPhoton(x, y, E, xErr, yErr, EErr));
     // Evaluate the Chi-square function
     Int_t iflag = 1;  // Don't calculate 1st derivatives...
     fMn.Eval(7, NULL, chiSq, param, iflag);  // ... so 2nd argument unneeded
