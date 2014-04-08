@@ -2,7 +2,6 @@
 
 #include <algorithm>
 #include <cmath>
-#include <iostream>
 #include <list>
 #include <memory>
 
@@ -11,6 +10,7 @@
 #include <TCollection.h>
 #include <TObjArray.h>
 
+#include "St_base/StMessMgr.h"
 #include "StEvent/StFmsCluster.h"
 #include "StEvent/StFmsHit.h"
 
@@ -502,10 +502,9 @@ unsigned StFmsClusterFinder::associateValleyTowersWithClusters(
       neighbors->remove(association->tower());
       cluster->towers()->Add(association->tower());
     } else {
-      std::cout << "Something is wrong! The following \"Valley\" tower does "
-        << "not belong to any cluster! Error!" << std::endl;
+      LOG_INFO << "Something is wrong! The following \"Valley\" tower does "
+        << "not belong to any cluster! Error!" << endm;
       association->tower()->Print();
-      std::cout << "!!!!!!!!\n" << std::endl;
     }  // if (cluster)
   }  // end of for loop over valley towers
   return size - neighbors->size();

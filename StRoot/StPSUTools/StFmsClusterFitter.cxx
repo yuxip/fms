@@ -1,11 +1,11 @@
 #include "StFmsClusterFitter.h"
 
-#include <iostream>
 #include <vector>
 
 #include <TF2.h>
 #include <TMath.h>
 
+#include "StRoot/St_base/StMessMgr.h"
 #include "StEvent/StFmsHit.h"
 
 #include "StPSUTools/StFmsGeometry.h"
@@ -157,14 +157,14 @@ Double_t StFmsClusterFitter::Fit(const Double_t* para, const Double_t* step,
   Double_t chiSq(-1.);  // Return value
   // Check that there is a pointer to TObjArray of towers
   if(!StFmsClusterFitter::tow2Fit) {
-    std::cerr << "no tower data available! return -1!" << "\n";
+    LOG_ERROR << "no tower data available! return -1!" << endm;
     return chiSq;
   }  // if
   fMn.SetFCN(Fcn1);  // Must set the function for Minuit to use
   Int_t nPh = (Int_t)para[0];  // Get the number of photons from parameters
   if (nPh < 1 || nPh > MAX_NUMB_PHOTONS) {
-    std::cerr << "nPh = " << nPh << "! Number of photons must be between 1 and "
-      << MAX_NUMB_PHOTONS << "! Set it to be 1!" << std::endl;
+    LOG_ERROR << "nPh = " << nPh << "! Number of photons must be between 1 and "
+      << MAX_NUMB_PHOTONS << "! Set it to be 1!" << endm;
     nPh = 1;
   }  // if
   fMn.mncler();  // Clear old parameters, so we can define the new parameters
@@ -245,14 +245,15 @@ Int_t StFmsClusterFitter::Fit2Pin1Clust(const Double_t* para,
   Double_t chiSq(-1.);  // Return value
   // Check that there is a pointer to TObjArray of towers
   if (!StFmsClusterFitter::tow2Fit) {
-    std::cerr << "no tower data available! return -1!" << "\n";
+    LOG_ERROR << "no tower data available! return -1!" << endm;
     return chiSq;
   }  // if
   fMn.SetFCN(Fcn2);  // Must set the function for Minuit to use
   Int_t nPh = (Int_t)para[0];
   if (nPh != 2) {
-    std::cerr << "number of photons must be 2 for special 2-photon cluster fitter \"Int_t StFmsClusterFitter::Fit2Pin1Clust(...)\"!";
-    std::cerr << " Set it to be 2!" << "\n";
+    LOG_ERROR << "number of photons must be 2 for special 2-photon cluster "
+      << "fitter \"Int_t StFmsClusterFitter::Fit2Pin1Clust(...)\"!"
+      << " Set it to be 2!" << endm;
     nPh = 2;
   }  // if
   fMn.mncler();  // Clear old parameters, so we can define the new parameters

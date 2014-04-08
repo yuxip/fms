@@ -1,7 +1,6 @@
 #ifndef STFMSEVENTCLUSTERER_H
 #define STFMSEVENTCLUSTERER_H
 
-#include <iostream>
 #include <vector>
 
 #ifndef __CINT__

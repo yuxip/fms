@@ -8,6 +8,7 @@
 #include <list>
 #include <numeric>
 
+#include "StRoot/St_base/StMessMgr.h"
 #include "StEvent/StFmsCluster.h"
 #include "StEvent/StFmsHit.h"
 
@@ -105,7 +106,7 @@ Float_t StFmsEventClusterer::FitOnePhoton(StFmsTowerCluster* p_clust) {
   PhotonList photons;
   Double_t chiSq = fitter->Fit(start, fitter->step, lowLim, upLim, &photons);
   if (photons.empty()) {  // check return status in case of a bad fit
-    std::cerr << "1-photon Minuit fit returns error!" << std::endl;
+    LOG_ERROR << "1-photon Minuit fit returns error!" << endm;
   }  // if
   p_clust->photons()[0] = photons.back();
   p_clust->cluster()->SetNphoton(photons.size());
@@ -132,12 +133,12 @@ Float_t StFmsEventClusterer::GlobalFit(const Int_t nPh, const Int_t nCl,
                                        ClusterIter first) {
   // By design, we can only fit up to "MAX_NUMB_PHOTONS" (currently 4) photons
   if (nPh > StFmsClusterFitter::MAX_NUMB_PHOTONS || nPh < 2) {
-    std::cout << "Global fit! Can not fit " << nPh << " photons! ERROR!" << "\n";
+    LOG_ERROR << "Global fit! Can not fit " << nPh << " photons!" << endm;
     return -9999;
   }  // if
   // Check that there is at least one cluster
   if (nCl < 1) {
-    std::cout << nCl << " clusters! Global fit will NOT work! ERROR!" << "\n";
+    LOG_ERROR << nCl << " clusters! Global fit will NOT work!" << endm;
     return -9999;
   }  // if
   // Fit has 3 parameters per photon (x, y, E), plus 1 for the number of photons
@@ -163,8 +164,8 @@ Float_t StFmsEventClusterer::GlobalFit(const Int_t nPh, const Int_t nCl,
     // Loop over all photons in cluster
     for (Int_t jp = 0; jp < cluster->cluster()->GetNphoton(); jp++) {
       if (totPh > StFmsClusterFitter::MAX_NUMB_PHOTONS) {
-        std::cout << "Total # of photons in " << nCl << " clusters is at least "
-          << totPh << "! I can NOT do fit! ERROR!" << "\n";
+        LOG_ERROR << "Total # of photons in " << nCl << " clusters is at least "
+          << totPh << "! I can NOT do fit!" << endm;
         return -9999;
       }  // if
       // Note positions are in centimetres, not tower unites
@@ -184,9 +185,9 @@ Float_t StFmsEventClusterer::GlobalFit(const Int_t nPh, const Int_t nCl,
     }  // for
   }  // for
   if (totPh != nPh) {
-    std::cout << "WARNING! Total # of photons in " << nCl <<
-      " clusters is at least " << totPh << "! Not the same as the nPh = ";
-    std::cout  << nPh << "! I will try " << totPh << " instead!" << "\n";
+    LOG_WARN << "WARNING! Total # of photons in " << nCl <<
+      " clusters is at least " << totPh << "! Not the same as the nPh = "
+      << nPh << "! I will try " << totPh << " instead!" << endm;
   }  // if
   // Set the number-of-photons fit parameter
   start[0] = totPh;
@@ -197,7 +198,7 @@ Float_t StFmsEventClusterer::GlobalFit(const Int_t nPh, const Int_t nCl,
   PhotonList photons;
   Double_t chiSq = fitter->Fit(start, fitter->step, lowLim, upLim, &photons);
   if (photons.empty()) {
-    std::cout << "Global Minuit fit returns error!" << "\n";
+    LOG_WARN << "Global Minuit fit returns error!" << endm;
   }  // if
   // Put the fit result back in the clusters
   // Loop over all clusters
@@ -284,7 +285,7 @@ Float_t StFmsEventClusterer::Fit2PhotonClust(ClusterIter p_clust) {
   PhotonList photons;
   Double_t chiSq = fitter->Fit2Pin1Clust(start, step2, lowLim, upLim, &photons);
   if (photons.empty()) {
-    std::cout << "Minuit fit returns error!" << "\n";
+    LOG_WARN << "Minuit fit returns error!" << endm;
   }  // if
   // Do a global fit, using result of 1st fit as starting point
   // Need to set "nPhoton" before calling "GlobalFit(..)"
@@ -437,17 +438,17 @@ Int_t StFmsEventClusterer::FitEvent(Int_t nTows, Int_t &nClusts,
       }  // if (is2Photon)
     } else {  // Invalid cluster category
       // should not happen!
-      std::cerr << "Your logic of catagory is wrong! Something impossible " <<
-        "happens! This a catagory-" << clustCatag;
-      std::cerr << " clusters! Don't know how to fit it!\n" << "\n";
+      LOG_ERROR << "Your logic of catagory is wrong! Something impossible " <<
+        "happens! This a catagory-" << clustCatag <<
+        " clusters! Don't know how to fit it!" << endm;
     }  // if (clustCatag...)
   }  // Loop over all real clusters
   Int_t nPh = std::accumulate(mClusters.begin(), mClusters.end(), 0,
                               accumulatePhotons);
   if(nPh > StFmsClusterFitter::MAX_NUMB_PHOTONS) {
     // myFitter can only do up to "MAX_NUMB_PHOTONS"-photon fit
-    std::cout << "Can not fit " << nPh << " (more than " <<
-      StFmsClusterFitter::MAX_NUMB_PHOTONS << " photons!" << "\n";
+    LOG_WARN << "Can not fit " << nPh << " (more than " <<
+      StFmsClusterFitter::MAX_NUMB_PHOTONS << " photons!" << endm;
     return nPh;
   }  // if
   // For global fit, add all towers from all clusters
@@ -472,7 +473,7 @@ Int_t StFmsEventClusterer::FitEvent(Int_t nTows, Int_t &nClusts,
     Int_t iph = std::accumulate(mClusters.begin(), mClusters.end(), 0,
                                 accumulatePhotons);
     if(iph != nPh) {
-      std::cerr << "ERROR total nPh=" << nPh << " iPh=" << iph << std::endl;
+      LOG_ERROR << "total nPh=" << nPh << " iPh=" << iph << endm;
     }  // if
   } else if (mClusters.size() == 1) {
       double chiSqG = mClusters.front().chiSquare();
@@ -534,7 +535,7 @@ Bool_t StFmsEventClusterer::cluster(TowerList* towerList) {
   widLG = p_geom->towerWidths(mDetectorId);
   NTower = towers->size();
   if (NTower > 578) {
-    printf("Too many towers for Fit\n");
+    LOG_ERROR << "Too many towers for Fit" << endm;
     /** \todo Need to handle this more gracefully. We CANNOT exit during a
               production run */
     exit(-1);
