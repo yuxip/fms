@@ -21,7 +21,6 @@ class StFmsCollection;
 class StMuFmsCollection;
 
 /*class FilesSet;
-class Geom;
 class Qt;
 class RunDepMgr;
 class RunDepCor;

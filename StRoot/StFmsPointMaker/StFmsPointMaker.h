@@ -9,7 +9,7 @@
 
 class StFmsDbMaker;
 class StFmsPointCollection;
-namespace PSUGlobals { class Geom; }
+namespace PSUGlobals { class StFmsGeometry; }
 
 /**
  Call Yiqun class to find FMS clusters and
@@ -45,7 +45,7 @@ class StFmsPointMaker : public StMaker {
   Bool_t populateTowerLists();
   /** all the points (photons) extracted from clusters */
   //StFmsPointCollection*   mFmsPtsColl;  //!
-  PSUGlobals::Geom* fmsgeom;  //!< Access to current FMS geometry information
+  PSUGlobals::StFmsGeometry* fmsgeom;  //!< Access to current FMS geometry
   ClassDef(StFmsPointMaker, 0)
 };
 #endif

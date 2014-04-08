@@ -1,5 +1,5 @@
-#ifndef Geom_
-#define Geom_
+#ifndef StFmsGeometry_
+#define StFmsGeometry_
 
 #include <map>
 #include <vector>
@@ -44,12 +44,12 @@ enum StFmsDetectorId {
  Provides convenience functions to access fmsDetectorPosition_st and its
  members via detector ID
  */
-class Geom : public TObject {
+class StFmsGeometry : public TObject {
  public:
   /** Constructor */
-  Geom();
+  StFmsGeometry();
   /** Destructor */
-  ~Geom();
+  ~StFmsGeometry();
   /**
    Initialise geometry from the FMS database
    
@@ -110,7 +110,8 @@ class Geom : public TObject {
    
    The z position corresponds to the front (beam-facing) plane of the detector.
    
-   Returns (0, 0, 0) for an invalid detector ID, or if Geom is uninitialized.
+   Returns (0, 0, 0) for an invalid detector ID, or if StFmsGeometry is
+   uninitialized.
    */
   TVector3 localToGlobalCoordinates(Double_t x, Double_t y,
                                     Int_t detectorId) const;
@@ -133,7 +134,7 @@ class Geom : public TObject {
  private:
   typedef std::map<int, fmsDetectorPosition_st*> Table;
   Table mPositions;  ///< Detector ID: position information pairs
-  ClassDef(Geom, 3)
-};  // class Geom
+  ClassDef(StFmsGeometry, 3)
+};  // class StFmsGeometry
 }  // namespace PSUGlobals
 #endif

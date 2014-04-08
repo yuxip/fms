@@ -6,11 +6,11 @@
 #include "tables/St_fmsDetectorPosition_Table.h"
 
 namespace PSUGlobals {
-Geom::Geom() { }
+StFmsGeometry::StFmsGeometry() { }
 
-Geom::~Geom() { }
+StFmsGeometry::~StFmsGeometry() { }
 
-const fmsDetectorPosition_st* Geom::find(Int_t detectorId) const {
+const fmsDetectorPosition_st* StFmsGeometry::find(Int_t detectorId) const {
   const fmsDetectorPosition_st* positions(NULL);
   Table::const_iterator entry = mPositions.find(detectorId);
   if (entry != mPositions.end()) {
@@ -19,7 +19,7 @@ const fmsDetectorPosition_st* Geom::find(Int_t detectorId) const {
   return positions;
 }
 
-Float_t Geom::z(Int_t detectorId) const {
+Float_t StFmsGeometry::z(Int_t detectorId) const {
   const fmsDetectorPosition_st* geometry = find(detectorId);
   if (geometry) {
     return geometry->zoffset;
@@ -27,7 +27,7 @@ Float_t Geom::z(Int_t detectorId) const {
   return 0.;
 }
 
-Float_t Geom::xOffset(Int_t detectorId) const {
+Float_t StFmsGeometry::xOffset(Int_t detectorId) const {
   const fmsDetectorPosition_st* geometry = find(detectorId);
   if (geometry) {
     return geometry->xoffset;
@@ -35,7 +35,7 @@ Float_t Geom::xOffset(Int_t detectorId) const {
   return 0.;
 }
 
-Float_t Geom::yOffset(Int_t detectorId) const {
+Float_t StFmsGeometry::yOffset(Int_t detectorId) const {
   const fmsDetectorPosition_st* geometry = find(detectorId);
   if (geometry) {
     return geometry->yoffset;
@@ -43,7 +43,7 @@ Float_t Geom::yOffset(Int_t detectorId) const {
   return 0.;
 }
 
-std::vector<Float_t> Geom::towerWidths(Int_t detectorId) const {
+std::vector<Float_t> StFmsGeometry::towerWidths(Int_t detectorId) const {
   // I don't like this implementation, returning a pointer to access two floats
   // It relies on the data being aligned OK and seems dangerous. We should add
   // a more robust solution e.g. return a pair or 2-element vector.
@@ -56,7 +56,7 @@ std::vector<Float_t> Geom::towerWidths(Int_t detectorId) const {
   return widths;
 }
 
-Bool_t Geom::initialize(StFmsDbMaker* fmsDbMaker) {
+Bool_t StFmsGeometry::initialize(StFmsDbMaker* fmsDbMaker) {
   // If no FMS database was provided, attempt to locate on in the current chain,
   // if one exists
   if (!fmsDbMaker) {
@@ -67,8 +67,8 @@ Bool_t Geom::initialize(StFmsDbMaker* fmsDbMaker) {
   }  // if
   // Bail out if no FMS database can be located
   if (!fmsDbMaker) {
-    LOG_ERROR << "Geom unable to locate an StFmsDbMaker - geometry will not "
-      << "be initialised!" << endm;
+    LOG_ERROR << "StFmsGeometry unable to locate an StFmsDbMaker - "
+      << "geometry will not be initialised!" << endm;
     return false;
   }  // if
   fmsDetectorPosition_st* dbgeom = fmsDbMaker->DetectorPosition();
@@ -86,12 +86,12 @@ Bool_t Geom::initialize(StFmsDbMaker* fmsDbMaker) {
   return false;
 }
 
-TVector3 Geom::localToGlobalCoordinates(Double_t x, Double_t y,
-                                        Int_t detectorId) const {
+TVector3 StFmsGeometry::localToGlobalCoordinates(Double_t x, Double_t y,
+                                                 Int_t detectorId) const {
   TVector3 global(0., 0., 0.);
   const fmsDetectorPosition_st* detector = find(detectorId);
   if (!detector) {
-    return global;  // Uninitialized Geom object or invalid detector ID
+    return global;  // Uninitialized StFmsGeometry object or invalid detector ID
   }  // if
   if (isNorth(detectorId)) {
     // Local coordinates are always positive numbers, but north
@@ -111,8 +111,9 @@ TVector3 Geom::localToGlobalCoordinates(Double_t x, Double_t y,
   return global;
 }
 
-TVector3 Geom::columnRowToGlobalCoordinates(Double_t column, Double_t row,
-                                            Int_t detectorId) const {
+TVector3 StFmsGeometry::columnRowToGlobalCoordinates(Double_t column,
+                                                     Double_t row,
+                                                     Int_t detectorId) const {
   const fmsDetectorPosition_st* detector = find(detectorId);
   if (detector) {
     // Multiply column and row by tower widths to convert to cm then just call
@@ -123,7 +124,7 @@ TVector3 Geom::columnRowToGlobalCoordinates(Double_t column, Double_t row,
   return TVector3(0., 0., 0.);  // In case of no detector information
 }
 
-Bool_t Geom::isNorth(Int_t detectorId) {
+Bool_t StFmsGeometry::isNorth(Int_t detectorId) {
   switch (detectorId) {
     case kFpdNorth:  // Deliberate fall-through
     case kFpdNorthPreshower:  // Deliberate fall-through

@@ -508,7 +508,7 @@ Double_t Yiqun::EnergyInTowerByPhoton(Double_t widthLG, TowerFPD *p_tower,
   return eSS;
 }
 
-Yiqun::Yiqun(Geom* pgeom, Int_t detectorId) {
+Yiqun::Yiqun(StFmsGeometry* pgeom, Int_t detectorId) {
   p_geom=pgeom;
   mDetectorId = detectorId;
 }

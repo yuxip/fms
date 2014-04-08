@@ -27,7 +27,7 @@ TF2* StFmsClusterFitter::GetFunctShowShape() {
   return &showerShapeFitFunction;
 }
 
-StFmsClusterFitter::StFmsClusterFitter(Geom* pgeom, Int_t detectorId)
+StFmsClusterFitter::StFmsClusterFitter(StFmsGeometry* pgeom, Int_t detectorId)
     : fMn(3 * MAX_NUMB_PHOTONS + 1) {
   SetStep();
   std::vector<Float_t> towerWidth = pgeom->towerWidths(detectorId);

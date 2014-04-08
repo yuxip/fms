@@ -63,7 +63,7 @@ Int_t StFmsPointMaker::InitRun(Int_t runNumber) {
   // Set up geometry, which stays constant for each run
   // Only allocate new space in the beginning, not in between runs
   if (!fmsgeom) {
-    fmsgeom = new PSUGlobals::Geom;
+    fmsgeom = new PSUGlobals::StFmsGeometry;
     if (!fmsgeom->initialize(mFmsDbMaker)) {
       // Return an error if geometry initialization fails
       return kStErr;

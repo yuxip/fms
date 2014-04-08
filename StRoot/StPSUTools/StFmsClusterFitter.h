@@ -12,7 +12,7 @@ class TF2;
 
 namespace PSUGlobals {//$NMSPC
 typedef std::list<PhotonHitFPD> PhotonList;
-class Geom;
+class StFmsGeometry;
 /**
  \todo
  It may be safer to make StFmsClusterFitter a singleton class, or something like that.
@@ -25,7 +25,7 @@ class Geom;
 class StFmsClusterFitter : public TObject {
  public:
   /** Constructor using detector geometry */
-  StFmsClusterFitter(Geom* pgeom, Int_t detectorId);
+  StFmsClusterFitter(StFmsGeometry* pgeom, Int_t detectorId);
   /** Default constructor */
   StFmsClusterFitter() { }
   /** Destructor */
