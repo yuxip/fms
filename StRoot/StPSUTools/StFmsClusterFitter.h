@@ -15,21 +15,21 @@ typedef std::list<PhotonHitFPD> PhotonList;
 class Geom;
 /**
  \todo
- It may be safer to make FitTower a singleton class, or something like that.
+ It may be safer to make StFmsClusterFitter a singleton class, or something like that.
  The shower shape fit function is shared across all objects (by necessity, in
  order to interface with TMinuit), but each object updates the function itself
  with different parameters. Therefore bad things would happen if there were
  more than one object in existence at any time. There isn't ever more than one
  instance created in this code, but I think it would be good to enforce that.
  */
-class FitTower : public TObject {
+class StFmsClusterFitter : public TObject {
  public:
   /** Constructor using detector geometry */
-  FitTower(Geom* pgeom, Int_t detectorId);
+  StFmsClusterFitter(Geom* pgeom, Int_t detectorId);
   /** Default constructor */
-  FitTower() { }
+  StFmsClusterFitter() { }
   /** Destructor */
-  ~FitTower();
+  ~StFmsClusterFitter();
   /**
    Return the shower shape function
    
@@ -119,7 +119,7 @@ class FitTower : public TObject {
   Double_t fFitPara[3 * MAX_NUMB_PHOTONS + 1];  ///< Minuit fit parameter
   TMinuit fMn;  // Minuit fitter
   static Float_t widLG[2];  ///< glass width X,Y
-  ClassDef(FitTower,4);
-};  // class FitTower
+  ClassDef(StFmsClusterFitter,4);
+};  // class StFmsClusterFitter
 }  // namespace PSUGlobals
 #endif

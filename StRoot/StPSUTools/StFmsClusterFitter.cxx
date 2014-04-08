@@ -14,26 +14,26 @@
 namespace {
 Int_t numbPara = 10;
 TF2 showerShapeFitFunction("showerShapeFitFunction",
-                           &PSUGlobals::FitTower::GGams,
+                           &PSUGlobals::StFmsClusterFitter::GGams,
                            -25.0, 25.0, -25.0, 25.0, numbPara);
 }  // unnamed namespace
 
 namespace PSUGlobals {
 // Instantiate static members
-Float_t FitTower::widLG[2];
-TObjArray* FitTower::tow2Fit(NULL);
+Float_t StFmsClusterFitter::widLG[2];
+TObjArray* StFmsClusterFitter::tow2Fit(NULL);
 
-TF2* FitTower::GetFunctShowShape() {
+TF2* StFmsClusterFitter::GetFunctShowShape() {
   return &showerShapeFitFunction;
 }
 
-FitTower::FitTower(Geom* pgeom, Int_t detectorId)
+StFmsClusterFitter::StFmsClusterFitter(Geom* pgeom, Int_t detectorId)
     : fMn(3 * MAX_NUMB_PHOTONS + 1) {
   SetStep();
   std::vector<Float_t> towerWidth = pgeom->towerWidths(detectorId);
   fTWidthCM = towerWidth[0];
-  FitTower::widLG[0] = towerWidth[0];
-  FitTower::widLG[1] = towerWidth[1];
+  StFmsClusterFitter::widLG[0] = towerWidth[0];
+  StFmsClusterFitter::widLG[1] = towerWidth[1];
   Double_t para[numbPara];
   para[0] = fTWidthCM;
   para[1] = 1.070804;
@@ -50,9 +50,9 @@ FitTower::FitTower(Geom* pgeom, Int_t detectorId)
   fMn.SetPrintLevel(-1);  // Quiet, including suppression of warnings
 }
 
-FitTower::~FitTower() { }
+StFmsClusterFitter::~StFmsClusterFitter() { }
 
-void FitTower::SetStep() {
+void StFmsClusterFitter::SetStep() {
   const Double_t step0[3 * MAX_NUMB_PHOTONS + 1]= {
     0.0, 0.1, 0.1, 0.2, 0.1, 0.1, 0.2, 0.1, 0.1, 0.2, 0.1,
     0.1, 0.2, 0.1, 0.1, 0.2, 0.1, 0.1, 0.2, 0.1, 0.1, 0.2
@@ -64,7 +64,7 @@ void FitTower::SetStep() {
 
 // Calculate fractional photon energy deposition in a tower based on its (x, y)
 // position relative to the tower center
-Double_t FitTower::FGams(Double_t* xy, Double_t* parameters) {
+Double_t StFmsClusterFitter::FGams(Double_t* xy, Double_t* parameters) {
   Double_t f = 0;
   Double_t x = xy[0];
   Double_t y = xy[1];
@@ -80,7 +80,7 @@ Double_t FitTower::FGams(Double_t* xy, Double_t* parameters) {
 }
 
 // xy array contains (x, y) position of the photon relative to the tower center
-Double_t FitTower::GGams(Double_t* xy, Double_t* para) {
+Double_t StFmsClusterFitter::GGams(Double_t* xy, Double_t* para) {
   Double_t gg(0);
   // Calculate the energy deposited in a tower
   // Evaluate FGams at x+/-d/2 and y+/-d/2, for tower width d
@@ -103,27 +103,27 @@ Double_t FitTower::GGams(Double_t* xy, Double_t* para) {
 
 // Uses the signature needed for TMinuit interface:
 // http://root.cern.ch/root/htmldoc/TMinuit.html#TMinuit:SetFCN
-void FitTower::Fcn1(Int_t& npara, Double_t* grad, Double_t& fval,
-                    Double_t* para, Int_t iflag) {
+void StFmsClusterFitter::Fcn1(Int_t& npara, Double_t* grad, Double_t& fval,
+                              Double_t* para, Int_t iflag) {
   // Number of expected photons should ALWAYS be the first parameter "para[0]"
   Int_t numbPh = (Int_t)para[0];
   TowerFPD* oneTow;
   // Sum energy of all towers being studied
   Double_t sumCl = 0;
-  TIter next(FitTower::tow2Fit);
+  TIter next(StFmsClusterFitter::tow2Fit);
   while(oneTow=(TowerFPD*)next()) {
     sumCl += oneTow->hit()->energy();
   }  // while
   // Loop over all towers that are involved in the fit
   fval = 0;  // Stores sum of chi2 over each tower
-  TIter nextTower(FitTower::tow2Fit);
+  TIter nextTower(StFmsClusterFitter::tow2Fit);
   while(oneTow=(TowerFPD*) nextTower()) {
     // The shower shape function expects the centers of towers in units of cm
     // Tower centers are stored in row/column i.e. local coordinates
     // Therefore convert to cm, remembering to subtract 0.5 from row/column to
     // get centres not edges
-    const Double_t x = (oneTow->column() - 0.5) * FitTower::widLG[0];
-    const Double_t y = (oneTow->row() - 0.5) * FitTower::widLG[1];
+    const Double_t x = (oneTow->column() - 0.5) * StFmsClusterFitter::widLG[0];
+    const Double_t y = (oneTow->row() - 0.5) * StFmsClusterFitter::widLG[1];
     // Measured energy
     const Double_t eMeas = oneTow->hit()->energy();
     // Expected energy from Shower-Shape
@@ -151,12 +151,12 @@ void FitTower::Fcn1(Int_t& npara, Double_t* grad, Double_t& fval,
   }  // if
 }
 
-Double_t FitTower::Fit(const Double_t* para, const Double_t* step,
-                       const Double_t* low, const Double_t* up,
-                       PhotonList* photons) {
+Double_t StFmsClusterFitter::Fit(const Double_t* para, const Double_t* step,
+                                 const Double_t* low, const Double_t* up,
+                                 PhotonList* photons) {
   Double_t chiSq(-1.);  // Return value
   // Check that there is a pointer to TObjArray of towers
-  if(!FitTower::tow2Fit) {
+  if(!StFmsClusterFitter::tow2Fit) {
     std::cerr << "no tower data available! return -1!" << "\n";
     return chiSq;
   }  // if
@@ -237,19 +237,21 @@ Double_t FitTower::Fit(const Double_t* para, const Double_t* step,
 //    z_gg:          should just let it vary from -1 to 1.
 //    d_gg:          a lower bound is given by r=sqrt(sigmaX^2+sigmaY^2). 
 //                      d_gg > Max( 2.5*(r-0.6), 0.5 )
-Int_t FitTower::Fit2Pin1Clust(const Double_t* para, const Double_t* step,
-                              const Double_t* low, const Double_t* up,
-                              PhotonList* photons) {
+Int_t StFmsClusterFitter::Fit2Pin1Clust(const Double_t* para,
+                                        const Double_t* step,
+                                        const Double_t* low,
+                                        const Double_t* up,
+                                        PhotonList* photons) {
   Double_t chiSq(-1.);  // Return value
   // Check that there is a pointer to TObjArray of towers
-  if (!FitTower::tow2Fit) {
+  if (!StFmsClusterFitter::tow2Fit) {
     std::cerr << "no tower data available! return -1!" << "\n";
     return chiSq;
   }  // if
   fMn.SetFCN(Fcn2);  // Must set the function for Minuit to use
   Int_t nPh = (Int_t)para[0];
   if (nPh != 2) {
-    std::cerr << "number of photons must be 2 for special 2-photon cluster fitter \"Int_t FitTower::Fit2Pin1Clust(...)\"!";
+    std::cerr << "number of photons must be 2 for special 2-photon cluster fitter \"Int_t StFmsClusterFitter::Fit2Pin1Clust(...)\"!";
     std::cerr << " Set it to be 2!" << "\n";
     nPh = 2;
   }  // if
@@ -308,8 +310,8 @@ Int_t FitTower::Fit2Pin1Clust(const Double_t* para, const Double_t* step,
   return chiSq;
 }
 
-void FitTower::Fcn2(Int_t& nparam, Double_t* grad, Double_t& fval,
-                    Double_t* param, Int_t iflag) {
+void StFmsClusterFitter::Fcn2(Int_t& nparam, Double_t* grad, Double_t& fval,
+                              Double_t* param, Int_t iflag) {
   // Only need to translate into the old parameterization
   Double_t oldParam[7];
   float dd = param[3];

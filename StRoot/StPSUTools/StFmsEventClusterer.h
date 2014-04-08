@@ -61,7 +61,7 @@ class Yiqun: public TObject {
   Int_t NTower;
   TowerList* towers;
   TObjArray* tow_Arr;
-  FitTower* fitter;
+  StFmsClusterFitter* fitter;
   Int_t NPh; 
   Int_t NClusts;
   Int_t NRealClusts;
@@ -78,7 +78,7 @@ class Yiqun: public TObject {
   Float_t MaxChi2Catag2;
   Float_t minRealClusterEne;
   Int_t maxHitsInRealCluster;
-  Double_t step[3*FitTower::MAX_NUMB_PHOTONS+1];
+  Double_t step[3*StFmsClusterFitter::MAX_NUMB_PHOTONS+1];
   std::vector<Float_t> widLG;
   static TF1* EDepCorrection;
   /**

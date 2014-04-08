@@ -129,7 +129,7 @@ Float_t Yiqun::FitOnePhoton(HitCluster* p_clust) {
 Float_t Yiqun::GlobalFit(const Int_t nPh, const Int_t nCl,
                          ClusterIter first) {
   // By design, we can only fit up to "MAX_NUMB_PHOTONS" (currently 4) photons
-  if (nPh > FitTower::MAX_NUMB_PHOTONS || nPh < 2) {
+  if (nPh > StFmsClusterFitter::MAX_NUMB_PHOTONS || nPh < 2) {
     std::cout << "Global fit! Can not fit " << nPh << " photons! ERROR!" << "\n";
     return -9999;
   }  // if
@@ -139,7 +139,7 @@ Float_t Yiqun::GlobalFit(const Int_t nPh, const Int_t nCl,
     return -9999;
   }  // if
   // Fit has 3 parameters per photon (x, y, E), plus 1 for the number of photons
-  const Int_t nParam = 3 * FitTower::MAX_NUMB_PHOTONS + 1;
+  const Int_t nParam = 3 * StFmsClusterFitter::MAX_NUMB_PHOTONS + 1;
   // Fit parameters, errors, and gradients of function
   Double_t param[nParam];
   Double_t error[nParam];
@@ -159,7 +159,7 @@ Float_t Yiqun::GlobalFit(const Int_t nPh, const Int_t nCl,
   for (ClusterIter cluster = first; cluster != end; ++cluster) {
     // Loop over all photons in cluster
     for (Int_t jp = 0; jp < cluster->cluster()->GetNphoton(); jp++) {
-      if (totPh > FitTower::MAX_NUMB_PHOTONS) {
+      if (totPh > StFmsClusterFitter::MAX_NUMB_PHOTONS) {
         std::cout << "Total # of photons in " << nCl << " clusters is at least "
           << totPh << "! I can NOT do fit! ERROR!" << "\n";
         return -9999;
@@ -188,7 +188,7 @@ Float_t Yiqun::GlobalFit(const Int_t nPh, const Int_t nCl,
   // Set the number-of-photons fit parameter
   start[0] = totPh;
   lowLim[0] = 0.5;
-  upLim[0] = FitTower::MAX_NUMB_PHOTONS + 0.5 ;
+  upLim[0] = StFmsClusterFitter::MAX_NUMB_PHOTONS + 0.5 ;
   // Fit status, and flag needed by fitter
   Int_t status, iflag=1;
   PhotonList photons;
@@ -441,10 +441,10 @@ Int_t Yiqun::FitEvent(Int_t nTows, Int_t &nClusts, Int_t &nRealClusts,
   }  // Loop over all real clusters
   Int_t nPh = std::accumulate(mClusters.begin(), mClusters.end(), 0,
                               accumulatePhotons);
-  if(nPh > FitTower::MAX_NUMB_PHOTONS) {
+  if(nPh > StFmsClusterFitter::MAX_NUMB_PHOTONS) {
     // myFitter can only do up to "MAX_NUMB_PHOTONS"-photon fit
     std::cout << "Can not fit " << nPh << " (more than " <<
-      FitTower::MAX_NUMB_PHOTONS << " photons!" << "\n";
+      StFmsClusterFitter::MAX_NUMB_PHOTONS << " photons!" << "\n";
     return nPh;
   }  // if
   // For global fit, add all towers from all clusters
@@ -562,7 +562,7 @@ Bool_t Yiqun::cluster(TowerList* towerList) {
     minRealClusterEne=.75;
     maxHitsInRealCluster=25;
   }  // if
-  fitter = new FitTower(p_geom, mDetectorId);
+  fitter = new StFmsClusterFitter(p_geom, mDetectorId);
   Bool_t badEvent(true);
   NPh = FitEvent(NTower, NClusts, NRealClusts, badEvent);
   return !badEvent;  // Return true for success
