@@ -365,8 +365,8 @@ bool StFmsEventClusterer::validate2ndPhoton(ClusterIter cluster) {
   return true;  // The photon passed all tests; it's real
 }
 
-Int_t StFmsEventClusterer::FitEvent(Int_t nTows, Int_t &nClusts,
-                                    Int_t &nRealClusts, Bool_t &junkyEvent) {
+Int_t StFmsEventClusterer::FitEvent(Int_t &nClusts, Int_t &nRealClusts,
+                                    Bool_t &junkyEvent) {
   // Possible alternative clusters for 1-photon fit: for catagory 0
   nClusts = 0 ;
   StFmsClusterFinder::TowerList towerList;
@@ -456,7 +456,7 @@ Int_t StFmsEventClusterer::FitEvent(Int_t nTows, Int_t &nClusts,
     return nPh;
   }  // if
   // For global fit, add all towers from all clusters
-  TObjArray allTow(nTows);
+  TObjArray allTow(towers->size());
   Int_t ndfg = 0 ;
   for (ClusterIter cluster = mClusters.begin(); cluster != mClusters.end();
        ++cluster) {
@@ -530,21 +530,19 @@ StFmsEventClusterer::StFmsEventClusterer(StFmsGeometry* pgeom,
 Bool_t StFmsEventClusterer::cluster(TowerList* towerList) {
   towers = towerList;
   NPh=0;
-  NTower=0;
   NClusts=0;
   NRealClusts=0;
   mClusterFinder.SetMomentEcutoff(.5);  
   tow_Arr=0;
   widLG = p_geom->towerWidths(mDetectorId);
-  NTower = towers->size();
-  if (NTower > 578) {
+  if (towers->size() > 578) {
     LOG_ERROR << "Too many towers for Fit" << endm;
     /** \todo Need to handle this more gracefully. We CANNOT exit during a
               production run */
     exit(-1);
   }  // if
   Int_t cnt = -1;
-  tow_Arr = new TObjArray(NTower);
+  tow_Arr = new TObjArray(towers->size());
   for (TowerList::iterator i = towers->begin(); i != towers->end(); ++i) {
     if (i->hit()->energy() > 0.001) {
       tow_Arr->Add(&(*i));
@@ -570,7 +568,7 @@ Bool_t StFmsEventClusterer::cluster(TowerList* towerList) {
   MaxChi2Catag2=10.;
   fitter = new StFmsClusterFitter(p_geom, mDetectorId);
   Bool_t badEvent(true);
-  NPh = FitEvent(NTower, NClusts, NRealClusts, badEvent);
+  NPh = FitEvent(NClusts, NRealClusts, badEvent);
   return !badEvent;  // Return true for success
 }
 

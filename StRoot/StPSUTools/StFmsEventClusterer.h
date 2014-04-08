@@ -66,15 +66,13 @@ class StFmsEventClusterer: public TObject {
     - nClusts: stores the total number of clusters found
     - nRealClusts: stores the number of good clusters found
     - junkyEvent: true if the event is bad, false if OK
-   \todo remove nTows argument, not needed
    */
-  Int_t FitEvent(Int_t nTows, Int_t &nClusts, Int_t &nRealClusts, Bool_t &junkyEvent);
+  Int_t FitEvent(Int_t &nClusts, Int_t &nRealClusts, Bool_t &junkyEvent);
   Double_t EnergyInClusterByPhoton(Double_t widthLG, StFmsTowerCluster*, StFmsFittedPhoton*);
   Double_t EnergyInTowerByPhoton(Double_t, StFmsTower* , StFmsFittedPhoton* );
   StFmsClusterFinder mClusterFinder;
   StFmsGeometry* p_geom;
   Int_t mDetectorId;
-  Int_t NTower;
   TowerList* towers;
   TObjArray* tow_Arr;
   StFmsClusterFitter* fitter;
