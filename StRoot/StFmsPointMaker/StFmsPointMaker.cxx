@@ -159,7 +159,7 @@ Int_t StFmsPointMaker::FindPoint() {
       // Save the tower hit info.
       TIter next(ci->towers());
       UChar_t status = 0;  // No status code for now --04/01/2013          
-      while (PSUGlobals::TowerFPD* tow = (PSUGlobals::TowerFPD*)next()){
+      while (PSUGlobals::StFmsTower* tow = (PSUGlobals::StFmsTower*)next()){
         if (tow->hit()->adc() >= 1) {  // Min ADC = 1
           cluster->hits().push_back(tow->hit());
           // Make sure the hit is in the original collection
@@ -213,7 +213,7 @@ Bool_t StFmsPointMaker::populateTowerLists() {
     }  // if
     unsigned index = hit->detectorId() - 8;  // FMS IDs range from 8 to 11
     if (hit->adc() > 0 && index >= 0 && index < mTowers.size()) {
-      PSUGlobals::TowerFPD tower(hit);
+      PSUGlobals::StFmsTower tower(hit);
       // Ensure tower information is valid before adding
       if (tower.initialize(mFmsDbMaker)) {
         mTowers.at(index).push_back(tower);

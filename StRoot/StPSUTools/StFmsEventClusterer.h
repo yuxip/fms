@@ -44,9 +44,9 @@ class Yiqun: public TObject {
 #endif  // __CINT__
   Int_t FitEvent(Int_t nTows, Int_t &nClusts, Int_t &nRealClusts, Bool_t &junkyEvent);
   Double_t EnergyInClusterByPhoton(Double_t widthLG, StFmsTowerCluster*, StFmsFittedPhoton*);
-  Double_t EnergyInTowerByPhoton(Double_t, TowerFPD* , StFmsFittedPhoton* );
+  Double_t EnergyInTowerByPhoton(Double_t, StFmsTower* , StFmsFittedPhoton* );
   Yiqun(StFmsGeometry* pgeom, Int_t detectorId);
-  typedef std::vector<TowerFPD> TowerList;
+  typedef std::vector<StFmsTower> TowerList;
   /**
    Perform cluster finding and photon fitting on a list of towers
    

@@ -39,7 +39,7 @@ class StFmsPointMaker : public StMaker {
   /** Return true if a detector/row/column number physically exists */
   Bool_t Legal(Int_t iew, Int_t nstb, Int_t row0, Int_t col0);
   StFmsDbMaker* mFmsDbMaker;  //!< Access to FMS database information
-  typedef std::vector<PSUGlobals::TowerFPD> TowerList;
+  typedef std::vector<PSUGlobals::StFmsTower> TowerList;
   std::vector<TowerList> mTowers; ///< One for each of four FMS sub-detectors
   /** Read hits from StEvent and prepare them for clustering */
   Bool_t populateTowerLists();

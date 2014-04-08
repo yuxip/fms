@@ -17,25 +17,25 @@ namespace PSUGlobals {//$NMSPC
  are needed. We also store the index of the cluster (if any) that the tower
  becomes associated with during clustering.
  
- The TowerFPD does not own the StFmsHit; it merely references it. Therefore it
- is vital that the StFmsHit have a longer lifetime than the TowerFPD i.e.
+ The StFmsTower does not own the StFmsHit; it merely references it. Therefore it
+ is vital that the StFmsHit have a longer lifetime than the StFmsTower i.e.
  do not clear your StFmsCollection until after you have finished clustering!
  
  Inherits from TObject so it can be stored in a ROOT container.
  */
-class TowerFPD : public TObject {
+class StFmsTower : public TObject {
  public:
   /** Default constructor */
-	TowerFPD();
+	StFmsTower();
 	/**
 	 Constructor.
 	 
-	 Initialize with an StFmsHit, which the TowerFPD does *now* own. It should
-	 therefore have longer lifetime that the TowerFPD.
+	 Initialize with an StFmsHit, which the StFmsTower does *now* own. It should
+	 therefore have longer lifetime that the StFmsTower.
 	 */
-	TowerFPD(StFmsHit* fmsHit);
+	StFmsTower(StFmsHit* fmsHit);
 	/** Destructor */
-	~TowerFPD();
+	~StFmsTower();
 	/**
 	 Initialize tower row and column information from the database.
 	 
@@ -43,21 +43,21 @@ class TowerFPD : public TObject {
 	 Important: an uninitialized tower should NOT be used!
 	 */
 	Bool_t initialize(StFmsDbMaker*);
-	/** Returns true, as TowerFPD can be sorted in a ROOT container */
+	/** Returns true, as StFmsTower can be sorted in a ROOT container */
 	Bool_t IsSortable() const;
 	/**
-	 Function for sorting TowerFPD in order of ascending energy
+	 Function for sorting StFmsTower in order of ascending energy
 	 
 	 See TObject::Compare() for the convention of return values
 	 */
 	Int_t Compare(const TObject* tower) const;
 	/**
-	 Test if another TowerFPD is a neighbor of this tower
+	 Test if another StFmsTower is a neighbor of this tower
 	 
 	 A neighbor is the tower immediately above, below, left or right of this one
 	 i.e. NOT diagonally adjacent towers
 	 */
-	Bool_t IsNeighbor(TowerFPD* tower);
+	Bool_t IsNeighbor(StFmsTower* tower);
 	/** Returns the hit information for this tower (NULL if unknown) */
 	StFmsHit* hit();
 	/** Returns the hit information for this tower (NULL if unknown) */
@@ -72,26 +72,26 @@ class TowerFPD : public TObject {
 	Int_t setCluster(Int_t cluster);
 
  protected:
-  StFmsHit* mHit;  //!< Hit information, not owned by TowerFPD
+  StFmsHit* mHit;  //!< Hit information, not owned by StFmsTower
 	Int_t mColumn;  ///< Column number, starts at 0, horizontal (STAR x-coord)
 	Int_t mRow;  ///< Row number, starts at 0, vertical (STAR y-coord)
 	Int_t mCluster;  ///< Index of cluster the tower is associated with
-	ClassDef(TowerFPD, 7)
+	ClassDef(StFmsTower, 7)
 };
 
-inline Bool_t TowerFPD::IsSortable() const { return kTRUE; }
+inline Bool_t StFmsTower::IsSortable() const { return kTRUE; }
 
-inline StFmsHit* TowerFPD::hit() { return mHit; }
+inline StFmsHit* StFmsTower::hit() { return mHit; }
 
-inline const StFmsHit* TowerFPD::hit() const { return mHit; }
+inline const StFmsHit* StFmsTower::hit() const { return mHit; }
 
-inline Int_t TowerFPD::column() const { return mColumn; }
+inline Int_t StFmsTower::column() const { return mColumn; }
 
-inline Int_t TowerFPD::row() const { return mRow; }
+inline Int_t StFmsTower::row() const { return mRow; }
 
-inline Int_t TowerFPD::cluster() const { return mCluster; }
+inline Int_t StFmsTower::cluster() const { return mCluster; }
 
-inline Int_t TowerFPD::setCluster(Int_t cluster) {
+inline Int_t StFmsTower::setCluster(Int_t cluster) {
   mCluster = cluster;
   return cluster;
 }

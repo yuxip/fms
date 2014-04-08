@@ -14,13 +14,13 @@ class TObjArray;
 
 namespace PSUGlobals {//$NMSPC
 class StFmsTowerCluster;
-class TowerFPD;
+class StFmsTower;
 #ifndef __CINT__
 typedef boost::ptr_list<StFmsTowerCluster> ClusterList;
 #endif  // __CINT__
 class TowerUtil {
  public:
-  typedef std::list<TowerFPD*> TowerList;
+  typedef std::list<StFmsTower*> TowerList;
   TowerUtil();
   ~TowerUtil();
 #ifndef __CINT__

@@ -38,7 +38,7 @@ typedef TowerList::iterator TowerIter;
 typedef TowerList::reverse_iterator TowerRIter;
 typedef PSUGlobals::ClusterList::iterator ClusterIter;
 
-using PSUGlobals::TowerFPD;
+using PSUGlobals::StFmsTower;
 
 /*
  Test for a tower that can be a cluster peak.
@@ -49,7 +49,7 @@ using PSUGlobals::TowerFPD;
  that returning true does not mean the tower *is* a peak, merely that it *can*
  be (i.e. it is consistent with that hypothesis given this input).
  */
-Bool_t couldBePeakTower(TowerFPD* tower, TowerList* nonPeakTowers) {
+Bool_t couldBePeakTower(StFmsTower* tower, TowerList* nonPeakTowers) {
   Bool_t couldBePeak(true);
   for (TowerIter i = nonPeakTowers->begin(); i != nonPeakTowers->end(); ++i) {
     // Compare this tower's energy with that of its immediate neighbours
@@ -86,7 +86,7 @@ typename StlContainer::size_type fillStlContainerFromRootCollection(
  Comparison function to sort towers in order of ascending energy.
  */
 struct AscendingTowerEnergySorter {
-  bool operator()(const TowerFPD* a, const TowerFPD* b) const {
+  bool operator()(const StFmsTower* a, const StFmsTower* b) const {
     return a->Compare(b) < 0;
   }
 };
@@ -95,7 +95,7 @@ struct AscendingTowerEnergySorter {
  Comparison function to sort towers in order of descending energy.
  */
 struct DescendingTowerEnergySorter {
-  bool operator()(const TowerFPD* a, const TowerFPD* b) const {
+  bool operator()(const StFmsTower* a, const StFmsTower* b) const {
     return a->hit()->energy() > b->hit()->energy();
   }
 };
@@ -109,8 +109,8 @@ struct DescendingTowerEnergySorter {
  even if it is physically a neighbour of the reference tower.
  */
 struct TowerIsNeighbor
-    : public std::binary_function<TowerFPD*, TowerFPD*, bool> {
-  bool operator()(TowerFPD* test, TowerFPD* reference) const {
+    : public std::binary_function<StFmsTower*, StFmsTower*, bool> {
+  bool operator()(StFmsTower* test, StFmsTower* reference) const {
     if(test->hit()->energy() < minTowerEnergy) {
       return false;
     }  // if
@@ -122,7 +122,7 @@ struct TowerIsNeighbor
  Predicate testing for tower energy above the global cutoff
  */
 struct TowerEnergyIsAboveThreshold {
-  bool operator()(const TowerFPD* tower) const {
+  bool operator()(const StFmsTower* tower) const {
     return !(tower->hit()->energy() < minTowerEnergy);
   }
 };
@@ -166,8 +166,9 @@ void sortTowersEnergyAscending(PSUGlobals::ClusterList* clusters,
     // Do an exchange of towers: 0<-->N-1, 1<-->N-2... to get ascending
     Int_t n = i->towers()->GetEntriesFast();
     for(Int_t j(0); j < n / 2; ++j) {
-      TowerFPD* t1 = static_cast<TowerFPD*>(i->towers()->RemoveAt(j));
-      TowerFPD* t2 = static_cast<TowerFPD*>(i->towers()->RemoveAt(n - 1 - j));
+      StFmsTower* t1 = static_cast<StFmsTower*>(i->towers()->RemoveAt(j));
+      StFmsTower* t2 = static_cast<StFmsTower*>(
+        i->towers()->RemoveAt(n - 1 - j));
       i->towers()->AddAt(t1, n - 1 - j);
       i->towers()->AddAt(t2, j);
     }  // for
@@ -192,9 +193,9 @@ class TowerClusterAssociation : public TObject {
    
    Initialise with the tower of interest.
    */
-  TowerClusterAssociation(TowerFPD* tower) : mTower(tower) { }
+  TowerClusterAssociation(StFmsTower* tower) : mTower(tower) { }
   /* Returns this tower */
-  TowerFPD* tower() { return mTower; }
+  StFmsTower* tower() { return mTower; }
   /* Returns the list of potential associate clusters */
   std::list<StFmsTowerCluster*>* clusters() { return &mClusters; }
   /*
@@ -203,7 +204,7 @@ class TowerClusterAssociation : public TObject {
    The separation is in local row-column coordinates i.e. the distance is in
    number of towers, not in cm.
    */
-  double separation(TowerFPD* tower) {
+  double separation(StFmsTower* tower) {
     return sqrt(pow(tower->column() - mTower->column(), 2.) +
                 pow(tower->row() - mTower->row(), 2.));
   }
@@ -220,7 +221,7 @@ class TowerClusterAssociation : public TObject {
   double separation(StFmsTowerCluster* cluster,
                     const ETowerClusterDistance distance) {
     if (kPeakTower == distance) {
-      TowerFPD* peak = static_cast<TowerFPD*>(cluster->towers()->First());
+      StFmsTower* peak = static_cast<StFmsTower*>(cluster->towers()->First());
       return separation(peak);
     } else {
       // Use calculated cluster center (x0, y0)
@@ -245,7 +246,7 @@ class TowerClusterAssociation : public TObject {
    */
   bool canAssociate(StFmsTowerCluster* cluster) {
     // The peak tower in a cluster is always the first
-    TowerFPD* peak = static_cast<TowerFPD*>(cluster->towers()->First());
+    StFmsTower* peak = static_cast<StFmsTower*>(cluster->towers()->First());
     // Make sure that this tower has lower energy than the peak, but be careful;
     // because of digitization, it is possible that the "neighbor" tower
     // has the exact same energy as the peak tower, not just less
@@ -255,7 +256,8 @@ class TowerClusterAssociation : public TObject {
     // Loop over all towers in this cluster to see if this tower is
     // physically adjacent to any of them.
     for(Int_t i(0); i < cluster->towers()->GetEntriesFast(); ++i) {
-      TowerFPD* clusterTower = static_cast<TowerFPD*>(cluster->towers()->At(i));
+      StFmsTower* clusterTower = static_cast<StFmsTower*>(
+        cluster->towers()->At(i));
       // Place an energy selection when determining adjacent towers, as a
       // neighbor cannot exceed an adjacent tower by a factor more than
       // minRatioPeakTower, otherwise it will be considered a peak itself.
@@ -336,7 +338,7 @@ class TowerClusterAssociation : public TObject {
     return nearest;
   }
  private:
-  TowerFPD* mTower;
+  StFmsTower* mTower;
   std::list<StFmsTowerCluster*> mClusters;
 };
 
@@ -345,7 +347,7 @@ unsigned TowerUtil::locateClusterSeeds(TowerList* towers, TowerList* neighbors,
   while (!towers->empty() && nClusts < maxNClusters) {
     // By design, this tower is the highest tower remaining in towers, but it
     // could be lower than a tower in neighbors
-    TowerFPD* high = towers->front();
+    StFmsTower* high = towers->front();
     towers->pop_front();
     // Compare this highest tower with all towers in neighbors, and if it is
     // lower than any of those, make it a neighbor. Otherwise, it is a

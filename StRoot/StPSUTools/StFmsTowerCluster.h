@@ -69,7 +69,7 @@ class StFmsTowerCluster {
   Float_t mThetaAxis;  ///< theta angle in x-y plane that define the direction
                       ///< of least-2nd-sigma axis
   Float_t mChiSquare;  ///< Chi-square of the fitting
-  TObjArray* mTowers;  //!<  TowerFPD objects that make the cluster
+  TObjArray* mTowers;  //!<  StFmsTower objects that make the cluster
   StFmsCluster* mCluster;  //!< Pointer to StEvent cluster structure
   static const int mMaxPhotonsPerCluster = 2;
   StFmsFittedPhoton mPhotons[mMaxPhotonsPerCluster];  ///< Photons in cluster

@@ -66,10 +66,10 @@ Double_t StFmsTowerCluster::GetSigma(Double_t theta) {
 	// 2-d vector vaxis define the axis
 	TVector2 vaxis(cos(theta), sin(theta));
 	// loop over all towers pointer in cluster
-	TowerFPD * oneTower;
+	StFmsTower* oneTower;
 	float wnew =0;
 	for (Int_t it=0; it < mTowers->GetEntriesFast(); it++) {
-		oneTower = (TowerFPD *)mTowers->At(it);
+		oneTower = (StFmsTower*)mTowers->At(it);
 		// the 2-d vector from the "center" of cluster to tower
 		// "center" are at 0.5, 1.5, etc! Need shift of 0.5
 		TVector2 v1(oneTower->column() - 0.5 - mCluster->GetX0(),
@@ -91,9 +91,9 @@ void StFmsTowerCluster::CalClusterMoment(Float_t Ecoff) {
   Ecutoff=Ecoff;
   Float_t w0, w1, mtmp, mx, my, sigx, sigy, sigXY;
   w0 = w1 = mtmp = mx = my = sigx = sigy = sigXY = 0;
-  TowerFPD * oneTow;
+  StFmsTower* oneTow;
   TIter next(mTowers);
-  while (oneTow=(TowerFPD*) next()) {
+  while (oneTow=(StFmsTower*) next()) {
     Float_t xxx, yyy;
     xxx = oneTow->column() - 0.5;
     yyy = oneTow->row() - 0.5;

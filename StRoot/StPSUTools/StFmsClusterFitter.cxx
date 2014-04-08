@@ -107,17 +107,17 @@ void StFmsClusterFitter::Fcn1(Int_t& npara, Double_t* grad, Double_t& fval,
                               Double_t* para, Int_t iflag) {
   // Number of expected photons should ALWAYS be the first parameter "para[0]"
   Int_t numbPh = (Int_t)para[0];
-  TowerFPD* oneTow;
+  StFmsTower* oneTow;
   // Sum energy of all towers being studied
   Double_t sumCl = 0;
   TIter next(StFmsClusterFitter::tow2Fit);
-  while(oneTow=(TowerFPD*)next()) {
+  while(oneTow=(StFmsTower*)next()) {
     sumCl += oneTow->hit()->energy();
   }  // while
   // Loop over all towers that are involved in the fit
   fval = 0;  // Stores sum of chi2 over each tower
   TIter nextTower(StFmsClusterFitter::tow2Fit);
-  while(oneTow=(TowerFPD*) nextTower()) {
+  while(oneTow=(StFmsTower*) nextTower()) {
     // The shower shape function expects the centers of towers in units of cm
     // Tower centers are stored in row/column i.e. local coordinates
     // Therefore convert to cm, remembering to subtract 0.5 from row/column to

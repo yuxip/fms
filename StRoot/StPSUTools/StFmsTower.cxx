@@ -4,15 +4,15 @@
 #include "StFmsDbMaker/StFmsDbMaker.h"
 
 namespace PSUGlobals {
-TowerFPD::TowerFPD()
+StFmsTower::StFmsTower()
     : mHit(NULL), mColumn(-1), mRow(-1), mCluster(-1) { }
 
-TowerFPD::TowerFPD(StFmsHit* fmsHit)
+StFmsTower::StFmsTower(StFmsHit* fmsHit)
     : mHit(fmsHit), mColumn(-1), mRow(-1), mCluster(-1) { }
 
-TowerFPD::~TowerFPD() { }
+StFmsTower::~StFmsTower() { }
 
-Bool_t TowerFPD::initialize(StFmsDbMaker* database) {
+Bool_t StFmsTower::initialize(StFmsDbMaker* database) {
   if (!mHit || !database) {  // Check for invalid input
     return false;
   }  // if
@@ -22,8 +22,8 @@ Bool_t TowerFPD::initialize(StFmsDbMaker* database) {
   return mRow > -1 && mColumn > -1;
 }
 
-Int_t TowerFPD::Compare(const TObject* tower) const {
-  const TowerFPD* other = static_cast<const TowerFPD*>(tower);
+Int_t StFmsTower::Compare(const TObject* tower) const {
+  const StFmsTower* other = static_cast<const StFmsTower*>(tower);
   if (mHit->energy() < other->hit()->energy()) {
     return -1;
   } else if (mHit->energy() > other->hit()->energy()) {
@@ -33,7 +33,7 @@ Int_t TowerFPD::Compare(const TObject* tower) const {
   }  // if
 }
 
-Bool_t TowerFPD::IsNeighbor(TowerFPD* other) {
+Bool_t StFmsTower::IsNeighbor(StFmsTower* other) {
   if (!other) {
     return false;
   }  // if

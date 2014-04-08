@@ -65,11 +65,11 @@ StFmsFittedPhoton* findLowestEnergyPhoton(StFmsTowerCluster* cluster) {
  
  Return a pointer to the matching tower if one is found, NULL otherwise.
  */
-TowerFPD* searchClusterTowers(int row, int column,
-                              const StFmsTowerCluster& cluster) {
-  TowerFPD* match(NULL);
+StFmsTower* searchClusterTowers(int row, int column,
+                                const StFmsTowerCluster& cluster) {
+  StFmsTower* match(NULL);
   for (Int_t i(0); i < cluster.cluster()->GetNTower(); ++i) {
-    TowerFPD* tower = static_cast<TowerFPD*>(cluster.towers()->At(i));
+    StFmsTower* tower = static_cast<StFmsTower*>(cluster.towers()->At(i));
     if (tower->row() == row && tower->column() == column) {
       match = tower;
       break;
@@ -329,8 +329,8 @@ bool Yiqun::validate2ndPhoton(ClusterIter cluster) {
   int column = 1 + (Int_t)(photon->xPos / widLG[0]);
   int row = 1 + (Int_t)(photon->yPos / widLG[1]);
   // Now check whether this tower is one of the non-zero towers of the cluster
-  // The temporary TowerFPD only needs row and column set for the test
-  TowerFPD* tower = searchClusterTowers(row, column, *cluster);
+  // The temporary StFmsTower only needs row and column set for the test
+  StFmsTower* tower = searchClusterTowers(row, column, *cluster);
   // If tower is non-NULL, the photon does hit in a tower in this cluster.
   if (!tower) {
     return false;
@@ -369,7 +369,7 @@ Int_t Yiqun::FitEvent(Int_t nTows, Int_t &nClusts, Int_t &nRealClusts,
   // Possible alternative clusters for 1-photon fit: for catagory 0
   nClusts = 0 ;
   TowerUtil::TowerList towerList;
-  std::vector<TowerFPD>::iterator towerIter;
+  std::vector<StFmsTower>::iterator towerIter;
   for (towerIter = towers->begin(); towerIter != towers->end(); ++towerIter) {
     towerList.push_back(&(*towerIter));
   }  // for
@@ -493,7 +493,8 @@ Double_t Yiqun::EnergyInClusterByPhoton(Double_t widthLG,
   Double_t eSS = 0;
   // Sum depositions by the photon in all towers of this cluster
   for(Int_t it=0; it<p_clust->cluster()->GetNTower(); it++) {
-    eSS += EnergyInTowerByPhoton(widthLG, (TowerFPD*)p_clust->towers()->At(it),
+    eSS += EnergyInTowerByPhoton(widthLG,
+                                 (StFmsTower*)p_clust->towers()->At(it),
                                  p_photon);
   };
   return eSS;
@@ -503,7 +504,7 @@ Double_t Yiqun::EnergyInClusterByPhoton(Double_t widthLG,
  Calculate the energy deposit in a tower by a photon from shower-shape
  function.
  */
-Double_t Yiqun::EnergyInTowerByPhoton(Double_t widthLG, TowerFPD *p_tower,
+Double_t Yiqun::EnergyInTowerByPhoton(Double_t widthLG, StFmsTower *p_tower,
                                       StFmsFittedPhoton* p_photon) {
   Double_t xx = ((Double_t)p_tower->column() - 0.5) * widLG[0] - p_photon->xPos;
   Double_t yy = ((Double_t)p_tower->row() - 0.5) * widLG[1] - p_photon->yPos;
