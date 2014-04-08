@@ -27,24 +27,12 @@ namespace PSUGlobals {//$NMSPC
 class ToweFPD;
 class StFmsEventClusterer: public TObject {
  public:
-  StFmsClusterFinder* pTowerUtil;
-  Int_t nrows;
-  Int_t ncols;
-#ifndef __CINT__
-  ClusterList mClusters;
-  Float_t FitOnePhoton(StFmsTowerCluster*);
-  // ClusterList is defined in StFmsClusterFinder.h
-  typedef ClusterList::iterator ClusterIter;
-  Float_t GlobalFit(const Int_t, const Int_t, ClusterIter);
-  Float_t Fit2PhotonClust(ClusterIter);
-  bool validate2ndPhoton(ClusterIter cluster);
-  ClusterList& clusters() { return mClusters; }
-  const ClusterList& clusters() const { return mClusters; }
-#endif  // __CINT__
-  Int_t FitEvent(Int_t nTows, Int_t &nClusts, Int_t &nRealClusts, Bool_t &junkyEvent);
-  Double_t EnergyInClusterByPhoton(Double_t widthLG, StFmsTowerCluster*, StFmsFittedPhoton*);
-  Double_t EnergyInTowerByPhoton(Double_t, StFmsTower* , StFmsFittedPhoton* );
+  /** Constructor */
   StFmsEventClusterer(StFmsGeometry* pgeom, Int_t detectorId);
+  /** Destructor */
+  ~StFmsEventClusterer();
+  /** Return the ID of the detector for which clustering is being performed */
+  int detector() const { return mDetectorId; }
   typedef std::vector<StFmsTower> TowerList;
   /**
    Perform cluster finding and photon fitting on a list of towers
@@ -54,7 +42,38 @@ class StFmsEventClusterer: public TObject {
    value.
    */
   Bool_t cluster(TowerList* towers);
-  ~StFmsEventClusterer();
+#ifndef __CINT__
+  /** Return the list of clusters in this detector for the event */
+  ClusterList& clusters() { return mClusters; }
+  /** \overload */
+  const ClusterList& clusters() const { return mClusters; }
+#endif  // __CINT__
+
+ private:
+#ifndef __CINT__
+  ClusterList mClusters;
+  Float_t FitOnePhoton(StFmsTowerCluster*);
+  // ClusterList is defined in StFmsClusterFinder.h
+  typedef ClusterList::iterator ClusterIter;
+  Float_t GlobalFit(const Int_t, const Int_t, ClusterIter);
+  Float_t Fit2PhotonClust(ClusterIter);
+  bool validate2ndPhoton(ClusterIter cluster);
+#endif  // __CINT__
+  /**
+   Fit clusters for all towers in this detector for the event
+   
+   Arguments:
+    - nClusts: stores the total number of clusters found
+    - nRealClusts: stores the number of good clusters found
+    - junkyEvent: true if the event is bad, false if OK
+   \todo remove nTows argument, not needed
+   */
+  Int_t FitEvent(Int_t nTows, Int_t &nClusts, Int_t &nRealClusts, Bool_t &junkyEvent);
+  Double_t EnergyInClusterByPhoton(Double_t widthLG, StFmsTowerCluster*, StFmsFittedPhoton*);
+  Double_t EnergyInTowerByPhoton(Double_t, StFmsTower* , StFmsFittedPhoton* );
+  StFmsClusterFinder* pTowerUtil;
+  Int_t nrows;
+  Int_t ncols;
   StFmsGeometry* p_geom;
   Int_t mDetectorId;
   Int_t NTower;

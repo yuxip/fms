@@ -134,7 +134,7 @@ Int_t StFmsPointMaker::FindPoint() {
       }  // if
       // Cluster locations are in column-row coordinates (not cm)
       TVector3 xyz = fmsgeom->columnRowToGlobalCoordinates(
-        cluster->GetX0(), cluster->GetY0(), clustering.mDetectorId);
+        cluster->GetX0(), cluster->GetY0(), clustering.detector());
       cluster->SetFourMomentum(compute4Momentum(xyz, cluster->GetEnergy()));
       // Save photons reconstructed from this cluster
       for (Int_t np = 0; np < cluster->GetNphoton(); np++) {
@@ -146,7 +146,7 @@ Int_t StFmsPointMaker::FindPoint() {
         // Photon position is in local (x, y) cm coordinates
         TVector3 xyzph = fmsgeom->localToGlobalCoordinates(
           ci->photons()[np].xPos, ci->photons()[np].yPos,
-          clustering.mDetectorId);
+          clustering.detector());
         clpoint->SetPointXYZLab(xyzph);
         clpoint->SetFourMomentum(compute4Momentum(xyzph, clpoint->GetEnergy()));
         clpoint->SetParentCluId(cluster->GetClusterId());
