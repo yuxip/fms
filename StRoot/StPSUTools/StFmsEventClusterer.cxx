@@ -533,7 +533,6 @@ Bool_t StFmsEventClusterer::cluster(TowerList* towerList) {
   NClusts=0;
   NRealClusts=0;
   mClusterFinder.SetMomentEcutoff(.5);  
-  tow_Arr=0;
   widLG = p_geom->towerWidths(mDetectorId);
   if (towers->size() > 578) {
     LOG_ERROR << "Too many towers for Fit" << endm;
@@ -542,13 +541,6 @@ Bool_t StFmsEventClusterer::cluster(TowerList* towerList) {
     exit(-1);
   }  // if
   Int_t cnt = -1;
-  tow_Arr = new TObjArray(towers->size());
-  for (TowerList::iterator i = towers->begin(); i != towers->end(); ++i) {
-    if (i->hit()->energy() > 0.001) {
-      tow_Arr->Add(&(*i));
-    }  // if
-  }  // for
-  TIter next(tow_Arr);
   posDif_2PC=0.2;
   eneRat_2PC=0.05;
   dggPara[0]=18.0;
@@ -575,9 +567,6 @@ Bool_t StFmsEventClusterer::cluster(TowerList* towerList) {
 StFmsEventClusterer::~StFmsEventClusterer() {
   if (fitter) {
     delete fitter;
-  }  // if
-  if (tow_Arr) {
-    delete tow_Arr;
   }  // if
 }
 

@@ -74,7 +74,6 @@ class StFmsEventClusterer: public TObject {
   StFmsGeometry* p_geom;
   Int_t mDetectorId;
   TowerList* towers;
-  TObjArray* tow_Arr;
   StFmsClusterFitter* fitter;
   Int_t NPh; 
   Int_t NClusts;
