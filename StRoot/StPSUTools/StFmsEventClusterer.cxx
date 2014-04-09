@@ -171,16 +171,16 @@ Float_t StFmsEventClusterer::GlobalFit(const Int_t nPh, const Int_t nCl,
       // Note positions are in centimetres, not tower unites
       Int_t kpar = 3 * totPh + 1;
       start[kpar] = cluster->photons()[jp].xPos;
-      lowLim[kpar] = start[kpar] - posDif_Gl;
-      upLim[kpar] = start[kpar] + posDif_Gl;
+      lowLim[kpar] = start[kpar] - 1.25;
+      upLim[kpar] = start[kpar] + 1.25;
       kpar++;
       start[kpar] = cluster->photons()[jp].yPos;
-      lowLim[kpar] = start[kpar] - posDif_Gl;
-      upLim[kpar] = start[kpar] + posDif_Gl;
+      lowLim[kpar] = start[kpar] - 1.25;
+      upLim[kpar] = start[kpar] + 1.25;
       kpar++;
       start[kpar] = cluster->photons()[jp].energy;
-      lowLim[kpar] = start[kpar] * (1 - eneRat_Gl);
-      upLim[kpar] = start[kpar] * (1 + eneRat_Gl);
+      lowLim[kpar] = start[kpar] * (1 - 0.3);  // Limit to +/- 30% energy
+      upLim[kpar] = start[kpar] * (1 + 0.3);
       totPh++ ;
     }  // for
   }  // for
@@ -223,7 +223,7 @@ Float_t StFmsEventClusterer::Fit2PhotonClust(ClusterIter p_clust) {
   const Double_t step2[7] = {0, 0.02, 0.02, 0.01, 0.01, 0.01, 0.1} ;
   Double_t ratioSigma = p_clust->cluster()->GetSigmaMin() /
                         p_clust->cluster()->GetSigmaMax();
-  Double_t maxTheta = ratioSigma / thetaPara ;
+  Double_t maxTheta = ratioSigma / 2.8;
   if (maxTheta > (TMath::Pi() / 2.0)) {
     maxTheta = TMath::Pi() / 2.0;
   }  // if
@@ -252,15 +252,16 @@ Float_t StFmsEventClusterer::Fit2PhotonClust(ClusterIter p_clust) {
   start[2]  = widLG[1] * p_clust->cluster()->GetY0();
   start[6]  = p_clust->cluster()->GetEnergy();
   start[4]  = p_clust->thetaAxis();
+  const float dggPara[6] = {18.0, 2.2, 0.5, 60.0, 0.085, 3.5};
   start[3] = dggPara[1] * widLG[0] * p_clust->cluster()->GetSigmaMax();
   // Randomize the starting point of Z_gg (from -0.1 to 0.1)
   start[5]  = 0.1 * (2 * gRandom->Rndm() - 1);
-  lowLim[1] = start[1] - posDif_2PC * widLG[0];
-  lowLim[2] = start[2] - posDif_2PC * widLG[1];
-  lowLim[6] = start[6] * (1 - eneRat_2PC);
-  upLim[1]  = start[1] + posDif_2PC * widLG[0];
-  upLim[2]  = start[2] + posDif_2PC * widLG[1];
-  upLim[6]  = start[6] * (1 + eneRat_2PC);
+  lowLim[1] = start[1] - 0.2 * widLG[0];
+  lowLim[2] = start[2] - 0.2 * widLG[1];
+  lowLim[6] = start[6] * (1. - 0.05);
+  upLim[1]  = start[1] + 0.2 * widLG[0];
+  upLim[2]  = start[2] + 0.2 * widLG[1];
+  upLim[6]  = start[6] * (1. + 0.05);
   lowLim[4] = start[4] - maxTheta;
   lowLim[5] = - 1.0;
   lowLim[3] = dggPara[0] / pow(EcSigmaMax, 0.8);
@@ -338,13 +339,13 @@ bool StFmsEventClusterer::validate2ndPhoton(ClusterIter cluster) {
   }  // if
   // Now test the photon and tower properties.
   // Check if the fitted energy is too large compared to the energy of the tower
-  if(tower->hit()->energy() < minHTEneOverPhoton * photon->energy) {
+  if(tower->hit()->energy() < 0.25 * photon->energy) {
     return false;
   }  // if
   // Check if the 2nd photon's "High-Tower" enery is too large compared to its
   // fitted energy. If so, it is probably splitting one photon into two
   Double_t eSS = EnergyInTowerByPhoton(widLG[0], tower, photon);
-  if(tower->hit()->energy() > maxHTEneOverPhoton * eSS) {
+  if(tower->hit()->energy() > 1.5 * eSS) {
     return false;
   }  // if
   // Check that the 2nd photon is not near the edge of another cluster
@@ -357,7 +358,7 @@ bool StFmsEventClusterer::validate2ndPhoton(ClusterIter cluster) {
   for (ClusterIter i = mClusters.begin(); i != mClusters.end(); ++i) {
     if (i != cluster) {  // Skip the photon's own cluster
       if (EnergyInClusterByPhoton(widLG[0], &(*i), photon) > 
-          (maxRatioSpill * energyInOwnCluster)) {
+          (0.2 * energyInOwnCluster)) {
         return false;  // Stop as soon as we fail for one cluster
       }  // if
     }  // if
@@ -386,6 +387,7 @@ Int_t StFmsEventClusterer::FitEvent() {
   // Loop over clusters, catagorize, guess the photon locations for cat 0 or 2
   // clusters then fit, compare, and choose the best fit
   bool badEvent = false;
+  const double max2PhotonFitChi2 = 10.;
   for (ClusterIter cluster = mClusters.begin(); cluster != mClusters.end();
        ++cluster) {
     Int_t clustCatag = mClusterFinder.CatagBySigmXY(&(*cluster));
@@ -399,7 +401,7 @@ Int_t StFmsEventClusterer::FitEvent() {
     } else if (clustCatag == k2PhotonCluster) {
       // Do 2-photon fit
       Fit2PhotonClust(cluster);
-      badEvent = cluster->chiSquare() > MaxChi2Catag2;
+      badEvent = cluster->chiSquare() > max2PhotonFitChi2;
     } else if (clustCatag == kAmbiguousCluster) {
       // for catagory-0 cluster, first try 1-photon fit!
       // If the fit is good enough, it is 1-photon. Else also
@@ -409,7 +411,7 @@ Int_t StFmsEventClusterer::FitEvent() {
       const StFmsFittedPhoton photon = cluster->photons()[0];  // Cache photon
       double chiSq2(NAN);  // Only set if do 2-photon fit
       // Decide if this 1-photon fit is good enough
-      if (chiSq1 < maxGood1PhChi2NDF) {
+      if (chiSq1 < 5.) {
         is2Photon = false ;
       } else {
         // The 1-photon fit isn't good enough, so try 2-photon fit
@@ -431,7 +433,7 @@ Int_t StFmsEventClusterer::FitEvent() {
         cluster->cluster()->SetNphoton(2);
         cluster->setChiSquare(chiSq2);
         // Flag the event as bad if the fit chi2/ndf is too bad
-        badEvent = cluster->chiSquare() > MaxChi2Catag2;
+        badEvent = cluster->chiSquare() > max2PhotonFitChi2;
       } else {
         // 1-photon fit is better
         cluster->cluster()->SetNphoton(1);
@@ -534,24 +536,6 @@ Bool_t StFmsEventClusterer::cluster(TowerList* towerList) {
               production run */
     exit(-1);
   }  // if
-  Int_t cnt = -1;
-  posDif_2PC=0.2;
-  eneRat_2PC=0.05;
-  dggPara[0]=18.0;
-  dggPara[1]=2.2;
-  dggPara[2]=0.5;
-  dggPara[3]=60.0;
-  dggPara[4]=0.085;
-  dggPara[5]=3.5;
-  thetaPara=2.8;
-  // Global fit (more than 1 cluster)
-  posDif_Gl=1.25;
-  eneRat_Gl=0.3;
-  maxGood1PhChi2NDF=5;
-  minHTEneOverPhoton=0.25;
-  maxHTEneOverPhoton=1.5;
-  maxRatioSpill=0.2;
-  MaxChi2Catag2=10.;
   fitter = new StFmsClusterFitter(p_geom, mDetectorId);
   return FitEvent();  // Return true for success
 }

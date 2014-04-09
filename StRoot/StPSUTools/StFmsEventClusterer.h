@@ -68,17 +68,6 @@ class StFmsEventClusterer: public TObject {
   Int_t mDetectorId;
   TowerList* towers;
   StFmsClusterFitter* fitter;
-  Float_t posDif_2PC;    // in unit of Lead-glass
-  Float_t eneRat_2PC;
-  Float_t dggPara[6];
-  Float_t thetaPara;
-  Float_t posDif_Gl;    // in unit of "cm"
-  Float_t eneRat_Gl;
-  Float_t maxGood1PhChi2NDF;
-  Float_t minHTEneOverPhoton;
-  Float_t maxHTEneOverPhoton;
-  Float_t maxRatioSpill;
-  Float_t MaxChi2Catag2;
   Double_t step[3*StFmsClusterFitter::MAX_NUMB_PHOTONS+1];
   std::vector<Float_t> widLG;
   static TF1* EDepCorrection;
