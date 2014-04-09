@@ -68,12 +68,6 @@ class StFmsEventClusterer: public TObject {
   std::vector<PSUGlobals::StFmsTower>* mTowers;
   StFmsClusterFitter* mFitter;
   std::vector<Float_t> mTowerWidthXY;
-  
-  static TF1* mEDepCorrection;
-  /**
-   Response function for nonlinear energy correction, based on cerenkov studies.
-   */
-  static TF1* GetEDepCorrection();
   ClassDef(StFmsEventClusterer,7);
 };
 }  // namespace PSUGlobals

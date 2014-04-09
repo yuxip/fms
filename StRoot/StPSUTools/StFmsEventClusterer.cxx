@@ -80,9 +80,6 @@ StFmsTower* searchClusterTowers(int row, int column,
 }
 }  // unnamed namespace
 
-// Static members
-TF1* StFmsEventClusterer::mEDepCorrection(NULL);
-
 Float_t StFmsEventClusterer::fitOnePhoton(StFmsTowerCluster* p_clust) {
   // 4 parameters are passed to the fitting routine: nPhotons, cluster x
   // position, cluster y position and cluster energy. Set the starting points
@@ -220,8 +217,7 @@ Float_t StFmsEventClusterer::globalFit(const Int_t nPh, const Int_t nCl,
  Cluster moments must have been calculated first
  */
 Float_t StFmsEventClusterer::fit2PhotonClust(ClusterIter p_clust) {
-  const Double_t step2[7] = {0, 0.02, 0.02, 0.01, 0.01, 0.01, 0.1} ;
-  
+  const Double_t step2[7] = {0, 0.02, 0.02, 0.01, 0.01, 0.01, 0.1};
   Double_t ratioSigma = p_clust->cluster()->GetSigmaMin() /
                         p_clust->cluster()->GetSigmaMax();
   Double_t maxTheta = ratioSigma / 2.8;
@@ -548,18 +544,4 @@ StFmsEventClusterer::~StFmsEventClusterer() {
   if (mFitter) {
     delete mFitter;
   }  // if
-}
-
-TF1* StFmsEventClusterer::GetEDepCorrection() {
-  if (!StFmsEventClusterer::mEDepCorrection) {
-    // This instantiation would seemingly leak memory, as it is not freed
-    // anywhere. However, ROOT stores all functions in a global function list,
-    // accessible via gROOT->GetListOfFunctions(). Therefore the ROOT
-    // environment should take care of deleting it.
-    StFmsEventClusterer::mEDepCorrection = new TF1("EDepCorrection",
-      "(1.3-.15*exp(-(x)/[0])-.6*exp(-(x)/[1]))", 1, 250);
-    StFmsEventClusterer::mEDepCorrection->SetParameter(0, 10.);
-    StFmsEventClusterer::mEDepCorrection->SetParameter(1, 70.);
-  }  // if
-  return StFmsEventClusterer::mEDepCorrection;
 }
