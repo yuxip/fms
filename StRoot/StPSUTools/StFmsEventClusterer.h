@@ -21,10 +21,7 @@
 #include "StFmsFittedPhoton.h"
 #include "StFmsClusterFinder.h"
 
-#define MAX_NUMER_CLUSTERS 6
-
 namespace PSUGlobals {//$NMSPC
-class ToweFPD;
 class StFmsEventClusterer: public TObject {
  public:
   /** Constructor */
@@ -33,7 +30,6 @@ class StFmsEventClusterer: public TObject {
   ~StFmsEventClusterer();
   /** Return the ID of the detector for which clustering is being performed */
   int detector() const { return mDetectorId; }
-  typedef std::vector<StFmsTower> TowerList;
   /**
    Perform cluster finding and photon fitting on a list of towers
    
@@ -41,7 +37,7 @@ class StFmsEventClusterer: public TObject {
    clusters have a photon fit with a chi-square exceeding the maximum allowed
    value.
    */
-  Bool_t cluster(TowerList* towers);
+  Bool_t cluster(std::vector<PSUGlobals::StFmsTower>* towers);
 #ifndef __CINT__
   /** Return the list of clusters in this detector for the event */
   ClusterList& clusters() { return mClusters; }
@@ -50,27 +46,30 @@ class StFmsEventClusterer: public TObject {
 #endif  // __CINT__
 
  private:
+  Int_t fitEvent();
+  Double_t photonEnergyInCluster(Double_t towerWidth,
+                                 StFmsTowerCluster* cluster,
+                                 StFmsFittedPhoton* photon);
+  Double_t photonEnergyInTower(Double_t towerWidth, StFmsTower* tower,
+                               StFmsFittedPhoton* photon);
 #ifndef __CINT__
-  ClusterList mClusters;
-  Float_t FitOnePhoton(StFmsTowerCluster*);
+  Float_t fitOnePhoton(StFmsTowerCluster*);
   // ClusterList is defined in StFmsClusterFinder.h
   typedef ClusterList::iterator ClusterIter;
-  Float_t GlobalFit(const Int_t, const Int_t, ClusterIter);
-  Float_t Fit2PhotonClust(ClusterIter);
+  Float_t globalFit(const Int_t, const Int_t, ClusterIter);
+  Float_t fit2PhotonClust(ClusterIter);
   bool validate2ndPhoton(ClusterIter cluster);
+  ClusterList mClusters;
 #endif  // __CINT__
   /** Fit clusters for all towers in this detector for the event */
-  Int_t FitEvent();
-  Double_t EnergyInClusterByPhoton(Double_t widthLG, StFmsTowerCluster*, StFmsFittedPhoton*);
-  Double_t EnergyInTowerByPhoton(Double_t, StFmsTower* , StFmsFittedPhoton* );
   StFmsClusterFinder mClusterFinder;
-  StFmsGeometry* p_geom;
+  StFmsGeometry* mGeometry;
   Int_t mDetectorId;
-  TowerList* towers;
-  StFmsClusterFitter* fitter;
-  Double_t step[3*StFmsClusterFitter::MAX_NUMB_PHOTONS+1];
-  std::vector<Float_t> widLG;
-  static TF1* EDepCorrection;
+  std::vector<PSUGlobals::StFmsTower>* mTowers;
+  StFmsClusterFitter* mFitter;
+  std::vector<Float_t> mTowerWidthXY;
+  
+  static TF1* mEDepCorrection;
   /**
    Response function for nonlinear energy correction, based on cerenkov studies.
    */
