@@ -365,16 +365,14 @@ bool StFmsEventClusterer::validate2ndPhoton(ClusterIter cluster) {
   return true;  // The photon passed all tests; it's real
 }
 
-Int_t StFmsEventClusterer::FitEvent(Int_t &nClusts, Int_t &nRealClusts,
-                                    Bool_t &junkyEvent) {
+Int_t StFmsEventClusterer::FitEvent() {
   // Possible alternative clusters for 1-photon fit: for catagory 0
-  nClusts = 0 ;
   StFmsClusterFinder::TowerList towerList;
   std::vector<StFmsTower>::iterator towerIter;
   for (towerIter = towers->begin(); towerIter != towers->end(); ++towerIter) {
     towerList.push_back(&(*towerIter));
   }  // for
-  nClusts = mClusterFinder.FindTowerCluster(&towerList, &mClusters);
+  mClusterFinder.FindTowerCluster(&towerList, &mClusters);
   // Cluster energy should be at least 2 GeV (parameter "minRealClusterEne")
   if (mDetectorId == 8 || mDetectorId == 9) {
     mClusters.erase_if(IsBadCluster(0.75, 25));
@@ -387,7 +385,7 @@ Int_t StFmsEventClusterer::FitEvent(Int_t &nClusts, Int_t &nRealClusts,
   }  // for
   // Loop over clusters, catagorize, guess the photon locations for cat 0 or 2
   // clusters then fit, compare, and choose the best fit
-  junkyEvent = false;  // Bad event?
+  bool badEvent = false;
   for (ClusterIter cluster = mClusters.begin(); cluster != mClusters.end();
        ++cluster) {
     Int_t clustCatag = mClusterFinder.CatagBySigmXY(&(*cluster));
@@ -401,7 +399,7 @@ Int_t StFmsEventClusterer::FitEvent(Int_t &nClusts, Int_t &nRealClusts,
     } else if (clustCatag == k2PhotonCluster) {
       // Do 2-photon fit
       Fit2PhotonClust(cluster);
-      junkyEvent = cluster->chiSquare() > MaxChi2Catag2;
+      badEvent = cluster->chiSquare() > MaxChi2Catag2;
     } else if (clustCatag == kAmbiguousCluster) {
       // for catagory-0 cluster, first try 1-photon fit!
       // If the fit is good enough, it is 1-photon. Else also
@@ -433,7 +431,7 @@ Int_t StFmsEventClusterer::FitEvent(Int_t &nClusts, Int_t &nRealClusts,
         cluster->cluster()->SetNphoton(2);
         cluster->setChiSquare(chiSq2);
         // Flag the event as bad if the fit chi2/ndf is too bad
-        junkyEvent = cluster->chiSquare() > MaxChi2Catag2;
+        badEvent = cluster->chiSquare() > MaxChi2Catag2;
       } else {
         // 1-photon fit is better
         cluster->cluster()->SetNphoton(1);
@@ -483,9 +481,8 @@ Int_t StFmsEventClusterer::FitEvent(Int_t &nClusts, Int_t &nRealClusts,
       double chiSqG = mClusters.front().chiSquare();
   } else {
     double chiSqG = -1 ;
-  }  // if (nRealClusts > 1)
-  nRealClusts = mClusters.size();
-  return nPh;
+  }  // if (mClusters.size() > 1)
+  return !badEvent;
 }
 
 /*
@@ -529,9 +526,6 @@ StFmsEventClusterer::StFmsEventClusterer(StFmsGeometry* pgeom,
 
 Bool_t StFmsEventClusterer::cluster(TowerList* towerList) {
   towers = towerList;
-  NPh=0;
-  NClusts=0;
-  NRealClusts=0;
   mClusterFinder.SetMomentEcutoff(.5);  
   widLG = p_geom->towerWidths(mDetectorId);
   if (towers->size() > 578) {
@@ -559,9 +553,7 @@ Bool_t StFmsEventClusterer::cluster(TowerList* towerList) {
   maxRatioSpill=0.2;
   MaxChi2Catag2=10.;
   fitter = new StFmsClusterFitter(p_geom, mDetectorId);
-  Bool_t badEvent(true);
-  NPh = FitEvent(NClusts, NRealClusts, badEvent);
-  return !badEvent;  // Return true for success
+  return FitEvent();  // Return true for success
 }
 
 StFmsEventClusterer::~StFmsEventClusterer() {

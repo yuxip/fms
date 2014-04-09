@@ -59,15 +59,8 @@ class StFmsEventClusterer: public TObject {
   Float_t Fit2PhotonClust(ClusterIter);
   bool validate2ndPhoton(ClusterIter cluster);
 #endif  // __CINT__
-  /**
-   Fit clusters for all towers in this detector for the event
-   
-   Arguments:
-    - nClusts: stores the total number of clusters found
-    - nRealClusts: stores the number of good clusters found
-    - junkyEvent: true if the event is bad, false if OK
-   */
-  Int_t FitEvent(Int_t &nClusts, Int_t &nRealClusts, Bool_t &junkyEvent);
+  /** Fit clusters for all towers in this detector for the event */
+  Int_t FitEvent();
   Double_t EnergyInClusterByPhoton(Double_t widthLG, StFmsTowerCluster*, StFmsFittedPhoton*);
   Double_t EnergyInTowerByPhoton(Double_t, StFmsTower* , StFmsFittedPhoton* );
   StFmsClusterFinder mClusterFinder;
@@ -75,9 +68,6 @@ class StFmsEventClusterer: public TObject {
   Int_t mDetectorId;
   TowerList* towers;
   StFmsClusterFitter* fitter;
-  Int_t NPh; 
-  Int_t NClusts;
-  Int_t NRealClusts;
   Float_t posDif_2PC;    // in unit of Lead-glass
   Float_t eneRat_2PC;
   Float_t dggPara[6];
