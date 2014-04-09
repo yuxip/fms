@@ -10,7 +10,7 @@
 
 class TF2;
 
-namespace PSUGlobals {//$NMSPC
+namespace PSUGlobals {  // $NMSPC
 typedef std::list<StFmsFittedPhoton> PhotonList;
 class StFmsGeometry;
 /**
@@ -36,20 +36,26 @@ class StFmsClusterFitter : public TObject {
    The shower shape gives the fractional energy deposition by a photon in a
    tower as a function of the distance of the photon from the tower center.
    */
-  TF2* GetFunctShowShape();
+  TF2* showerShapeFunction();
+  /**
+   Set the tower list to fit when calling fit() or fit2PhotonCluster()
+   
+   towers is a TObjArray of StFmsTowers.
+   */
+  void setTowers(TObjArray* towers) { mTowers = towers; }
   /**
    Fit photons to the list of towers.
    
    par, step, low and up are all arrays of size 3N+1 for an N-photon fit
     - par: start values for the fit variables
-    - step: step size when fitting
+    - step: step size when fitting (use StFmsClusterFitter default if NULL)
     - low: lower bound on fit variable
     - up: upper bound on fit varaible
    The first element in each array refers to the number of photons to fit.
    The next 3 are the x position, y position and energy of a photon.
    e.g. for 1 photon [1, x0, y0, E0]; for 2 photons [2, x0, y0, E0, x1, y1, E1]
    */
-  Double_t Fit(const Double_t* par, const Double_t* step, 
+  Double_t fit(const Double_t* par, const Double_t* step, 
                const Double_t* low, const Double_t* up, PhotonList* photons);
   /**
    Specialized fit function for exactly 2-photon fit
@@ -64,9 +70,9 @@ class StFmsClusterFitter : public TObject {
     - 5: z_gg     (this z_gg can go from -1 to +1, so we do not set E1>E2)
     - 6: E_gg     (total energy of two photons)
    */
-  Int_t Fit2Pin1Clust(const Double_t* para, const Double_t* step, 
-                      const Double_t* low, const Double_t* up,
-                      PhotonList* photons);
+  Int_t fit2PhotonCluster(const Double_t* para, const Double_t* step, 
+                          const Double_t* low, const Double_t* up,
+                          PhotonList* photons);
   /**
    Shower shape function for use with TF2
    
@@ -77,23 +83,24 @@ class StFmsClusterFitter : public TObject {
     - par: array of fit parameters (fixed, derived from FMS studies)
    Integrates F(x,y) over a tower, with F(x,y) defined as here:
    https://drupal.star.bnl.gov/STAR/blog/leun/2010/aug/02/fms-meeting-20100802
+   F(x, y) is returned by energyDepositionDistribution() in this class.
    \todo Provide LaTeX math function in documentation
    */
-  static Double_t GGams(Double_t* x, Double_t* par);
-  static const Int_t MAX_NUMB_PHOTONS = 7;
-  Double_t step[3 * MAX_NUMB_PHOTONS + 1];
-  static TObjArray* tow2Fit;
+  static Double_t energyDepositionInTower(Double_t* x, Double_t* par);
+  /** Maximum number of photons that can be fit at once */
+  static int maxNFittedPhotons() { return MAX_NUMB_PHOTONS; }
 
  private:  
   /**
    Shower shape helper function
    
-   Used by GGams to evaluate one component of the shower shape function.
+   Used by energyDepositionInTower to evaluate one component of the shower
+   shape function.
    Evaluates F(x,y) as defined here:
    https://drupal.star.bnl.gov/STAR/blog/leun/2010/aug/02/fms-meeting-20100802
    \todo Provide LaTeX math function in documentation
    */
-  static Double_t FGams(Double_t* x, Double_t* par);
+  static Double_t energyDepositionDistribution(Double_t* x, Double_t* par);
   /**
    Minuit minimization function for Fit() routine
    
@@ -111,15 +118,13 @@ class StFmsClusterFitter : public TObject {
    */
   static void Fcn2(Int_t& nparam, Double_t* grad, 
                    Double_t& fval, Double_t* param, Int_t iflag);
-  /**
-   Set default steps for fitting functions Fit() and Fit2Pin1Clust()
-   */
-  void SetStep();
-  Double_t fTWidthCM;  ///< width of one lead glass module
-  Double_t fFitPara[3 * MAX_NUMB_PHOTONS + 1];  ///< Minuit fit parameter
-  TMinuit fMn;  // Minuit fitter
-  static Float_t widLG[2];  ///< glass width X,Y
-  ClassDef(StFmsClusterFitter,4);
+  static const Int_t MAX_NUMB_PHOTONS = 7;
+  Double_t mSteps[3 * MAX_NUMB_PHOTONS + 1];
+  Double_t mTowerWidth;  ///< width of one lead glass module
+  TMinuit mMinuit;  // Minuit fitter
+  static TObjArray* mTowers;
+  static Float_t mTowerWidthXY[2];  ///< glass width X,Y
+  ClassDef(StFmsClusterFitter, 4)
 };  // class StFmsClusterFitter
 }  // namespace PSUGlobals
 #endif

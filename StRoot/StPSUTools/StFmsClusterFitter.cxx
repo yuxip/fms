@@ -14,28 +14,35 @@
 namespace {
 Int_t numbPara = 10;
 TF2 showerShapeFitFunction("showerShapeFitFunction",
-                           &PSUGlobals::StFmsClusterFitter::GGams,
-                           -25.0, 25.0, -25.0, 25.0, numbPara);
+                       &PSUGlobals::StFmsClusterFitter::energyDepositionInTower,
+                      -25.0, 25.0, -25.0, 25.0, numbPara);
 }  // unnamed namespace
 
 namespace PSUGlobals {
 // Instantiate static members
-Float_t StFmsClusterFitter::widLG[2];
-TObjArray* StFmsClusterFitter::tow2Fit(NULL);
+Float_t StFmsClusterFitter::mTowerWidthXY[2];
+TObjArray* StFmsClusterFitter::mTowers(NULL);
 
-TF2* StFmsClusterFitter::GetFunctShowShape() {
+TF2* StFmsClusterFitter::showerShapeFunction() {
   return &showerShapeFitFunction;
 }
 
 StFmsClusterFitter::StFmsClusterFitter(StFmsGeometry* pgeom, Int_t detectorId)
-    : fMn(3 * MAX_NUMB_PHOTONS + 1) {
-  SetStep();
+    : mMinuit(3 * MAX_NUMB_PHOTONS + 1) {
+  // Set steps for Minuit fitting
+  const Double_t step[3 * MAX_NUMB_PHOTONS + 1]= {
+    0.0, 0.1, 0.1, 0.2, 0.1, 0.1, 0.2, 0.1, 0.1, 0.2, 0.1,
+    0.1, 0.2, 0.1, 0.1, 0.2, 0.1, 0.1, 0.2, 0.1, 0.1, 0.2
+  };
+  for(int j = 0; j < 3 * MAX_NUMB_PHOTONS + 1; j++) {
+    mSteps[j] = step[j];
+  }  // for
   std::vector<Float_t> towerWidth = pgeom->towerWidths(detectorId);
-  fTWidthCM = towerWidth[0];
-  StFmsClusterFitter::widLG[0] = towerWidth[0];
-  StFmsClusterFitter::widLG[1] = towerWidth[1];
+  mTowerWidth = towerWidth[0];
+  StFmsClusterFitter::mTowerWidthXY[0] = towerWidth[0];
+  StFmsClusterFitter::mTowerWidthXY[1] = towerWidth[1];
   Double_t para[numbPara];
-  para[0] = fTWidthCM;
+  para[0] = mTowerWidth;
   para[1] = 1.070804;
   para[2] = 0.167773;
   para[3] = -0.238578;
@@ -47,24 +54,16 @@ StFmsClusterFitter::StFmsClusterFitter(StFmsGeometry* pgeom, Int_t detectorId)
   para[9] = 1.0;
   showerShapeFitFunction.SetParameters(para); 
   // create a Minuit instance
-  fMn.SetPrintLevel(-1);  // Quiet, including suppression of warnings
+  mMinuit.SetPrintLevel(-1);  // Quiet, including suppression of warnings
 }
 
 StFmsClusterFitter::~StFmsClusterFitter() { }
 
-void StFmsClusterFitter::SetStep() {
-  const Double_t step0[3 * MAX_NUMB_PHOTONS + 1]= {
-    0.0, 0.1, 0.1, 0.2, 0.1, 0.1, 0.2, 0.1, 0.1, 0.2, 0.1,
-    0.1, 0.2, 0.1, 0.1, 0.2, 0.1, 0.1, 0.2, 0.1, 0.1, 0.2
-  };
-  for(int j = 0; j < 3 * MAX_NUMB_PHOTONS + 1; j++) {
-    step[j] = step0[j];
-  }  // for
-}
-
 // Calculate fractional photon energy deposition in a tower based on its (x, y)
 // position relative to the tower center
-Double_t StFmsClusterFitter::FGams(Double_t* xy, Double_t* parameters) {
+Double_t StFmsClusterFitter::energyDepositionDistribution(
+    Double_t* xy,
+    Double_t* parameters) {
   Double_t f = 0;
   Double_t x = xy[0];
   Double_t y = xy[1];
@@ -80,11 +79,12 @@ Double_t StFmsClusterFitter::FGams(Double_t* xy, Double_t* parameters) {
 }
 
 // xy array contains (x, y) position of the photon relative to the tower center
-Double_t StFmsClusterFitter::GGams(Double_t* xy, Double_t* para) {
+Double_t StFmsClusterFitter::energyDepositionInTower(Double_t* xy,
+                                                     Double_t* para) {
   Double_t gg(0);
   // Calculate the energy deposited in a tower
-  // Evaluate FGams at x+/-d/2 and y+/-d/2, for tower width d
-  // The double-loop below is equivalent to
+  // Evaluate energyDepositionDistribution at x+/-d/2 and y+/-d/2, for tower
+  // width d. The double-loop below is equivalent to
   // F(x+d/2, y+d/2) + F(x-d/2, y-d/2) - F(x-d/2, y+d/2) - F(x+d/2, y-d/2)
   for (Int_t ix = 0; ix < 2; ix++) {
     for (Int_t iy = 0; iy < 2; iy++) {
@@ -95,7 +95,7 @@ Double_t StFmsClusterFitter::GGams(Double_t* xy, Double_t* para) {
       Double_t s[2];
       s[0] = xy[0] - para[7] + signX * para[0] / 2.0;  // x +/- d/2
       s[1] = xy[1] - para[8] + signY * para[0] / 2.0;  // y +/- d/2
-      gg += signX * signY * FGams(s, para);
+      gg += signX * signY * energyDepositionDistribution(s, para);
     }  // for
   }  // for
   return gg * para[9];
@@ -110,20 +110,22 @@ void StFmsClusterFitter::Fcn1(Int_t& npara, Double_t* grad, Double_t& fval,
   StFmsTower* oneTow;
   // Sum energy of all towers being studied
   Double_t sumCl = 0;
-  TIter next(StFmsClusterFitter::tow2Fit);
+  TIter next(StFmsClusterFitter::mTowers);
   while(oneTow=(StFmsTower*)next()) {
     sumCl += oneTow->hit()->energy();
   }  // while
   // Loop over all towers that are involved in the fit
   fval = 0;  // Stores sum of chi2 over each tower
-  TIter nextTower(StFmsClusterFitter::tow2Fit);
+  TIter nextTower(StFmsClusterFitter::mTowers);
   while(oneTow=(StFmsTower*) nextTower()) {
     // The shower shape function expects the centers of towers in units of cm
     // Tower centers are stored in row/column i.e. local coordinates
     // Therefore convert to cm, remembering to subtract 0.5 from row/column to
     // get centres not edges
-    const Double_t x = (oneTow->column() - 0.5) * StFmsClusterFitter::widLG[0];
-    const Double_t y = (oneTow->row() - 0.5) * StFmsClusterFitter::widLG[1];
+    const Double_t x = (oneTow->column() - 0.5) *
+                       StFmsClusterFitter::mTowerWidthXY[0];
+    const Double_t y = (oneTow->row() - 0.5) *
+                       StFmsClusterFitter::mTowerWidthXY[1];
     // Measured energy
     const Double_t eMeas = oneTow->hit()->energy();
     // Expected energy from Shower-Shape
@@ -151,53 +153,56 @@ void StFmsClusterFitter::Fcn1(Int_t& npara, Double_t* grad, Double_t& fval,
   }  // if
 }
 
-Double_t StFmsClusterFitter::Fit(const Double_t* para, const Double_t* step,
+Double_t StFmsClusterFitter::fit(const Double_t* para, const Double_t* step,
                                  const Double_t* low, const Double_t* up,
                                  PhotonList* photons) {
+  if (!step) {
+    step = mSteps;
+  }  // if
   Double_t chiSq(-1.);  // Return value
   // Check that there is a pointer to TObjArray of towers
-  if(!StFmsClusterFitter::tow2Fit) {
+  if(!StFmsClusterFitter::mTowers) {
     LOG_ERROR << "no tower data available! return -1!" << endm;
     return chiSq;
   }  // if
-  fMn.SetFCN(Fcn1);  // Must set the function for Minuit to use
+  mMinuit.SetFCN(Fcn1);  // Must set the function for Minuit to use
   Int_t nPh = (Int_t)para[0];  // Get the number of photons from parameters
   if (nPh < 1 || nPh > MAX_NUMB_PHOTONS) {
     LOG_ERROR << "nPh = " << nPh << "! Number of photons must be between 1 and "
       << MAX_NUMB_PHOTONS << "! Set it to be 1!" << endm;
     nPh = 1;
   }  // if
-  fMn.mncler();  // Clear old parameters, so we can define the new parameters
+  mMinuit.mncler();  // Clear old parameters, so we can define the new parameters
   // The first parameter tells Minuit how many photons to fit!
   // It should be a fixed parameter, and between 1 and the max number of photons
   Int_t ierflg = 0;
   Double_t nPhotons(nPh);  // Minuit needs a double argument
-  fMn.mnparm(0, "nph", nPhotons, 0, 0.5, 4.5, ierflg);
+  mMinuit.mnparm(0, "nph", nPhotons, 0, 0.5, 4.5, ierflg);
   // Set the rest of parameters: 3 parameters per photon
   for (Int_t i = 0; i < nPh; i++) {
     Int_t j = 3 * i + 1;  // Need to set 3 parameters per photon
-    fMn.mnparm(j, Form("x%d", i+1), para[j], step[j], low[j], up[j], ierflg);
+    mMinuit.mnparm(j, Form("x%d", i+1), para[j], step[j], low[j], up[j], ierflg);
     j++;
-    fMn.mnparm(j, Form("y%d", i+1), para[j], step[j], low[j], up[j], ierflg);
+    mMinuit.mnparm(j, Form("y%d", i+1), para[j], step[j], low[j], up[j], ierflg);
     j++;
-    fMn.mnparm(j, Form("E%d", i+1), para[j], step[j], low[j], up[j], ierflg);
+    mMinuit.mnparm(j, Form("E%d", i+1), para[j], step[j], low[j], up[j], ierflg);
   }  // if
   Double_t arglist[10];
   arglist[0] = 1000;
   arglist[1] = 1.;
   ierflg = 0;
-  fMn.mnexcm("MIGRAD", arglist ,2,ierflg);
+  mMinuit.mnexcm("MIGRAD", arglist ,2,ierflg);
   // Populate the list of photons
-  if (0 == fMn.GetStatus() && photons) {
+  if (0 == mMinuit.GetStatus() && photons) {
     // Get the fit results for starting positions and errors
     Double_t param[1 + 3 * MAX_NUMB_PHOTONS];
     Double_t error[1 + 3 * MAX_NUMB_PHOTONS];
-    fMn.GetParameter(0, param[0], error[0]);
+    mMinuit.GetParameter(0, param[0], error[0]);
     // There are 3 parameters per photon, plus the 1st parameter
     nPh = (Int_t)param[0];  // Shouldn't have changed, but just to be safe...
     const Int_t nPar = 3 * nPh + 1;
     for (Int_t i(1); i < nPar; ++i) {  // Get remaining fit parameters (x, y, E)
-      fMn.GetParameter(i, param[i], error[i]);
+      mMinuit.GetParameter(i, param[i], error[i]);
     }  // for
     for (Int_t par(1); par < nPar; par += 3) {  // Fill photons from parameters
       photons->push_back(  // x, y, E, error x, error y, error E
@@ -206,7 +211,7 @@ Double_t StFmsClusterFitter::Fit(const Double_t* para, const Double_t* step,
     }  // for
     // Evaluate chi-square (*not* chi-square per degree of freedom)
     Int_t iflag = 1;  // Don't calculate 1st derivatives, 2nd argument unneeded
-    fMn.Eval(photons->size(), NULL, chiSq, param, iflag);
+    mMinuit.Eval(photons->size(), NULL, chiSq, param, iflag);
   }  // for
   return chiSq;
 }
@@ -237,18 +242,21 @@ Double_t StFmsClusterFitter::Fit(const Double_t* para, const Double_t* step,
 //    z_gg:          should just let it vary from -1 to 1.
 //    d_gg:          a lower bound is given by r=sqrt(sigmaX^2+sigmaY^2). 
 //                      d_gg > Max( 2.5*(r-0.6), 0.5 )
-Int_t StFmsClusterFitter::Fit2Pin1Clust(const Double_t* para,
-                                        const Double_t* step,
-                                        const Double_t* low,
-                                        const Double_t* up,
-                                        PhotonList* photons) {
+Int_t StFmsClusterFitter::fit2PhotonCluster(const Double_t* para,
+                                            const Double_t* step,
+                                            const Double_t* low,
+                                            const Double_t* up,
+                                            PhotonList* photons) {
+  if (!step) {
+    step = mSteps;
+  }  // if
   Double_t chiSq(-1.);  // Return value
   // Check that there is a pointer to TObjArray of towers
-  if (!StFmsClusterFitter::tow2Fit) {
+  if (!StFmsClusterFitter::mTowers) {
     LOG_ERROR << "no tower data available! return -1!" << endm;
     return chiSq;
   }  // if
-  fMn.SetFCN(Fcn2);  // Must set the function for Minuit to use
+  mMinuit.SetFCN(Fcn2);  // Must set the function for Minuit to use
   Int_t nPh = (Int_t)para[0];
   if (nPh != 2) {
     LOG_ERROR << "number of photons must be 2 for special 2-photon cluster "
@@ -256,35 +264,35 @@ Int_t StFmsClusterFitter::Fit2Pin1Clust(const Double_t* para,
       << " Set it to be 2!" << endm;
     nPh = 2;
   }  // if
-  fMn.mncler();  // Clear old parameters, so we can define the new parameters
+  mMinuit.mncler();  // Clear old parameters, so we can define the new parameters
   // The first parameter tells Minuit how many photons to fit!
   // It should be a fixed parameter, in this case 2
   Int_t ierflg = 0;
   Double_t nPhotons(nPh);  // Minuit needs a double argument
-  fMn.mnparm(0, "nph", nPhotons, 0, 1.5, 2.5, ierflg);
-  fMn.mnparm(1, "xPi"  , para[1], step[1], low[1], up[1], ierflg);
-  fMn.mnparm(2, "yPi"  , para[2], step[2], low[2], up[2], ierflg);
-  fMn.mnparm(3, "d_gg" , para[3], step[3], low[3], up[3], ierflg);
-  fMn.mnparm(4, "theta", para[4], step[4], low[4], up[4], ierflg);
-  fMn.mnparm(5, "z_gg" , para[5], step[5], low[5], up[5], ierflg);
-  fMn.mnparm(6, "E_gg" , para[6], step[6], low[6], up[6], ierflg);
+  mMinuit.mnparm(0, "nph", nPhotons, 0, 1.5, 2.5, ierflg);
+  mMinuit.mnparm(1, "xPi"  , para[1], step[1], low[1], up[1], ierflg);
+  mMinuit.mnparm(2, "yPi"  , para[2], step[2], low[2], up[2], ierflg);
+  mMinuit.mnparm(3, "d_gg" , para[3], step[3], low[3], up[3], ierflg);
+  mMinuit.mnparm(4, "theta", para[4], step[4], low[4], up[4], ierflg);
+  mMinuit.mnparm(5, "z_gg" , para[5], step[5], low[5], up[5], ierflg);
+  mMinuit.mnparm(6, "E_gg" , para[6], step[6], low[6], up[6], ierflg);
   // Fix E_total and theta, we don't want these to be free parameters
-  fMn.FixParameter(6);
-  fMn.FixParameter(4);
+  mMinuit.FixParameter(6);
+  mMinuit.FixParameter(4);
   Double_t arglist[10];
   arglist[0] = 1000;
   arglist[1] = 1.;
   ierflg = 0;
-  fMn.mnexcm("MIGRAD", arglist ,2,ierflg);
-  fMn.mnfree(0);  // Free fixed parameters before next use of fMn
-  if (0 == fMn.GetStatus() && photons) {
+  mMinuit.mnexcm("MIGRAD", arglist ,2,ierflg);
+  mMinuit.mnfree(0);  // Free fixed parameters before next use of mMinuit
+  if (0 == mMinuit.GetStatus() && photons) {
     // Get the fit results
     Double_t param[7];  // 3 * nPhotons + 1 parameters = 7 for 2 photons
     Double_t error[7];
-    fMn.GetParameter(0, param[0], error[0]);
+    mMinuit.GetParameter(0, param[0], error[0]);
     Int_t nPar = 3 * (Int_t)param[0] + 1;  // Should be 7
     for (Int_t ipar = 1; ipar < nPar; ipar++) {  // Get the remaining parameters
-      fMn.GetParameter(ipar, param[ipar], error[ipar]);
+      mMinuit.GetParameter(ipar, param[ipar], error[ipar]);
     }  // for
     // Put the fit result back in "clust". Need to translate the special
     // parameters for 2-photon fit into x, y, E, which looks a bit complicated!
@@ -306,7 +314,7 @@ Int_t StFmsClusterFitter::Fit2Pin1Clust(const Double_t* para,
     photons->push_back(StFmsFittedPhoton(x, y, E, xErr, yErr, EErr));
     // Evaluate the Chi-square function
     Int_t iflag = 1;  // Don't calculate 1st derivatives...
-    fMn.Eval(7, NULL, chiSq, param, iflag);  // ... so 2nd argument unneeded
+    mMinuit.Eval(7, NULL, chiSq, param, iflag);  // ... so 2nd argument unneeded
   }  // if
   return chiSq;
 }

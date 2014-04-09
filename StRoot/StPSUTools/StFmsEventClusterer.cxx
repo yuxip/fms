@@ -101,7 +101,7 @@ Float_t StFmsEventClusterer::fitOnePhoton(StFmsTowerCluster* p_clust) {
     upLim[i] = start[i] + delta[i];
   }  // for
   PhotonList photons;
-  Double_t chiSq = mFitter->Fit(start, mFitter->step, lowLim, upLim, &photons);
+  Double_t chiSq = mFitter->fit(start, NULL, lowLim, upLim, &photons);
   if (photons.empty()) {  // check return status in case of a bad fit
     LOG_ERROR << "1-photon Minuit fit returns error!" << endm;
   }  // if
@@ -128,8 +128,8 @@ Float_t StFmsEventClusterer::fitOnePhoton(StFmsTowerCluster* p_clust) {
  */
 Float_t StFmsEventClusterer::globalFit(const Int_t nPh, const Int_t nCl,
                                        ClusterIter first) {
-  // By design, we can only fit up to "MAX_NUMB_PHOTONS" (currently 4) photons
-  if (nPh > StFmsClusterFitter::MAX_NUMB_PHOTONS || nPh < 2) {
+  // By design, we can only fit up to "maxNFittedPhotons()" photons
+  if (nPh > StFmsClusterFitter::maxNFittedPhotons() || nPh < 2) {
     LOG_ERROR << "Global fit! Can not fit " << nPh << " photons!" << endm;
     return -9999;
   }  // if
@@ -139,7 +139,7 @@ Float_t StFmsEventClusterer::globalFit(const Int_t nPh, const Int_t nCl,
     return -9999;
   }  // if
   // Fit has 3 parameters per photon (x, y, E), plus 1 for the number of photons
-  const Int_t nParam = 3 * StFmsClusterFitter::MAX_NUMB_PHOTONS + 1;
+  const Int_t nParam = 3 * StFmsClusterFitter::maxNFittedPhotons() + 1;
   // Fit parameters, errors, and gradients of function
   Double_t param[nParam];
   Double_t error[nParam];
@@ -160,7 +160,7 @@ Float_t StFmsEventClusterer::globalFit(const Int_t nPh, const Int_t nCl,
   for (ClusterIter cluster = first; cluster != end; ++cluster) {
     // Loop over all photons in cluster
     for (Int_t jp = 0; jp < cluster->cluster()->GetNphoton(); jp++) {
-      if (totPh > StFmsClusterFitter::MAX_NUMB_PHOTONS) {
+      if (totPh > StFmsClusterFitter::maxNFittedPhotons()) {
         LOG_ERROR << "Total # of photons in " << nCl << " clusters is at least "
           << totPh << "! I can NOT do fit!" << endm;
         return -9999;
@@ -189,11 +189,11 @@ Float_t StFmsEventClusterer::globalFit(const Int_t nPh, const Int_t nCl,
   // Set the number-of-photons fit parameter
   start[0] = totPh;
   lowLim[0] = 0.5;
-  upLim[0] = StFmsClusterFitter::MAX_NUMB_PHOTONS + 0.5 ;
+  upLim[0] = StFmsClusterFitter::maxNFittedPhotons() + 0.5 ;
   // Fit status, and flag needed by mFitter
   Int_t status, iflag=1;
   PhotonList photons;
-  Double_t chiSq = mFitter->Fit(start, mFitter->step, lowLim, upLim, &photons);
+  Double_t chiSq = mFitter->fit(start, NULL, lowLim, upLim, &photons);
   if (photons.empty()) {
     LOG_WARN << "Global Minuit fit returns error!" << endm;
   }  // if
@@ -281,8 +281,8 @@ Float_t StFmsEventClusterer::fit2PhotonClust(ClusterIter p_clust) {
   upLim[5] = 1.0;
   // Call special 2-photon-cluster mFitter
   PhotonList photons;
-  Double_t chiSq = mFitter->Fit2Pin1Clust(start, step2, lowLim, upLim,
-                                          &photons);
+  Double_t chiSq = mFitter->fit2PhotonCluster(start, step2, lowLim, upLim,
+                                              &photons);
   if (photons.empty()) {
     LOG_WARN << "Minuit fit returns error!" << endm;
   }  // if
@@ -391,7 +391,7 @@ Int_t StFmsEventClusterer::fitEvent() {
     Int_t clustCatag = mClusterFinder.categorise(&(*cluster));
     // point to the real TObjArray that contains the towers to be fitted
     // it is the same tower array for the cluster or all alternative clusters
-    mFitter->tow2Fit = cluster->towers();
+    mFitter->setTowers(cluster->towers());
     // Number of Degree of Freedom for the fit
     if (clustCatag == k1PhotonCluster) {
       // Do 1-photon fit
@@ -447,10 +447,10 @@ Int_t StFmsEventClusterer::fitEvent() {
   }  // Loop over all real clusters
   Int_t nPh = std::accumulate(mClusters.begin(), mClusters.end(), 0,
                               accumulatePhotons);
-  if(nPh > StFmsClusterFitter::MAX_NUMB_PHOTONS) {
-    // myFitter can only do up to "MAX_NUMB_PHOTONS"-photon fit
+  if(nPh > StFmsClusterFitter::maxNFittedPhotons()) {
+    // myFitter can only do up to "maxNFittedPhotons()"-photon fit
     LOG_WARN << "Can not fit " << nPh << " (more than " <<
-      StFmsClusterFitter::MAX_NUMB_PHOTONS << " photons!" << endm;
+      StFmsClusterFitter::maxNFittedPhotons() << " photons!" << endm;
     return nPh;
   }  // if
   // For global fit, add all towers from all clusters
@@ -465,7 +465,7 @@ Int_t StFmsEventClusterer::fitEvent() {
   if(ndfg <= 0) {
     ndfg = 1;
   }  // if
-  mFitter->tow2Fit = &allTow;
+  mFitter->setTowers(&allTow);
   // Only do global fit for 2 or more clusters (2-photon fit for one cluster
   // already has global fit)
   if (mClusters.size() > 1) {
@@ -516,7 +516,7 @@ Double_t StFmsEventClusterer::photonEnergyInTower(
   Double_t yy = ((Double_t)p_tower->row() - 0.5) *
                  mTowerWidthXY[1] - p_photon->yPos;
   Double_t eSS = p_photon->energy *
-                 mFitter->GetFunctShowShape()->Eval( xx, yy, 0 );
+                 mFitter->showerShapeFunction()->Eval(xx, yy, 0);
   return eSS;
 }
 
