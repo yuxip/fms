@@ -345,7 +345,7 @@ class TowerClusterAssociation : public TObject {
 unsigned StFmsClusterFinder::locateClusterSeeds(TowerList* towers,
                                                 TowerList* neighbors,
                                                 ClusterList* clusters) {
-  while (!towers->empty() && nClusts < maxNClusters) {
+  while (!towers->empty() && mNClusts < mMaxNClusters) {
     // By design, this tower is the highest tower remaining in towers, but it
     // could be lower than a tower in neighbors
     StFmsTower* high = towers->front();
@@ -355,11 +355,11 @@ unsigned StFmsClusterFinder::locateClusterSeeds(TowerList* towers,
     // peak (seed) tower so add it to a new cluster.
     if (couldBePeakTower(high, neighbors)) {
       // Add "high" to cluster and move towers neighboring "high" to "neighbor"
-      high->setCluster(nClusts);
+      high->setCluster(mNClusts);
       clusters->push_back(new StFmsTowerCluster(new StFmsCluster));
-      clusters->back().setIndex(nClusts);
+      clusters->back().setIndex(mNClusts);
       clusters->back().towers()->Add(high);
-      nClusts++ ;
+      mNClusts++ ;
       // Add neighbors of the new peak tower to the neighbor list.
       // Partition the remaining towers so that neighbours of the high tower are
       // placed at the beginning, and non-neighbours placed at the end. Use
@@ -389,7 +389,7 @@ unsigned StFmsClusterFinder::locateClusterSeeds(TowerList* towers,
       }  // if
     }  // while
   }  // End of for loop over "arrTow"
-  return nClusts;
+  return mNClusts;
 }
 
 /**
@@ -460,7 +460,7 @@ unsigned StFmsClusterFinder::associateResidualTowersWithClusters(
     for (ClusterIter i = clusters->begin(); i != clusters->end(); ++i) {
       // There are already some towers in the cluster so we can use a computed
       // cluster center to give a better estimate of tower-cluster separation
-      CalClusterMoment(&(*i));
+      calculateClusterMoments(&(*i));
       association.add(&(*i), kClusterCenter);
     }  // loop over all clusters
     if (!association.clusters()->empty()) {
@@ -533,15 +533,14 @@ unsigned StFmsClusterFinder::associateSubThresholdTowersWithClusters(
   }  // for
 }
 
-StFmsClusterFinder::StFmsClusterFinder() : nClusts(0) {
-  SetMomentEcutoff();
+StFmsClusterFinder::StFmsClusterFinder() : mNClusts(0) {
+  setMomentEnergyCutoff();
 }
 
 StFmsClusterFinder::~StFmsClusterFinder() {
 }
 
-Int_t StFmsClusterFinder::FindTowerCluster(TowerList* towers,
-                                           ClusterList* clusters) {
+int StFmsClusterFinder::findClusters(TowerList* towers, ClusterList* clusters) {
   // Remove towers below energy threshold, but save them for later use
   TowerList belowThreshold = filterTowersBelowEnergyThreshold(towers);
   // the neighbor TObjArray
@@ -569,7 +568,7 @@ Int_t StFmsClusterFinder::FindTowerCluster(TowerList* towers,
   // TowerClusterAssociation::nearestCluster, which uses the cluster moment
   // to determine tower-cluster separations for the valley towers.
   BOOST_FOREACH(StFmsTowerCluster& i, *clusters) {
-    CalClusterMoment(&i);
+    calculateClusterMoments(&i);
   }  // BOOST_FOREACH
   // Ambiguous "valley" towers that were equally spaced between clusters can
   // now be associated
@@ -578,26 +577,27 @@ Int_t StFmsClusterFinder::FindTowerCluster(TowerList* towers,
   do {
     nAssociations = associateResidualTowersWithClusters(&neighbors, clusters);
   } while (nAssociations > 0);
-  sortTowersEnergyAscending(clusters, nClusts);
+  sortTowersEnergyAscending(clusters, mNClusts);
   // Recalculate various moment of clusters
   for (ClusterIter i = clusters->begin(); i != clusters->end(); ++i) {
-    CalClusterMoment(&(*i));
+    calculateClusterMoments(&(*i));
   }  // for
   // Finally add "zero" energy towers to the clusters
   associateSubThresholdTowersWithClusters(&belowThreshold, clusters);
-  return nClusts;
+  return mNClusts;
 }
 
-/* Calculate moments of a cluster (position, sigma...) */
-void StFmsClusterFinder::CalClusterMoment(StFmsTowerCluster *cluster) {
+// Calculate moments of a cluster (position, sigma...)
+void StFmsClusterFinder::calculateClusterMoments(
+    StFmsTowerCluster* cluster) const {
   if (cluster) {
-    cluster->CalClusterMoment(Ecutoff);
+    cluster->CalClusterMoment(mEnergyCutoff);
+    cluster->cluster()->SetNumbTower(cluster->towers()->GetEntriesFast());
   }  // if
-  cluster->cluster()->SetNumbTower(cluster->towers()->GetEntriesFast());
 }
 
-/* Categorise a cluster */
-Int_t StFmsClusterFinder::CatagBySigmXY(StFmsTowerCluster* cluster) {
+// Categorise a cluster
+int StFmsClusterFinder::categorise(StFmsTowerCluster* cluster) {
   // If the number of towers in a cluster is less than "minTowerCatag02"
   // always consider the cluster a one-photon cluster
   if (cluster->cluster()->GetNTower() < minTowerCatag02) {

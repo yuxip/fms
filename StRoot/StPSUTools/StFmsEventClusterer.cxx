@@ -371,7 +371,7 @@ Int_t StFmsEventClusterer::fitEvent() {
   for (towerIter = mTowers->begin(); towerIter != mTowers->end(); ++towerIter) {
     towerList.push_back(&(*towerIter));
   }  // for
-  mClusterFinder.FindTowerCluster(&towerList, &mClusters);
+  mClusterFinder.findClusters(&towerList, &mClusters);
   // Cluster energy should be at least 2 GeV (parameter "minRealClusterEne")
   if (mDetectorId == 8 || mDetectorId == 9) {
     mClusters.erase_if(IsBadCluster(0.75, 25));
@@ -380,7 +380,7 @@ Int_t StFmsEventClusterer::fitEvent() {
   }  // if
   // Must do moment analysis before catagorization
   for (ClusterIter i = mClusters.begin(); i != mClusters.end(); ++i) {
-    i->FindClusterAxis(mClusterFinder.GetMomentEcutoff());
+    i->FindClusterAxis(mClusterFinder.getMomentEnergyCutoff());
   }  // for
   // Loop over clusters, catagorize, guess the photon locations for cat 0 or 2
   // clusters then fit, compare, and choose the best fit
@@ -388,7 +388,7 @@ Int_t StFmsEventClusterer::fitEvent() {
   const double max2PhotonFitChi2 = 10.;
   for (ClusterIter cluster = mClusters.begin(); cluster != mClusters.end();
        ++cluster) {
-    Int_t clustCatag = mClusterFinder.CatagBySigmXY(&(*cluster));
+    Int_t clustCatag = mClusterFinder.categorise(&(*cluster));
     // point to the real TObjArray that contains the towers to be fitted
     // it is the same tower array for the cluster or all alternative clusters
     mFitter->tow2Fit = cluster->towers();
@@ -528,7 +528,7 @@ StFmsEventClusterer::StFmsEventClusterer(StFmsGeometry* pgeom,
 
 Bool_t StFmsEventClusterer::cluster(std::vector<StFmsTower>* towerList) {
   mTowers = towerList;
-  mClusterFinder.SetMomentEcutoff(.5);  
+  mClusterFinder.setMomentEnergyCutoff(.5);  
   mTowerWidthXY = mGeometry->towerWidths(mDetectorId);
   if (mTowers->size() > 578) {
     LOG_ERROR << "Too many towers for Fit" << endm;
