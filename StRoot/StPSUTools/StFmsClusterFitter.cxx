@@ -14,11 +14,11 @@
 namespace {
 Int_t numbPara = 10;
 TF2 showerShapeFitFunction("showerShapeFitFunction",
-                       &PSUGlobals::StFmsClusterFitter::energyDepositionInTower,
+                       &FMSCluster::StFmsClusterFitter::energyDepositionInTower,
                       -25.0, 25.0, -25.0, 25.0, numbPara);
 }  // unnamed namespace
 
-namespace PSUGlobals {
+namespace FMSCluster {
 // Instantiate static members
 Float_t StFmsClusterFitter::mTowerWidthXY[2];
 TObjArray* StFmsClusterFitter::mTowers(NULL);
@@ -334,4 +334,4 @@ void StFmsClusterFitter::Fcn2(Int_t& nparam, Double_t* grad, Double_t& fval,
   // Now we can call the regular Fcn1 with the translated parameters
   Fcn1(nparam, grad, fval, oldParam, iflag);
 }
-}  // namespace PSUGlobals
+}  // namespace FMSCluster

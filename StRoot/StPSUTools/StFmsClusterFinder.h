@@ -12,7 +12,7 @@
 
 class TObjArray;
 
-namespace PSUGlobals {  // $NMSPC
+namespace FMSCluster {  // $NMSPC
 class StFmsTowerCluster;
 class StFmsTower;
 // Typedef a pointer list of tower clusters for convenience
@@ -24,7 +24,7 @@ typedef boost::ptr_list<StFmsTowerCluster> ClusterList;
 class StFmsClusterFinder {
  public:
   // Typedef StFmsTower pointer list for convenience
-  typedef std::list<PSUGlobals::StFmsTower*> TowerList;
+  typedef std::list<FMSCluster::StFmsTower*> TowerList;
   /** Constructor */
   StFmsClusterFinder();
   /** Destructor */
@@ -82,5 +82,5 @@ class StFmsClusterFinder {
   Int_t mNClusts;
   ClassDef(StFmsClusterFinder, 3)
 };  // class StFmsClusterFinder
-}  // namespace PSUGlobals
+}  // namespace FMSCluster
 #endif

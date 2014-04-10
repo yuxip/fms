@@ -1,6 +1,6 @@
 #include "StFmsFittedPhoton.h"
 
-namespace PSUGlobals {
+namespace FMSCluster {
 StFmsFittedPhoton::StFmsFittedPhoton(const Float_t x, const Float_t y,
                                      const Float_t e, const Float_t xerr,
                                      const Float_t yerr, const Float_t eerr)
@@ -11,4 +11,4 @@ void StFmsFittedPhoton::Clear() {
   energy = 0;
   errEne = xPos = errXPos = yPos = errYPos = -1;
 }
-}  // namespace PSUGlobals
+}  // namespace FMSCluster

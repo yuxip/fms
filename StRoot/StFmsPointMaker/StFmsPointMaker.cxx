@@ -23,8 +23,8 @@
 #include "StPSUTools/StFmsEventClusterer.h"
 
 #ifndef __CINT__
-typedef PSUGlobals::ClusterList::iterator ClusterIter;
-typedef PSUGlobals::ClusterList::const_iterator ClusterCIter;
+typedef FMSCluster::ClusterList::iterator ClusterIter;
+typedef FMSCluster::ClusterList::const_iterator ClusterCIter;
 #endif  // __CINT__
 
 namespace {
@@ -63,7 +63,7 @@ Int_t StFmsPointMaker::InitRun(Int_t runNumber) {
   // Set up geometry, which stays constant for each run
   // Only allocate new space in the beginning, not in between runs
   if (!fmsgeom) {
-    fmsgeom = new PSUGlobals::StFmsGeometry;
+    fmsgeom = new FMSCluster::StFmsGeometry;
     if (!fmsgeom->initialize(mFmsDbMaker)) {
       // Return an error if geometry initialization fails
       return kStErr;
@@ -115,14 +115,14 @@ Int_t StFmsPointMaker::FindPoint() {
       continue;  // To remove LED trails, for pp500 GeV
     }  // if
     Int_t detectorId = instb + 8;  // FMS IDs from 8 to 11
-    PSUGlobals::StFmsEventClusterer clustering(fmsgeom, detectorId);
+    FMSCluster::StFmsEventClusterer clustering(fmsgeom, detectorId);
     // Perform tower clustering, skip this subdetector if an error occurs
     if (!clustering.cluster(&towers)) {
       continue;
     }  // if
     // Saved cluser info into StFmsCluster
     Int_t iPh = 0;  // Sequence # in StFmsEventClusterer::photons[]
-    PSUGlobals::ClusterList& clusters = clustering.clusters();
+    FMSCluster::ClusterList& clusters = clustering.clusters();
     for (ClusterIter ci = clusters.begin(); ci != clusters.end(); ++ci) {
       StFmsCluster* cluster = ci->cluster();
       // Cluster id = id of the 1st photon, not necessarily the highE photon
@@ -159,7 +159,7 @@ Int_t StFmsPointMaker::FindPoint() {
       // Save the tower hit info.
       TIter next(ci->towers());
       UChar_t status = 0;  // No status code for now --04/01/2013          
-      while (PSUGlobals::StFmsTower* tow = (PSUGlobals::StFmsTower*)next()){
+      while (FMSCluster::StFmsTower* tow = (FMSCluster::StFmsTower*)next()){
         if (tow->hit()->adc() >= 1) {  // Min ADC = 1
           cluster->hits().push_back(tow->hit());
           // Make sure the hit is in the original collection
@@ -213,7 +213,7 @@ Bool_t StFmsPointMaker::populateTowerLists() {
     }  // if
     unsigned index = hit->detectorId() - 8;  // FMS IDs range from 8 to 11
     if (hit->adc() > 0 && index >= 0 && index < mTowers.size()) {
-      PSUGlobals::StFmsTower tower(hit);
+      FMSCluster::StFmsTower tower(hit);
       // Ensure tower information is valid before adding
       if (tower.initialize(mFmsDbMaker)) {
         mTowers.at(index).push_back(tower);

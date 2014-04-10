@@ -15,7 +15,7 @@
 #include "StPSUTools/StFmsTower.h"
 
 using namespace std;
-using namespace PSUGlobals;
+using namespace FMSCluster;
 
 namespace {
 /* Helper function to add numbers of photons using std::accumulate */

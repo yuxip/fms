@@ -3,7 +3,7 @@
 
 #include <Rtypes.h>
 
-namespace PSUGlobals {//$NMSPC
+namespace FMSCluster {  // $NMSPC
 /**
  Definition of a photon hit (SMD position info and reconstructed energy)
  */
@@ -23,6 +23,6 @@ struct StFmsFittedPhoton {
   void Clear();
   ClassDef(StFmsFittedPhoton, 4)
 };  // class StFmsFittedPhoton
-}  // namespace PSUGlobals
+}  // namespace FMSCluster
 
 #endif

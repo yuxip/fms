@@ -34,7 +34,6 @@ void testFms_stfms(Int_t ibegin = 1, Int_t iend = 100,
   StEmcADCtoEMaker* adc = new StEmcADCtoEMaker;
   adc->saveAllStEvent(true);
   // FMS makers
-  using namespace PSUGlobals;
   StFmsHitMaker* fmshitMk = new StFmsHitMaker();
   StFmsPointMaker* fmsptMk = new StFmsPointMaker("StFmsPointMaker");
   if (qa) {  // Activate QA figures

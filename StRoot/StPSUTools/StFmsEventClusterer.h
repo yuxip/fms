@@ -21,7 +21,7 @@
 #include "StFmsFittedPhoton.h"
 #include "StFmsClusterFinder.h"
 
-namespace PSUGlobals {//$NMSPC
+namespace FMSCluster {  // $NMSPC
 class StFmsEventClusterer: public TObject {
  public:
   /** Constructor */
@@ -37,7 +37,7 @@ class StFmsEventClusterer: public TObject {
    clusters have a photon fit with a chi-square exceeding the maximum allowed
    value.
    */
-  Bool_t cluster(std::vector<PSUGlobals::StFmsTower>* towers);
+  Bool_t cluster(std::vector<FMSCluster::StFmsTower>* towers);
 #ifndef __CINT__
   /** Return the list of clusters in this detector for the event */
   ClusterList& clusters() { return mClusters; }
@@ -65,10 +65,10 @@ class StFmsEventClusterer: public TObject {
   StFmsClusterFinder mClusterFinder;
   StFmsGeometry* mGeometry;
   Int_t mDetectorId;
-  std::vector<PSUGlobals::StFmsTower>* mTowers;
+  std::vector<FMSCluster::StFmsTower>* mTowers;
   StFmsClusterFitter* mFitter;
   std::vector<Float_t> mTowerWidthXY;
   ClassDef(StFmsEventClusterer,7);
 };
-}  // namespace PSUGlobals
+}  // namespace FMSCluster
 #endif

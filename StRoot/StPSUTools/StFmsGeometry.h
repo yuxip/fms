@@ -10,7 +10,7 @@
 class fmsDetectorPosition_st;
 class StFmsDbMaker;
 
-namespace PSUGlobals {//$NMSPC
+namespace FMSCluster {  // $NMSPC
 /**
  Enumeration for FPD and FMS subdetectors.
  
@@ -136,5 +136,5 @@ class StFmsGeometry : public TObject {
   Table mPositions;  ///< Detector ID: position information pairs
   ClassDef(StFmsGeometry, 3)
 };  // class StFmsGeometry
-}  // namespace PSUGlobals
+}  // namespace FMSCluster
 #endif

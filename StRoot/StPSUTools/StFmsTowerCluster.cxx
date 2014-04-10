@@ -12,7 +12,7 @@
 #include "StPSUTools/StFmsTower.h"
 #include "StPSUTools/StFmsFittedPhoton.h"
 
-namespace PSUGlobals {
+namespace FMSCluster {
 StFmsTowerCluster::StFmsTowerCluster(StFmsCluster* cluster)
     : mTowers(NULL),  mCluster(cluster), Ecutoff(0.5) {
   Clear();
@@ -122,4 +122,4 @@ void StFmsTowerCluster::calculateClusterMoments(Float_t Ecoff) {
     mSigmaXY = 0;
   }  // if
 }
-}  // namespace PSUGlobals
+}  // namespace FMSCluster

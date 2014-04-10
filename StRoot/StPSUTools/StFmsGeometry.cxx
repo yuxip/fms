@@ -5,7 +5,7 @@
 #include "StFmsDbMaker/StFmsDbMaker.h"
 #include "tables/St_fmsDetectorPosition_Table.h"
 
-namespace PSUGlobals {
+namespace FMSCluster {
 StFmsGeometry::StFmsGeometry() { }
 
 StFmsGeometry::~StFmsGeometry() { }
@@ -138,4 +138,4 @@ Bool_t StFmsGeometry::isNorth(Int_t detectorId) {
       return false;
   }  // switch
 }
-}  // namespace PSUGlobals
+}  // namespace FMSCluster

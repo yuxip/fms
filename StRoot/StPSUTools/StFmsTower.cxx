@@ -3,7 +3,7 @@
 #include "StEvent/StFmsHit.h"
 #include "StFmsDbMaker/StFmsDbMaker.h"
 
-namespace PSUGlobals {
+namespace FMSCluster {
 StFmsTower::StFmsTower()
     : mHit(NULL), mColumn(-1), mRow(-1), mCluster(-1) { }
 
@@ -39,4 +39,4 @@ Bool_t StFmsTower::isNeighbor(StFmsTower* other) {
   }  // if
   return abs(mColumn - other->column()) + abs(mRow - other->row()) == 1;
 }
-}  // namespace PSUGlobals
+}  // namespace FMSCluster

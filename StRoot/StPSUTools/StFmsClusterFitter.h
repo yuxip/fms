@@ -10,7 +10,7 @@
 
 class TF2;
 
-namespace PSUGlobals {  // $NMSPC
+namespace FMSCluster {  // $NMSPC
 typedef std::list<StFmsFittedPhoton> PhotonList;
 class StFmsGeometry;
 /**
@@ -126,5 +126,5 @@ class StFmsClusterFitter : public TObject {
   static Float_t mTowerWidthXY[2];  ///< glass width X,Y
   ClassDef(StFmsClusterFitter, 4)
 };  // class StFmsClusterFitter
-}  // namespace PSUGlobals
+}  // namespace FMSCluster
 #endif

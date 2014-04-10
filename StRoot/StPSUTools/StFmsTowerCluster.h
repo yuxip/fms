@@ -25,7 +25,7 @@ class StFmsCluster;
   TypeName(const TypeName&);               \
   void operator=(const TypeName&)
 
-namespace PSUGlobals {//$NMSPC
+namespace FMSCluster {  // $NMSPC
 /**
  A cluster of FMS towers
  
@@ -121,5 +121,5 @@ inline void StFmsTowerCluster::findClusterAxis(Float_t Ecoff) {
   Ecutoff = Ecoff;
   findClusterAxis();
 }
-}  // namespace PSUGlobals
+}  // namespace FMSCluster
 #endif

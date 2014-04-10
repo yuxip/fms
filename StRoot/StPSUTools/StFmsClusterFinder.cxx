@@ -33,12 +33,12 @@ const Float_t minRatioPeakTower = 1.6;
 // Extreme distance between towers (no distance can be this large!)
 const Float_t ExtremelyFaraway = 99999 ;
 
-typedef PSUGlobals::StFmsClusterFinder::TowerList TowerList;
+typedef FMSCluster::StFmsClusterFinder::TowerList TowerList;
 typedef TowerList::iterator TowerIter;
 typedef TowerList::reverse_iterator TowerRIter;
-typedef PSUGlobals::ClusterList::iterator ClusterIter;
+typedef FMSCluster::ClusterList::iterator ClusterIter;
 
-using PSUGlobals::StFmsTower;
+using FMSCluster::StFmsTower;
 
 /*
  Test for a tower that can be a cluster peak.
@@ -158,7 +158,7 @@ enum ETowerClusterDistance {
  \todo Replace cluster list with an STL list, which will make sorting and
        reversing much simpler than with a ROOT container
  */
-void sortTowersEnergyAscending(PSUGlobals::ClusterList* clusters,
+void sortTowersEnergyAscending(FMSCluster::ClusterList* clusters,
                                int nClusters) {
   for (ClusterIter i = clusters->begin(); i != clusters->end(); ++i) {
     i->towers()->UnSort();
@@ -176,7 +176,7 @@ void sortTowersEnergyAscending(PSUGlobals::ClusterList* clusters,
 }
 }  // unnamed namespace
 
-namespace PSUGlobals {
+namespace FMSCluster {
 /*
  Association information between a tower and clusters.
  
@@ -626,4 +626,4 @@ int StFmsClusterFinder::categorise(StFmsTowerCluster* cluster) {
   } // if (cluster->numbTower...)
   return cluster->cluster()->GetCatag();
 }
-}  // namespace PSUGlobals
+}  // namespace FMSCluster

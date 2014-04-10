@@ -6,7 +6,7 @@
 class StFmsHit;
 class StFmsDbMaker;
 
-namespace PSUGlobals {//$NMSPC
+namespace FMSCluster {  // $NMSPC
 /*
  Lightweight wrapper around an StFmsHit for use in tower clustering.
  
@@ -95,5 +95,5 @@ inline Int_t StFmsTower::setCluster(Int_t cluster) {
   mCluster = cluster;
   return cluster;
 }
-}  // namespace PSUGlobals
+}  // namespace FMSCluster
 #endif
