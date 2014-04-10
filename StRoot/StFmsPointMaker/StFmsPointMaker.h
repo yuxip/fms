@@ -34,17 +34,15 @@ class StFmsPointMaker : public StMaker {
 
  private:
   /** Interface to the actual photon reconstruction */
-  Int_t FindPoint();
+  int doClustering();
   /** Return true if a detector/row/column number physically exists */
-  Bool_t Legal(Int_t iew, Int_t nstb, Int_t row0, Int_t col0);
+  bool isValidChannel(int iew, int nstb, int row0, int col0);
+  /** Read hits from StEvent and prepare them for clustering */
+  bool populateTowerLists();
   StFmsDbMaker* mFmsDbMaker;  //!< Access to FMS database information
+  FMSCluster::StFmsGeometry* mGeometry;  //!< Access to current FMS geometry
   typedef std::vector<FMSCluster::StFmsTower> TowerList;
   std::vector<TowerList> mTowers; ///< One for each of four FMS sub-detectors
-  /** Read hits from StEvent and prepare them for clustering */
-  Bool_t populateTowerLists();
-  /** all the points (photons) extracted from clusters */
-  //StFmsPointCollection*   mFmsPtsColl;  //!
-  FMSCluster::StFmsGeometry* fmsgeom;  //!< Access to current FMS geometry
   ClassDef(StFmsPointMaker, 0)
 };
 #endif

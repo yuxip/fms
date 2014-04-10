@@ -37,7 +37,7 @@ TLorentzVector compute4Momentum(const TVector3& xyz, Double_t energy) {
 }  // unnamed namespace
 
 StFmsPointMaker::StFmsPointMaker(const char* name)
-    : StMaker(name), mFmsDbMaker(NULL), fmsgeom(NULL) { }
+    : StMaker(name), mFmsDbMaker(NULL), mGeometry(NULL) { }
 
 StFmsPointMaker::~StFmsPointMaker() {
   LOG_DEBUG << "StFmsPointMaker:: destructor " << endm;
@@ -62,9 +62,9 @@ Int_t StFmsPointMaker::InitRun(Int_t runNumber) {
   }  // if
   // Set up geometry, which stays constant for each run
   // Only allocate new space in the beginning, not in between runs
-  if (!fmsgeom) {
-    fmsgeom = new FMSCluster::StFmsGeometry;
-    if (!fmsgeom->initialize(mFmsDbMaker)) {
+  if (!mGeometry) {
+    mGeometry = new FMSCluster::StFmsGeometry;
+    if (!mGeometry->initialize(mFmsDbMaker)) {
       // Return an error if geometry initialization fails
       return kStErr;
     }  // if
@@ -83,7 +83,7 @@ Int_t StFmsPointMaker::Make() {
     LOG_ERROR << "StFmsPointMaker::Make() - failed to initialise tower " <<
       "lists for the event" << endm;
   }  // if
-  if (FindPoint()==kStOk){
+  if (doClustering() == kStOk){
      LOG_DEBUG << "Cluster finder returns successfully" <<endm;
      return kStOk;
   }  // if
@@ -91,7 +91,7 @@ Int_t StFmsPointMaker::Make() {
   return kStErr;
 }
   
-Int_t StFmsPointMaker::FindPoint() {
+int StFmsPointMaker::doClustering() {
   LOG_DEBUG << " StFmsPointMaker::FindPoint() " << endm;
   StEvent* event = static_cast<StEvent*>(GetDataSet("StEvent"));
   if (!event) {
@@ -115,7 +115,7 @@ Int_t StFmsPointMaker::FindPoint() {
       continue;  // To remove LED trails, for pp500 GeV
     }  // if
     Int_t detectorId = instb + 8;  // FMS IDs from 8 to 11
-    FMSCluster::StFmsEventClusterer clustering(fmsgeom, detectorId);
+    FMSCluster::StFmsEventClusterer clustering(mGeometry, detectorId);
     // Perform tower clustering, skip this subdetector if an error occurs
     if (!clustering.cluster(&towers)) {
       continue;
@@ -133,7 +133,7 @@ Int_t StFmsPointMaker::FindPoint() {
         continue;
       }  // if
       // Cluster locations are in column-row coordinates (not cm)
-      TVector3 xyz = fmsgeom->columnRowToGlobalCoordinates(
+      TVector3 xyz = mGeometry->columnRowToGlobalCoordinates(
         cluster->GetX0(), cluster->GetY0(), clustering.detector());
       cluster->SetFourMomentum(compute4Momentum(xyz, cluster->GetEnergy()));
       // Save photons reconstructed from this cluster
@@ -144,7 +144,7 @@ Int_t StFmsPointMaker::FindPoint() {
         iPh++;
         // Calculate photon 4 momentum
         // Photon position is in local (x, y) cm coordinates
-        TVector3 xyzph = fmsgeom->localToGlobalCoordinates(
+        TVector3 xyzph = mGeometry->localToGlobalCoordinates(
           ci->photons()[np].xPos, ci->photons()[np].yPos,
           clustering.detector());
         clpoint->SetPointXYZLab(xyzph);
@@ -177,7 +177,7 @@ Int_t StFmsPointMaker::FindPoint() {
   return kStOk;
 }
 
-Bool_t StFmsPointMaker::populateTowerLists() {
+bool StFmsPointMaker::populateTowerLists() {
   StEvent* event = static_cast<StEvent*>(GetDataSet("StEvent"));
   if (!event) {
     LOG_ERROR << "StFmsPointMaker::populateTowerLists() did not find "
@@ -208,7 +208,7 @@ Bool_t StFmsPointMaker::populateTowerLists() {
       row = 25 - row;
     }  // if
     Int_t ew  = 2;  // east=1, west=2
-    if (!Legal(ew, nstb, row - 1, column - 1)) {
+    if (!isValidChannel(ew, nstb, row - 1, column - 1)) {
       continue;
     }  // if
     unsigned index = hit->detectorId() - 8;  // FMS IDs range from 8 to 11
@@ -223,7 +223,7 @@ Bool_t StFmsPointMaker::populateTowerLists() {
   return true;
 }
 
-Bool_t StFmsPointMaker::Legal(Int_t iew, Int_t nstb, Int_t row0, Int_t col0) {
+bool StFmsPointMaker::isValidChannel(int iew, int nstb, int row0, int col0) {
   // nstb starts from 1, row0, col0 starts from 0  
   if (iew > 0 && iew < 2) {
     return false;
