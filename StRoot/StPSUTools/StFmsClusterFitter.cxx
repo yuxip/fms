@@ -28,13 +28,13 @@ TF2* StFmsClusterFitter::showerShapeFunction() {
 }
 
 StFmsClusterFitter::StFmsClusterFitter(StFmsGeometry* pgeom, Int_t detectorId)
-    : mMinuit(3 * MAX_NUMB_PHOTONS + 1) {
+    : mMinuit(3 * kMaxNPhotons + 1) {
   // Set steps for Minuit fitting
-  const Double_t step[3 * MAX_NUMB_PHOTONS + 1]= {
+  const Double_t step[3 * kMaxNPhotons + 1]= {
     0.0, 0.1, 0.1, 0.2, 0.1, 0.1, 0.2, 0.1, 0.1, 0.2, 0.1,
     0.1, 0.2, 0.1, 0.1, 0.2, 0.1, 0.1, 0.2, 0.1, 0.1, 0.2
   };
-  for(int j = 0; j < 3 * MAX_NUMB_PHOTONS + 1; j++) {
+  for(int j = 0; j < 3 * kMaxNPhotons + 1; j++) {
     mSteps[j] = step[j];
   }  // for
   std::vector<Float_t> towerWidth = pgeom->towerWidths(detectorId);
@@ -101,58 +101,6 @@ Double_t StFmsClusterFitter::energyDepositionInTower(Double_t* xy,
   return gg * para[9];
 }
 
-// Uses the signature needed for TMinuit interface:
-// http://root.cern.ch/root/htmldoc/TMinuit.html#TMinuit:SetFCN
-void StFmsClusterFitter::Fcn1(Int_t& npara, Double_t* grad, Double_t& fval,
-                              Double_t* para, Int_t iflag) {
-  // Number of expected photons should ALWAYS be the first parameter "para[0]"
-  Int_t numbPh = (Int_t)para[0];
-  StFmsTower* oneTow;
-  // Sum energy of all towers being studied
-  Double_t sumCl = 0;
-  TIter next(StFmsClusterFitter::mTowers);
-  while(oneTow=(StFmsTower*)next()) {
-    sumCl += oneTow->hit()->energy();
-  }  // while
-  // Loop over all towers that are involved in the fit
-  fval = 0;  // Stores sum of chi2 over each tower
-  TIter nextTower(StFmsClusterFitter::mTowers);
-  while(oneTow=(StFmsTower*) nextTower()) {
-    // The shower shape function expects the centers of towers in units of cm
-    // Tower centers are stored in row/column i.e. local coordinates
-    // Therefore convert to cm, remembering to subtract 0.5 from row/column to
-    // get centres not edges
-    const Double_t x = (oneTow->column() - 0.5) *
-                       StFmsClusterFitter::mTowerWidthXY[0];
-    const Double_t y = (oneTow->row() - 0.5) *
-                       StFmsClusterFitter::mTowerWidthXY[1];
-    // Measured energy
-    const Double_t eMeas = oneTow->hit()->energy();
-    // Expected energy from Shower-Shape
-    Double_t eSS = 0;
-    for (Int_t iph = 0; iph < numbPh; iph++) {
-      Int_t j = 3 * iph;
-      Double_t Eshape = para[j + 3] *
-                        showerShapeFitFunction.Eval(x - para[j + 1],
-                                                    y - para[j + 2], 0);
-      eSS += Eshape;
-    }  // for
-    const Double_t dev = eMeas - eSS;
-    const Double_t errFactor = 0.03;
-    const Double_t errQ = 0.01;
-    // Larisa's Chi2 function
-    const Double_t err = (errFactor * pow(eMeas / sumCl, 1. - 0.001 * sumCl) *
-                         pow(1 - eMeas / sumCl, 1. - 0.007 * sumCl)) * sumCl
-                         + errQ;
-    const Double_t dchi2 = dev * dev / err;  // Calculate chi^2 of this tower
-    fval += dchi2;  // Add chi2 for this tower to the sum
-  }  // while
-  // require that the fraction be positive!
-  if (fval < 0) {
-    fval = 0;
-  }  // if
-}
-
 Double_t StFmsClusterFitter::fit(const Double_t* para, const Double_t* step,
                                  const Double_t* low, const Double_t* up,
                                  PhotonList* photons) {
@@ -165,11 +113,11 @@ Double_t StFmsClusterFitter::fit(const Double_t* para, const Double_t* step,
     LOG_ERROR << "no tower data available! return -1!" << endm;
     return chiSq;
   }  // if
-  mMinuit.SetFCN(Fcn1);  // Must set the function for Minuit to use
+  mMinuit.SetFCN(minimizationFunctionNPhoton);
   Int_t nPh = (Int_t)para[0];  // Get the number of photons from parameters
-  if (nPh < 1 || nPh > MAX_NUMB_PHOTONS) {
+  if (nPh < 1 || nPh > kMaxNPhotons) {
     LOG_ERROR << "nPh = " << nPh << "! Number of photons must be between 1 and "
-      << MAX_NUMB_PHOTONS << "! Set it to be 1!" << endm;
+      << kMaxNPhotons << "! Set it to be 1!" << endm;
     nPh = 1;
   }  // if
   mMinuit.mncler();  // Clear old parameters, so we can define the new parameters
@@ -195,8 +143,8 @@ Double_t StFmsClusterFitter::fit(const Double_t* para, const Double_t* step,
   // Populate the list of photons
   if (0 == mMinuit.GetStatus() && photons) {
     // Get the fit results for starting positions and errors
-    Double_t param[1 + 3 * MAX_NUMB_PHOTONS];
-    Double_t error[1 + 3 * MAX_NUMB_PHOTONS];
+    Double_t param[1 + 3 * kMaxNPhotons];
+    Double_t error[1 + 3 * kMaxNPhotons];
     mMinuit.GetParameter(0, param[0], error[0]);
     // There are 3 parameters per photon, plus the 1st parameter
     nPh = (Int_t)param[0];  // Shouldn't have changed, but just to be safe...
@@ -256,11 +204,11 @@ Int_t StFmsClusterFitter::fit2PhotonCluster(const Double_t* para,
     LOG_ERROR << "no tower data available! return -1!" << endm;
     return chiSq;
   }  // if
-  mMinuit.SetFCN(Fcn2);  // Must set the function for Minuit to use
+  mMinuit.SetFCN(minimizationFunction2Photon);
   Int_t nPh = (Int_t)para[0];
   if (nPh != 2) {
     LOG_ERROR << "number of photons must be 2 for special 2-photon cluster "
-      << "fitter \"Int_t StFmsClusterFitter::Fit2Pin1Clust(...)\"!"
+      << "fitter \"Int_t StFmsClusterFitter::fit2PhotonCluster(...)\"!"
       << " Set it to be 2!" << endm;
     nPh = 2;
   }  // if
@@ -319,8 +267,66 @@ Int_t StFmsClusterFitter::fit2PhotonCluster(const Double_t* para,
   return chiSq;
 }
 
-void StFmsClusterFitter::Fcn2(Int_t& nparam, Double_t* grad, Double_t& fval,
-                              Double_t* param, Int_t iflag) {
+// Uses the signature needed for TMinuit interface:
+// http://root.cern.ch/root/htmldoc/TMinuit.html#TMinuit:SetFCN
+void StFmsClusterFitter::minimizationFunctionNPhoton(Int_t& npara,
+                                                     Double_t* grad,
+                                                     Double_t& fval,
+                                                     Double_t* para,
+                                                     Int_t iflag) {
+  // Number of expected photons should ALWAYS be the first parameter "para[0]"
+  Int_t numbPh = (Int_t)para[0];
+  StFmsTower* oneTow;
+  // Sum energy of all towers being studied
+  Double_t sumCl = 0;
+  TIter next(StFmsClusterFitter::mTowers);
+  while(oneTow=(StFmsTower*)next()) {
+    sumCl += oneTow->hit()->energy();
+  }  // while
+  // Loop over all towers that are involved in the fit
+  fval = 0;  // Stores sum of chi2 over each tower
+  TIter nextTower(StFmsClusterFitter::mTowers);
+  while(oneTow=(StFmsTower*) nextTower()) {
+    // The shower shape function expects the centers of towers in units of cm
+    // Tower centers are stored in row/column i.e. local coordinates
+    // Therefore convert to cm, remembering to subtract 0.5 from row/column to
+    // get centres not edges
+    const Double_t x = (oneTow->column() - 0.5) *
+                       StFmsClusterFitter::mTowerWidthXY[0];
+    const Double_t y = (oneTow->row() - 0.5) *
+                       StFmsClusterFitter::mTowerWidthXY[1];
+    // Measured energy
+    const Double_t eMeas = oneTow->hit()->energy();
+    // Expected energy from Shower-Shape
+    Double_t eSS = 0;
+    for (Int_t iph = 0; iph < numbPh; iph++) {
+      Int_t j = 3 * iph;
+      Double_t Eshape = para[j + 3] *
+                        showerShapeFitFunction.Eval(x - para[j + 1],
+                                                    y - para[j + 2], 0);
+      eSS += Eshape;
+    }  // for
+    const Double_t dev = eMeas - eSS;
+    const Double_t errFactor = 0.03;
+    const Double_t errQ = 0.01;
+    // Larisa's Chi2 function
+    const Double_t err = (errFactor * pow(eMeas / sumCl, 1. - 0.001 * sumCl) *
+                         pow(1 - eMeas / sumCl, 1. - 0.007 * sumCl)) * sumCl
+                         + errQ;
+    const Double_t dchi2 = dev * dev / err;  // Calculate chi^2 of this tower
+    fval += dchi2;  // Add chi2 for this tower to the sum
+  }  // while
+  // require that the fraction be positive!
+  if (fval < 0) {
+    fval = 0;
+  }  // if
+}
+
+void StFmsClusterFitter::minimizationFunction2Photon(Int_t& nparam,
+                                                     Double_t* grad,
+                                                     Double_t& fval,
+                                                     Double_t* param,
+                                                     Int_t iflag) {
   // Only need to translate into the old parameterization
   Double_t oldParam[7];
   float dd = param[3];
@@ -331,7 +337,7 @@ void StFmsClusterFitter::Fcn2(Int_t& nparam, Double_t* grad, Double_t& fval,
   oldParam[4] = param[1] - cos(param[4]) * dd * (1 + param[5]) / 2.0;  // x 2
   oldParam[5] = param[2] - sin(param[4]) * dd * (1 + param[5]) / 2.0;  // y 2
   oldParam[6] = param[6] * (1 - param[5]) / 2.0;  // Energy 2
-  // Now we can call the regular Fcn1 with the translated parameters
-  Fcn1(nparam, grad, fval, oldParam, iflag);
+  // Now call the regular minimization function with the translated parameters
+  minimizationFunctionNPhoton(nparam, grad, fval, oldParam, iflag);
 }
 }  // namespace FMSCluster

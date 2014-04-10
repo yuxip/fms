@@ -88,7 +88,7 @@ class StFmsClusterFitter : public TObject {
    */
   static Double_t energyDepositionInTower(Double_t* x, Double_t* par);
   /** Maximum number of photons that can be fit at once */
-  static int maxNFittedPhotons() { return MAX_NUMB_PHOTONS; }
+  static int maxNFittedPhotons() { return kMaxNPhotons; }
 
  private:  
   /**
@@ -102,24 +102,26 @@ class StFmsClusterFitter : public TObject {
    */
   static Double_t energyDepositionDistribution(Double_t* x, Double_t* par);
   /**
-   Minuit minimization function for Fit() routine
+   Minuit minimization function for fit() routine
    
    For the purpose of this function and a description of its arguments see
    https://wwwasdoc.web.cern.ch/wwwasdoc/minuit/node14.html
    For its use in ROOT via TMinuit see
    http://root.cern.ch/root/htmldoc/TMinuit.html#TMinuit:SetFCN
    */
-  static void Fcn1(Int_t& npar, Double_t* grad,  
-                   Double_t& fval, Double_t* par, Int_t iflag);
+  static void minimizationFunctionNPhoton(Int_t& npar, Double_t* grad,  
+                                          Double_t& fval, Double_t* par,
+                                          Int_t iflag);
   /**
-   Minuit minimization function for Fit2Pin1Clust() routine
+   Minuit minimization function for fit2PhotonCluster() routine
    
-   See also Fcn1().
+   See also minimizationFunction().
    */
-  static void Fcn2(Int_t& nparam, Double_t* grad, 
-                   Double_t& fval, Double_t* param, Int_t iflag);
-  static const Int_t MAX_NUMB_PHOTONS = 7;
-  Double_t mSteps[3 * MAX_NUMB_PHOTONS + 1];
+  static void minimizationFunction2Photon(Int_t& nparam, Double_t* grad, 
+                                          Double_t& fval, Double_t* param,
+                                          Int_t iflag);
+  static const Int_t kMaxNPhotons = 7;
+  Double_t mSteps[3 * kMaxNPhotons + 1];
   Double_t mTowerWidth;  ///< width of one lead glass module
   TMinuit mMinuit;  // Minuit fitter
   static TObjArray* mTowers;
