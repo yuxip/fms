@@ -33,7 +33,7 @@ Int_t StFmsTower::Compare(const TObject* tower) const {
   }  // if
 }
 
-Bool_t StFmsTower::IsNeighbor(StFmsTower* other) {
+Bool_t StFmsTower::isNeighbor(StFmsTower* other) {
   if (!other) {
     return false;
   }  // if

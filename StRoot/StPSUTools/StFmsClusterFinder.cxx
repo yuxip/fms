@@ -53,7 +53,7 @@ Bool_t couldBePeakTower(StFmsTower* tower, TowerList* nonPeakTowers) {
   Bool_t couldBePeak(true);
   for (TowerIter i = nonPeakTowers->begin(); i != nonPeakTowers->end(); ++i) {
     // Compare this tower's energy with that of its immediate neighbours
-    if (tower->IsNeighbor(*i)) {
+    if (tower->isNeighbor(*i)) {
       if (tower->hit()->energy() < minRatioPeakTower * (*i)->hit()->energy()) {
         couldBePeak = false;
         break;
@@ -114,7 +114,7 @@ struct TowerIsNeighbor
     if(test->hit()->energy() < minTowerEnergy) {
       return false;
     }  // if
-    return test->IsNeighbor(reference);
+    return test->isNeighbor(reference);
   }
 };  // End of class TowerIsNeighbor
 
@@ -261,7 +261,7 @@ class TowerClusterAssociation : public TObject {
       // Place an energy selection when determining adjacent towers, as a
       // neighbor cannot exceed an adjacent tower by a factor more than
       // minRatioPeakTower, otherwise it will be considered a peak itself.
-      if (mTower->IsNeighbor(clusterTower) &&
+      if (mTower->isNeighbor(clusterTower) &&
           mTower->hit()->energy() < minRatioPeakTower * clusterTower->hit()->energy()) {
         return true;  // Stop looping once we find any match
       }  // if
@@ -318,7 +318,7 @@ class TowerClusterAssociation : public TObject {
    Calculate the nearest cluster out of the list of potential associates.
    
    The distance is that between this tower and the cluster centre, (x0, y0),
-   therefore StFmsTowerCluster::CalClusterMoment() must have been called before
+   therefore StFmsTowerCluster::calculateClusterMoments() must have been called before
    doing this in order to calculate x0 and y0 of the cluster.
    
    Returns NULL if there are no clusters in the list.
@@ -591,7 +591,7 @@ int StFmsClusterFinder::findClusters(TowerList* towers, ClusterList* clusters) {
 void StFmsClusterFinder::calculateClusterMoments(
     StFmsTowerCluster* cluster) const {
   if (cluster) {
-    cluster->CalClusterMoment(mEnergyCutoff);
+    cluster->calculateClusterMoments(mEnergyCutoff);
     cluster->cluster()->SetNumbTower(cluster->towers()->GetEntriesFast());
   }  // if
 }

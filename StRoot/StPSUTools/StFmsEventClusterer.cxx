@@ -380,7 +380,7 @@ Int_t StFmsEventClusterer::fitEvent() {
   }  // if
   // Must do moment analysis before catagorization
   for (ClusterIter i = mClusters.begin(); i != mClusters.end(); ++i) {
-    i->FindClusterAxis(mClusterFinder.getMomentEnergyCutoff());
+    i->findClusterAxis(mClusterFinder.getMomentEnergyCutoff());
   }  // for
   // Loop over clusters, catagorize, guess the photon locations for cat 0 or 2
   // clusters then fit, compare, and choose the best fit

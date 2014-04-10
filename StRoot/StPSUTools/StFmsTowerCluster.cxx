@@ -36,7 +36,7 @@ void StFmsTowerCluster::Clear(const char* /* option */) {
   mTowers = new TObjArray(50);
 }
 
-void StFmsTowerCluster::FindClusterAxis() {
+void StFmsTowerCluster::findClusterAxis() {
   Double_t dSigma2, aA, bB;
   dSigma2 = mSigmaX * mSigmaX - mSigmaY * mSigmaY;
   aA = sqrt(dSigma2 * dSigma2 + 4.0 * mSigmaXY * mSigmaXY) + dSigma2;
@@ -87,7 +87,7 @@ Double_t StFmsTowerCluster::GetSigma(Double_t theta) {
 	return wnew > 0 ? sqrt(sigma / wnew) : 0;
 }
 
-void StFmsTowerCluster::CalClusterMoment(Float_t Ecoff) {
+void StFmsTowerCluster::calculateClusterMoments(Float_t Ecoff) {
   Ecutoff=Ecoff;
   Float_t w0, w1, mtmp, mx, my, sigx, sigy, sigXY;
   w0 = w1 = mtmp = mx = my = sigx = sigy = sigXY = 0;

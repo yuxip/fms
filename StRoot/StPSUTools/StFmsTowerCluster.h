@@ -36,9 +36,16 @@ class StFmsTowerCluster {
  public:
   explicit StFmsTowerCluster(StFmsCluster* cluster);
   ~StFmsTowerCluster();
-  void CalClusterMoment(Float_t Ecoff);
+  /**
+   Calculate cluster moments (mean and sigma of tower positions)
+   
+   Ignore towers below the energy cutoff
+   */
+  void calculateClusterMoments(Float_t energyCutoff);
+  /* Clear photon and tower lists and reset other values to defaults */
   void Clear(const char* optionNotUsed = "");
-  void FindClusterAxis(Float_t Ecoff);
+  /* Determine cluster axis. Also sets energy cutoff for cluster moments */
+  void findClusterAxis(Float_t Ecoff);
   /** Return the index of this cluster in the event */
   Int_t index() const;
   /** Sets the index of this cluster in the event */
@@ -76,7 +83,7 @@ class StFmsTowerCluster {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(StFmsTowerCluster);
-  void FindClusterAxis();
+  void findClusterAxis();
   Double_t GetSigma(Double_t theta);
   Float_t Ecutoff;
   ClassDef(StFmsTowerCluster, 7)
@@ -110,9 +117,9 @@ inline const StFmsFittedPhoton* StFmsTowerCluster::photons() const {
   return mPhotons;
 }
 
-inline void StFmsTowerCluster::FindClusterAxis(Float_t Ecoff) {
+inline void StFmsTowerCluster::findClusterAxis(Float_t Ecoff) {
   Ecutoff = Ecoff;
-  FindClusterAxis();
+  findClusterAxis();
 }
 }  // namespace PSUGlobals
 #endif
