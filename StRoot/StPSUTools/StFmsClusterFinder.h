@@ -66,17 +66,17 @@ class StFmsClusterFinder {
   static const Int_t kMaxNClusters = 6;
 #ifndef __CINT__  // Hide ClusterList from CINT
   unsigned locateClusterSeeds(TowerList* towers, TowerList* neighbors,
-                              ClusterList* clusters);
+                              ClusterList* clusters) const;
   unsigned associateTowersWithClusters(TowerList* neighbors,
                                        ClusterList* clusters,
-                                       TObjArray* valleys);
+                                       TObjArray* valleys) const;
   unsigned associateValleyTowersWithClusters(TowerList* neighbors,
                                              ClusterList* clusters,
-                                             TObjArray* valleys);
+                                             TObjArray* valleys) const;
   unsigned associateResidualTowersWithClusters(TowerList* neighbors,
-                                               ClusterList* clusters);
+                                               ClusterList* clusters) const;
   unsigned associateSubThresholdTowersWithClusters(TowerList* towers,
-                                                   ClusterList* clusters);
+                                                   ClusterList* clusters) const;
 #endif  // __CINT__
   Float_t mEnergyCutoff;  
   Int_t mNClusts;

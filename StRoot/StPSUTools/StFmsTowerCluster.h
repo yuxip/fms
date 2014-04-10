@@ -34,7 +34,15 @@ namespace FMSCluster {  // $NMSPC
  */
 class StFmsTowerCluster {
  public:
+  /**
+   Constructor
+   
+   Initialise with an StFmsCluster, which the StFmsTowerCluster continues to
+   reference. However the StFmsTowerCluster does not own the StFmsCluster,
+   so it must be deleted elsewhere if dynamically allocated.
+   */
   explicit StFmsTowerCluster(StFmsCluster* cluster);
+  /** Destructor */
   ~StFmsTowerCluster();
   /**
    Calculate cluster moments (mean and sigma of tower positions)
@@ -83,7 +91,7 @@ class StFmsTowerCluster {
  protected:
   static const int kMaxPhotonsPerCluster = 2;
   void findClusterAxis();
-  Double_t getSigma(Double_t theta);
+  Double_t getSigma(Double_t theta) const;
   Int_t mIndex;  ///< cluster number in an event, counts from 0
   Float_t mSigmaX;  ///< 2nd moment in x
   Float_t mSigmaY;  ///< 2nd moment in y

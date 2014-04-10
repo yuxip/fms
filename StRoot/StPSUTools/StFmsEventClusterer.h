@@ -49,18 +49,19 @@ class StFmsEventClusterer: public TObject {
 #ifndef __CINT__  // Hide ClusterList from CINT as it uses Boost
   // ClusterList is defined in StFmsClusterFinder.h
   typedef ClusterList::iterator ClusterIter;
+  typedef ClusterList::const_iterator ClusterConstIter;
 #endif  // __CINT__
   Int_t fitEvent();
   Double_t photonEnergyInCluster(Double_t towerWidth,
-                                 StFmsTowerCluster* cluster,
-                                 StFmsFittedPhoton* photon);
-  Double_t photonEnergyInTower(Double_t towerWidth, StFmsTower* tower,
-                               StFmsFittedPhoton* photon);
-  Float_t fitOnePhoton(StFmsTowerCluster*);
+                                 const StFmsTowerCluster* cluster,
+                                 const StFmsFittedPhoton* photon) const;
+  Double_t photonEnergyInTower(Double_t towerWidth, const StFmsTower* tower,
+                               const StFmsFittedPhoton* photon) const;
+  Float_t fitOnePhoton(StFmsTowerCluster* cluster);
 #ifndef __CINT__  // Hide ClusterList from CINT as it uses Boost
   Float_t globalFit(const Int_t, const Int_t, ClusterIter);
-  Float_t fit2PhotonClust(ClusterIter);
-  bool validate2ndPhoton(ClusterIter cluster);
+  Float_t fit2PhotonClust(ClusterIter cluster);
+  bool validate2ndPhoton(ClusterConstIter cluster) const;
   ClusterList mClusters;
 #endif  // __CINT__
   /** Fit clusters for all towers in this detector for the event */

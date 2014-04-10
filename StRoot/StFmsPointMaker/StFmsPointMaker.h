@@ -38,7 +38,7 @@ class StFmsPointMaker : public StMaker {
   /** Interface to the actual photon reconstruction */
   int doClustering();
   /** Return true if a detector/row/column number physically exists */
-  bool isValidChannel(int iew, int nstb, int row0, int col0);
+  static bool isValidChannel(int iew, int nstb, int row, int col);
   /** Read hits from StEvent and prepare them for clustering */
   bool populateTowerLists();
   StFmsDbMaker* mFmsDbMaker;  //!< Access to FMS database information

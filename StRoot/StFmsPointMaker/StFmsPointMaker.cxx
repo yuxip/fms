@@ -24,7 +24,7 @@
 
 #ifndef __CINT__
 typedef FMSCluster::ClusterList::iterator ClusterIter;
-typedef FMSCluster::ClusterList::const_iterator ClusterCIter;
+typedef FMSCluster::ClusterList::const_iterator ClusterConstIter;
 #endif  // __CINT__
 
 namespace {

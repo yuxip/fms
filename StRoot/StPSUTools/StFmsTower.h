@@ -57,7 +57,7 @@ class StFmsTower : public TObject {
 	 A neighbor is the tower immediately above, below, left or right of this one
 	 i.e. NOT diagonally adjacent towers
 	 */
-	Bool_t isNeighbor(StFmsTower* tower);
+	Bool_t isNeighbor(const StFmsTower& tower) const;
 	/** Returns the hit information for this tower (NULL if unknown) */
 	StFmsHit* hit() { return mHit; }
 	/** Returns the hit information for this tower (NULL if unknown) */

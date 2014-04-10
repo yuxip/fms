@@ -53,7 +53,7 @@ Bool_t couldBePeakTower(StFmsTower* tower, TowerList* nonPeakTowers) {
   Bool_t couldBePeak(true);
   for (TowerIter i = nonPeakTowers->begin(); i != nonPeakTowers->end(); ++i) {
     // Compare this tower's energy with that of its immediate neighbours
-    if (tower->isNeighbor(*i)) {
+    if (tower->isNeighbor(**i)) {
       if (tower->hit()->energy() < minRatioPeakTower * (*i)->hit()->energy()) {
         couldBePeak = false;
         break;
@@ -114,7 +114,7 @@ struct TowerIsNeighbor
     if(test->hit()->energy() < minTowerEnergy) {
       return false;
     }  // if
-    return test->isNeighbor(reference);
+    return test->isNeighbor(*reference);
   }
 };  // End of class TowerIsNeighbor
 
@@ -261,7 +261,7 @@ class TowerClusterAssociation : public TObject {
       // Place an energy selection when determining adjacent towers, as a
       // neighbor cannot exceed an adjacent tower by a factor more than
       // minRatioPeakTower, otherwise it will be considered a peak itself.
-      if (mTower->isNeighbor(clusterTower) &&
+      if (mTower->isNeighbor(*clusterTower) &&
           mTower->hit()->energy() < minRatioPeakTower * clusterTower->hit()->energy()) {
         return true;  // Stop looping once we find any match
       }  // if
@@ -344,8 +344,8 @@ class TowerClusterAssociation : public TObject {
 
 unsigned StFmsClusterFinder::locateClusterSeeds(TowerList* towers,
                                                 TowerList* neighbors,
-                                                ClusterList* clusters) {
-  while (!towers->empty() && mNClusts < kMaxNClusters) {
+                                                ClusterList* clusters) const {
+  while (!towers->empty() && clusters->size() < kMaxNClusters) {
     // By design, this tower is the highest tower remaining in towers, but it
     // could be lower than a tower in neighbors
     StFmsTower* high = towers->front();
@@ -355,11 +355,10 @@ unsigned StFmsClusterFinder::locateClusterSeeds(TowerList* towers,
     // peak (seed) tower so add it to a new cluster.
     if (couldBePeakTower(high, neighbors)) {
       // Add "high" to cluster and move towers neighboring "high" to "neighbor"
-      high->setCluster(mNClusts);
+      high->setCluster(clusters->size());
       clusters->push_back(new StFmsTowerCluster(new StFmsCluster));
-      clusters->back().setIndex(mNClusts);
+      clusters->back().setIndex(high->cluster());
       clusters->back().towers()->Add(high);
-      mNClusts++ ;
       // Add neighbors of the new peak tower to the neighbor list.
       // Partition the remaining towers so that neighbours of the high tower are
       // placed at the beginning, and non-neighbours placed at the end. Use
@@ -389,7 +388,7 @@ unsigned StFmsClusterFinder::locateClusterSeeds(TowerList* towers,
       }  // if
     }  // while
   }  // End of for loop over "arrTow"
-  return mNClusts;
+  return clusters->size();
 }
 
 /**
@@ -406,9 +405,10 @@ unsigned StFmsClusterFinder::locateClusterSeeds(TowerList* towers,
  Return the number of neighbors either associated with clusters or placed in the
  valley i.e. the number removed from the neighbor list.
  */
-unsigned StFmsClusterFinder::associateTowersWithClusters(TowerList* neighbors,
-                                                         ClusterList* clusters,
-                                                         TObjArray* valleys) {
+unsigned StFmsClusterFinder::associateTowersWithClusters(
+    TowerList* neighbors,
+    ClusterList* clusters,
+    TObjArray* valleys) const {
   TowerList associated;  // Store neighbors we associate
   // Towers are sorted in ascending energy, so use reverse iterator to go from
   // highest to lowest energy
@@ -451,7 +451,7 @@ unsigned StFmsClusterFinder::associateTowersWithClusters(TowerList* neighbors,
  */
 unsigned StFmsClusterFinder::associateResidualTowersWithClusters(
     TowerList* neighbors,
-    ClusterList* clusters) {
+    ClusterList* clusters) const {
   TowerList associated;
   TowerRIter tower;
   for (tower = neighbors->rbegin(); tower != neighbors->rend(); ++tower) {
@@ -490,7 +490,7 @@ unsigned StFmsClusterFinder::associateResidualTowersWithClusters(
 unsigned StFmsClusterFinder::associateValleyTowersWithClusters(
     TowerList* neighbors,
     ClusterList* clusters,
-    TObjArray* valleys) {
+    TObjArray* valleys) const {
   unsigned size = neighbors->size();
   for (Int_t i(0); i < valleys->GetEntriesFast(); ++i) {
     TowerClusterAssociation* association =
@@ -516,7 +516,8 @@ unsigned StFmsClusterFinder::associateValleyTowersWithClusters(
  where there is no energy deposited at the tower
  */
 unsigned StFmsClusterFinder::associateSubThresholdTowersWithClusters(
-    TowerList* towers, ClusterList* clusters) {
+    TowerList* towers,
+    ClusterList* clusters) const{
   TowerIter tower;
   for (tower = towers->begin(); tower != towers->end(); ++tower) {
     TowerClusterAssociation association(*tower);

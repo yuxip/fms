@@ -33,10 +33,7 @@ Int_t StFmsTower::Compare(const TObject* tower) const {
   }  // if
 }
 
-Bool_t StFmsTower::isNeighbor(StFmsTower* other) {
-  if (!other) {
-    return false;
-  }  // if
-  return abs(mColumn - other->column()) + abs(mRow - other->row()) == 1;
+Bool_t StFmsTower::isNeighbor(const StFmsTower& other) const {
+  return abs(mColumn - other.column()) + abs(mRow - other.row()) == 1;
 }
 }  // namespace FMSCluster

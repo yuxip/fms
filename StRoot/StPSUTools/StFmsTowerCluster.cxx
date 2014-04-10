@@ -61,7 +61,7 @@ void StFmsTowerCluster::findClusterAxis() {
 
 // Calculate sigma w.r.t the axis going through the "center" and of an angle
 // "theta" in x-y plane
-Double_t StFmsTowerCluster::getSigma(Double_t theta) {
+Double_t StFmsTowerCluster::getSigma(Double_t theta) const {
 	Double_t sigma = 0;
 	// 2-d vector vaxis define the axis
 	TVector2 vaxis(cos(theta), sin(theta));

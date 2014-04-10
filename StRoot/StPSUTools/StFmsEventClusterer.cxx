@@ -43,8 +43,9 @@ struct IsBadCluster
  Assumes the cluster is either 1- or 2-photon
  Returns NULL if there is no photon in the cluster
  */
-StFmsFittedPhoton* findLowestEnergyPhoton(StFmsTowerCluster* cluster) {
-  StFmsFittedPhoton* photon(NULL);
+const StFmsFittedPhoton* findLowestEnergyPhoton(
+    const StFmsTowerCluster* cluster) {
+  const StFmsFittedPhoton* photon(NULL);
   switch (cluster->cluster()->GetNphoton()) {
     case 1:
       photon = &(cluster->photons()[0]);
@@ -322,9 +323,9 @@ Float_t StFmsEventClusterer::fit2PhotonClust(ClusterIter p_clust) {
   - clusterIndex: index of cluster to test
   - nRealClusters: total number of clusters in the event
  */
-bool StFmsEventClusterer::validate2ndPhoton(ClusterIter cluster) {
+bool StFmsEventClusterer::validate2ndPhoton(ClusterConstIter cluster) const {
   // Select the lower-energy of the two photons
-  StFmsFittedPhoton* photon = findLowestEnergyPhoton(&(*cluster));
+  const StFmsFittedPhoton* photon = findLowestEnergyPhoton(&(*cluster));
   // Tower row and column where the fitted photon of lower energy should hit
   int column = 1 + (Int_t)(photon->xPos / mTowerWidthXY[0]);
   int row = 1 + (Int_t)(photon->yPos / mTowerWidthXY[1]);
@@ -353,7 +354,7 @@ bool StFmsEventClusterer::validate2ndPhoton(ClusterIter cluster) {
   Double_t energyInOwnCluster =
     photonEnergyInCluster(mTowerWidthXY[0], &(*cluster), photon);
   // Loop over all clusters except its own
-  for (ClusterIter i = mClusters.begin(); i != mClusters.end(); ++i) {
+  for (ClusterConstIter i = mClusters.begin(); i != mClusters.end(); ++i) {
     if (i != cluster) {  // Skip the photon's own cluster
       if (photonEnergyInCluster(mTowerWidthXY[0], &(*i), photon) > 
           (0.2 * energyInOwnCluster)) {
@@ -491,8 +492,8 @@ Int_t StFmsEventClusterer::fitEvent() {
  */
 Double_t StFmsEventClusterer::photonEnergyInCluster(
     Double_t widthLG,
-    StFmsTowerCluster *p_clust,
-    StFmsFittedPhoton *p_photon) {
+    const StFmsTowerCluster *p_clust,
+    const StFmsFittedPhoton *p_photon) const {
   Double_t eSS = 0;
   // Sum depositions by the photon in all towers of this cluster
   for(Int_t it=0; it<p_clust->cluster()->GetNTower(); it++) {
@@ -509,8 +510,8 @@ Double_t StFmsEventClusterer::photonEnergyInCluster(
  */
 Double_t StFmsEventClusterer::photonEnergyInTower(
     Double_t widthLG,
-    StFmsTower *p_tower,
-    StFmsFittedPhoton* p_photon) {
+    const StFmsTower *p_tower,
+    const StFmsFittedPhoton* p_photon) const {
   Double_t xx = ((Double_t)p_tower->column() - 0.5) *
                  mTowerWidthXY[0] - p_photon->xPos;
   Double_t yy = ((Double_t)p_tower->row() - 0.5) *
@@ -530,6 +531,7 @@ Bool_t StFmsEventClusterer::cluster(std::vector<StFmsTower>* towerList) {
   mTowers = towerList;
   mClusterFinder.setMomentEnergyCutoff(.5);  
   mTowerWidthXY = mGeometry->towerWidths(mDetectorId);
+  /** \todo Test of number of towers should be detector-dependent */
   if (mTowers->size() > 578) {
     LOG_ERROR << "Too many towers for Fit" << endm;
     /** \todo Need to handle this more gracefully. We CANNOT exit during a
