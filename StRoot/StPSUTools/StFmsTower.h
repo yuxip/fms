@@ -44,7 +44,7 @@ class StFmsTower : public TObject {
 	 */
 	Bool_t initialize(StFmsDbMaker*);
 	/** Returns true, as StFmsTower can be sorted in a ROOT container */
-	Bool_t IsSortable() const;
+	Bool_t IsSortable() const { return kTRUE; }
 	/**
 	 Function for sorting StFmsTower in order of ascending energy
 	 
@@ -59,17 +59,17 @@ class StFmsTower : public TObject {
 	 */
 	Bool_t isNeighbor(StFmsTower* tower);
 	/** Returns the hit information for this tower (NULL if unknown) */
-	StFmsHit* hit();
+	StFmsHit* hit() { return mHit; }
 	/** Returns the hit information for this tower (NULL if unknown) */
-	const StFmsHit* hit() const;
+	const StFmsHit* hit() const { return mHit; }
 	/** Returns the row of this tower (-1 if unknown) */
-	Int_t column() const;
+	Int_t column() const { return mColumn; }
 	/** Returns the column of this tower (-1 if unknown) */
-	Int_t row() const;
+	Int_t row() const { return mRow; }
 	/** Returns the cluster index of this tower (-1 if unassociated) */
-	Int_t cluster() const;
+	Int_t cluster() const { return mCluster; }
 	/** Sets the cluster index and returns the new index */
-	Int_t setCluster(Int_t cluster);
+	void setCluster(Int_t cluster) { mCluster = cluster; }
 
  protected:
   StFmsHit* mHit;  //!< Hit information, not owned by StFmsTower
@@ -78,22 +78,5 @@ class StFmsTower : public TObject {
 	Int_t mCluster;  ///< Index of cluster the tower is associated with
 	ClassDef(StFmsTower, 7)
 };
-
-inline Bool_t StFmsTower::IsSortable() const { return kTRUE; }
-
-inline StFmsHit* StFmsTower::hit() { return mHit; }
-
-inline const StFmsHit* StFmsTower::hit() const { return mHit; }
-
-inline Int_t StFmsTower::column() const { return mColumn; }
-
-inline Int_t StFmsTower::row() const { return mRow; }
-
-inline Int_t StFmsTower::cluster() const { return mCluster; }
-
-inline Int_t StFmsTower::setCluster(Int_t cluster) {
-  mCluster = cluster;
-  return cluster;
-}
 }  // namespace FMSCluster
 #endif

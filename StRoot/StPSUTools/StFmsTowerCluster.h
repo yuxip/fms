@@ -45,29 +45,32 @@ class StFmsTowerCluster {
   /* Clear photon and tower lists and reset other values to defaults */
   void Clear(const char* optionNotUsed = "");
   /* Determine cluster axis. Also sets energy cutoff for cluster moments */
-  void findClusterAxis(Float_t Ecoff);
+  void findClusterAxis(Float_t Ecoff) {
+    mEnergyCutoff = Ecoff;
+    findClusterAxis();
+  }
   /** Return the index of this cluster in the event */
-  Int_t index() const;
+  Int_t index() const { return mIndex; }
   /** Sets the index of this cluster in the event */
-  void setIndex(Int_t index);
+  void setIndex(Int_t index) { mIndex = index; }
   /** Return the &chi;<sup>2</sup> of the photon fit for this cluster */
-  Float_t chiSquare() const;
+  Float_t chiSquare() const { return mChiSquare; }
   /** Set the &chi;<sup>2</sup> of the photon fit for this cluster */
-  void setChiSquare(Float_t chi2);
+  void setChiSquare(Float_t chi2) { mChiSquare = chi2; }
   /** angle in x-y plane that define the direction of least-2nd-sigma axis */
-  Float_t thetaAxis() const;
+  Float_t thetaAxis() const { return mThetaAxis; }
   /** Return the list of towers in this cluster */
-  TObjArray* towers();
+  TObjArray* towers() { return mTowers; }
   /** \overload */
-  const TObjArray* towers() const;
+  const TObjArray* towers() const { return mTowers; }
   /** Return the array of photons creating this cluster */
-  StFmsFittedPhoton* photons();
+  StFmsFittedPhoton* photons() { return mPhotons; }
   /** \overload */
-  const StFmsFittedPhoton* photons() const;
+  const StFmsFittedPhoton* photons() const { return mPhotons; }
   /** Return the StEvent cluster structure */
-  StFmsCluster* cluster();
+  StFmsCluster* cluster() { return mCluster; }
   /** \overload */
-  const StFmsCluster* cluster() const;
+  const StFmsCluster* cluster() const{ return mCluster; }
 
  protected:
   static const int kMaxPhotonsPerCluster = 2;
@@ -89,38 +92,5 @@ class StFmsTowerCluster {
   DISALLOW_COPY_AND_ASSIGN(StFmsTowerCluster);
   ClassDef(StFmsTowerCluster, 7)
 };  // class StFmsTowerCluster
-
-inline Int_t StFmsTowerCluster::index() const { return mIndex; }
-
-inline void StFmsTowerCluster::setIndex(Int_t index) { mIndex = index; }
-
-inline Float_t StFmsTowerCluster::chiSquare() const { return mChiSquare; }
-
-inline void StFmsTowerCluster::setChiSquare(Float_t chi2) {
-  mChiSquare = chi2;
-}
-
-inline Float_t StFmsTowerCluster::thetaAxis() const { return mThetaAxis; }
-
-inline TObjArray* StFmsTowerCluster::towers() { return mTowers; }
-
-inline const TObjArray* StFmsTowerCluster::towers() const { return mTowers; }
-
-inline StFmsCluster* StFmsTowerCluster::cluster() { return mCluster; }
-
-inline const StFmsCluster* StFmsTowerCluster::cluster() const {
-  return mCluster;
-}
-
-inline StFmsFittedPhoton* StFmsTowerCluster::photons() { return mPhotons; }
-
-inline const StFmsFittedPhoton* StFmsTowerCluster::photons() const {
-  return mPhotons;
-}
-
-inline void StFmsTowerCluster::findClusterAxis(Float_t Ecoff) {
-  mEnergyCutoff = Ecoff;
-  findClusterAxis();
-}
 }  // namespace FMSCluster
 #endif
