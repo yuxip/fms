@@ -66,7 +66,7 @@ Bool_t couldBePeakTower(const StFmsTower* tower, TowerList* nonPeakTowers) {
 
 /** Comparison function to sort towers in order of ascending energy. */
 bool ascendingTowerEnergySorter(const StFmsTower* a, const StFmsTower* b) {
-  return a->Compare(b) < 0;
+  return a->hit()->energy() < b->hit()->energy();
 }
 
 /** Comparison function to sort towers in order of descending energy. */

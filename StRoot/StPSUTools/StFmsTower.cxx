@@ -22,17 +22,6 @@ Bool_t StFmsTower::initialize(StFmsDbMaker* database) {
   return mRow > -1 && mColumn > -1;
 }
 
-Int_t StFmsTower::Compare(const TObject* tower) const {
-  const StFmsTower* other = static_cast<const StFmsTower*>(tower);
-  if (mHit->energy() < other->hit()->energy()) {
-    return -1;
-  } else if (mHit->energy() > other->hit()->energy()) {
-    return 1;
-  } else {
-    return 0;
-  }  // if
-}
-
 Bool_t StFmsTower::isNeighbor(const StFmsTower& other) const {
   return abs(mColumn - other.column()) + abs(mRow - other.row()) == 1;
 }

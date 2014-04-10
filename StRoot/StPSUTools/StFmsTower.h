@@ -46,12 +46,6 @@ class StFmsTower : public TObject {
 	/** Returns true, as StFmsTower can be sorted in a ROOT container */
 	Bool_t IsSortable() const { return kTRUE; }
 	/**
-	 Function for sorting StFmsTower in order of ascending energy
-	 
-	 See TObject::Compare() for the convention of return values
-	 */
-	Int_t Compare(const TObject* tower) const;
-	/**
 	 Test if another StFmsTower is a neighbor of this tower
 	 
 	 A neighbor is the tower immediately above, below, left or right of this one
