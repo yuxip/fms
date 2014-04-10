@@ -74,6 +74,11 @@ bool descendingTowerEnergySorter(const StFmsTower* a, const StFmsTower* b) {
   return a->hit()->energy() > b->hit()->energy();
 }
 
+/* Predicate testing for tower energy above the global cutoff */
+bool towerEnergyIsAboveThreshold(const StFmsTower* tower) {
+  return !(tower->hit()->energy() < minTowerEnergy);
+}
+
 /**
  Predicate determining if a test tower is a neighbour of a reference tower.
  
@@ -82,24 +87,12 @@ bool descendingTowerEnergySorter(const StFmsTower* a, const StFmsTower* b) {
  If the test tower has energy below the global cutoff, always return false,
  even if it is physically a neighbour of the reference tower.
  */
-struct TowerIsNeighbor
-    : public std::binary_function<StFmsTower*, StFmsTower*, bool> {
-  bool operator()(StFmsTower* test, StFmsTower* reference) const {
-    if(test->hit()->energy() < minTowerEnergy) {
-      return false;
-    }  // if
+bool towerIsNeighbor(const StFmsTower* test, const StFmsTower* reference) {
+  if(towerEnergyIsAboveThreshold(test)) {
     return test->isNeighbor(*reference);
-  }
-};  // End of class TowerIsNeighbor
-
-/*
- Predicate testing for tower energy above the global cutoff
- */
-struct TowerEnergyIsAboveThreshold {
-  bool operator()(const StFmsTower* tower) const {
-    return !(tower->hit()->energy() < minTowerEnergy);
-  }
-};
+  }  // if
+  return false;
+}
 
 /*
  Filter out towers below the minimum energy threshold from a list.
@@ -112,7 +105,7 @@ TowerList filterTowersBelowEnergyThreshold(TowerList* towers) {
   // newEnd marks the end of the above-threshold towers and the beginning of the
   // below-threshold towers
   TowerIter newEnd = std::partition(towers->begin(), towers->end(),
-                                    TowerEnergyIsAboveThreshold());
+                                    std::ptr_fun(&towerEnergyIsAboveThreshold));
   // Store the below-threshold towers in a new list
   TowerList belowThreshold(newEnd, towers->end());
   // Remove the below-threshold towers from the input list
@@ -332,7 +325,8 @@ unsigned StFmsClusterFinder::locateClusterSeeds(TowerList* towers,
       // stable_partition so we don't alter the energy ordering.
       TowerIter neighborEnd =
         std::stable_partition(towers->begin(), towers->end(),
-                              std::bind2nd(TowerIsNeighbor(), high));
+                              std::bind2nd(std::ptr_fun(&towerIsNeighbor),
+                                           high));
       // Copy neighbors to the neighbor list, erase them from the tower list
       neighbors->insert(neighbors->end(), towers->begin(), neighborEnd);
       towers->erase(towers->begin(), neighborEnd);
