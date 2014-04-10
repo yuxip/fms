@@ -53,12 +53,20 @@ class StFmsTowerCluster {
   Int_t index() const { return mIndex; }
   /** Sets the index of this cluster in the event */
   void setIndex(Int_t index) { mIndex = index; }
+  /** 2nd moment in x */
+  float sigmaX() const { return mSigmaX; }
+  /** 2nd moment in y */
+  float sigmaY() const { return mSigmaY; }
+  /** 2nd moment in x-y */
+  float sigmaXY() const { return mSigmaXY; }
+  /** angle in x-y plane that define the direction of least-2nd-sigma axis */
+  Float_t thetaAxis() const { return mThetaAxis; }
   /** Return the &chi;<sup>2</sup> of the photon fit for this cluster */
   Float_t chiSquare() const { return mChiSquare; }
   /** Set the &chi;<sup>2</sup> of the photon fit for this cluster */
   void setChiSquare(Float_t chi2) { mChiSquare = chi2; }
-  /** angle in x-y plane that define the direction of least-2nd-sigma axis */
-  Float_t thetaAxis() const { return mThetaAxis; }
+  /** Cutoff on towers to use in moment calculations */
+  float energyCutoff() const { return mEnergyCutoff; }
   /** Return the list of towers in this cluster */
   TObjArray* towers() { return mTowers; }
   /** \overload */

@@ -46,6 +46,7 @@ class StFmsClusterFitter : public TObject {
   /**
    Fit photons to the list of towers.
    
+   Return fit &chi;<sup>2</sup>
    par, step, low and up are all arrays of size 3N+1 for an N-photon fit
     - par: start values for the fit variables
     - step: step size when fitting (use StFmsClusterFitter default if NULL)
@@ -60,6 +61,7 @@ class StFmsClusterFitter : public TObject {
   /**
    Specialized fit function for exactly 2-photon fit
    
+   Return fit &chi;<sup>2</sup>
    Arguments are as for Fit(). However the input arrays should always have 7
    (3 * 2 photons + 1) elements, and have a special meaning here:
     - 0: still a constant parameter, should be set to 2 for 2-photon fitting
