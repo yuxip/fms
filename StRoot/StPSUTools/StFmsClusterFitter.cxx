@@ -2,6 +2,8 @@
 
 #include <vector>
 
+#include <boost/foreach.hpp>
+
 #include <TF2.h>
 #include <TMath.h>
 
@@ -21,7 +23,7 @@ TF2 showerShapeFitFunction("showerShapeFitFunction",
 namespace FMSCluster {
 // Instantiate static members
 Float_t StFmsClusterFitter::mTowerWidthXY[2];
-TObjArray* StFmsClusterFitter::mTowers(NULL);
+std::list<StFmsTower*>* StFmsClusterFitter::mTowers(NULL);
 
 TF2* StFmsClusterFitter::showerShapeFunction() {
   return &showerShapeFitFunction;
@@ -279,24 +281,22 @@ void StFmsClusterFitter::minimizationFunctionNPhoton(Int_t& npara,
   StFmsTower* oneTow;
   // Sum energy of all towers being studied
   Double_t sumCl = 0;
-  TIter next(StFmsClusterFitter::mTowers);
-  while(oneTow=(StFmsTower*)next()) {
-    sumCl += oneTow->hit()->energy();
-  }  // while
+  BOOST_FOREACH(const StFmsTower* tower, *StFmsClusterFitter::mTowers) {
+    sumCl += tower->hit()->energy();
+  }  // BOOST_FOREACH
   // Loop over all towers that are involved in the fit
   fval = 0;  // Stores sum of chi2 over each tower
-  TIter nextTower(StFmsClusterFitter::mTowers);
-  while(oneTow=(StFmsTower*) nextTower()) {
+  BOOST_FOREACH(const StFmsTower* tower, *StFmsClusterFitter::mTowers) {
     // The shower shape function expects the centers of towers in units of cm
     // Tower centers are stored in row/column i.e. local coordinates
     // Therefore convert to cm, remembering to subtract 0.5 from row/column to
     // get centres not edges
-    const Double_t x = (oneTow->column() - 0.5) *
+    const Double_t x = (tower->column() - 0.5) *
                        StFmsClusterFitter::mTowerWidthXY[0];
-    const Double_t y = (oneTow->row() - 0.5) *
+    const Double_t y = (tower->row() - 0.5) *
                        StFmsClusterFitter::mTowerWidthXY[1];
     // Measured energy
-    const Double_t eMeas = oneTow->hit()->energy();
+    const Double_t eMeas = tower->hit()->energy();
     // Expected energy from Shower-Shape
     Double_t eSS = 0;
     for (Int_t iph = 0; iph < numbPh; iph++) {

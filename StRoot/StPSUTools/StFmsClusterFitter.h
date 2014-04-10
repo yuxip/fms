@@ -13,6 +13,7 @@ class TF2;
 namespace FMSCluster {  // $NMSPC
 typedef std::list<StFmsFittedPhoton> PhotonList;
 class StFmsGeometry;
+class StFmsTower;
 /**
  \todo
  It may be safer to make StFmsClusterFitter a singleton class, or something like that.
@@ -42,7 +43,7 @@ class StFmsClusterFitter : public TObject {
    
    towers is a TObjArray of StFmsTowers.
    */
-  void setTowers(TObjArray* towers) { mTowers = towers; }
+  void setTowers(std::list<StFmsTower*>* towers) { mTowers = towers; }
   /**
    Fit photons to the list of towers.
    
@@ -126,7 +127,7 @@ class StFmsClusterFitter : public TObject {
   Double_t mSteps[3 * kMaxNPhotons + 1];
   Double_t mTowerWidth;  ///< width of one lead glass module
   TMinuit mMinuit;  // Minuit fitter
-  static TObjArray* mTowers;
+  static std::list<StFmsTower*>* mTowers;
   static Float_t mTowerWidthXY[2];  ///< glass width X,Y
   ClassDef(StFmsClusterFitter, 4)
 };  // class StFmsClusterFitter

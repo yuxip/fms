@@ -3,6 +3,8 @@
 #include <algorithm>
 #include <cassert>
 
+#include <boost/foreach.hpp>
+
 #include <TLorentzVector.h>
 
 #include "St_base/StMessMgr.h"
@@ -157,9 +159,7 @@ int StFmsPointMaker::doClustering() {
         cluster->points().push_back(clpoint);
       }  // for
       // Save the tower hit info.
-      TIter next(ci->towers());
-      UChar_t status = 0;  // No status code for now --04/01/2013          
-      while (FMSCluster::StFmsTower* tow = (FMSCluster::StFmsTower*)next()){
+      BOOST_FOREACH(const FMSCluster::StFmsTower* tow, ci->towers()) {
         if (tow->hit()->adc() >= 1) {  // Min ADC = 1
           cluster->hits().push_back(tow->hit());
           // Make sure the hit is in the original collection
@@ -168,7 +168,7 @@ int StFmsPointMaker::doClustering() {
                            cluster->hits().back()) !=
                  fmsCollection->hits().end());
         }  // if
-      }  // while
+      }  // BOOST_FOREACH
       fmsCollection->addCluster(cluster);
     }  // for loop over clusters
   }  // for loop over NSTB

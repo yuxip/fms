@@ -1,12 +1,14 @@
 #include "StFmsEventClusterer.h"
 
-#include <TRandom.h>  // For ROOT global random generator, gRandom
-
 #include <algorithm>
 #include <functional>
 #include <iterator>
 #include <list>
 #include <numeric>
+
+#include <boost/foreach.hpp>
+
+#include <TRandom.h>  // For ROOT global random generator, gRandom
 
 #include "StRoot/St_base/StMessMgr.h"
 #include "StEvent/StFmsCluster.h"
@@ -31,7 +33,7 @@ struct IsBadCluster
       : energy(minEnergy), towers(maxTowers) { }
   bool operator()(const StFmsTowerCluster& cluster) const {
     return cluster.cluster()->GetEnergy() <= energy ||
-           cluster.towers()->GetEntries() > towers;
+           cluster.towers().size() > towers;
   }
   double energy;
   int towers;
@@ -67,16 +69,15 @@ const StFmsFittedPhoton* findLowestEnergyPhoton(
  
  Return a pointer to the matching tower if one is found, NULL otherwise.
  */
-StFmsTower* searchClusterTowers(int row, int column,
-                                const StFmsTowerCluster& cluster) {
-  StFmsTower* match(NULL);
-  for (Int_t i(0); i < cluster.cluster()->GetNTower(); ++i) {
-    StFmsTower* tower = static_cast<StFmsTower*>(cluster.towers()->At(i));
+const StFmsTower* searchClusterTowers(int row, int column,
+                                      const StFmsTowerCluster& cluster) {
+  const StFmsTower* match(NULL);
+  BOOST_FOREACH(const StFmsTower* tower, cluster.towers()) {
     if (tower->row() == row && tower->column() == column) {
       match = tower;
       break;
     }  // if
-  }  // for
+  }  // BOOST_FOREACH
   return match;
 }
 }  // unnamed namespace
@@ -108,7 +109,7 @@ Float_t StFmsEventClusterer::fitOnePhoton(StFmsTowerCluster* p_clust) {
   }  // if
   p_clust->photons()[0] = photons.back();
   p_clust->cluster()->SetNphoton(photons.size());
-  int ndf = p_clust->towers()->GetEntriesFast() - 3;
+  int ndf = p_clust->towers().size() - 3;
   if (ndf <= 0) {
     ndf = 1;
   }  // if
@@ -293,7 +294,7 @@ Float_t StFmsEventClusterer::fit2PhotonClust(ClusterIter p_clust) {
   p_clust->photons()[1] = photons.back();
   p_clust->cluster()->SetNphoton(photons.size());
   chiSq = globalFit(2, 1, p_clust);
-  int ndf = p_clust->towers()->GetEntriesFast() - 6;
+  int ndf = p_clust->towers().size() - 6;
   if (ndf <= 0) {
     ndf = 1;
   }  // if
@@ -331,7 +332,7 @@ bool StFmsEventClusterer::validate2ndPhoton(ClusterConstIter cluster) const {
   int row = 1 + (Int_t)(photon->yPos / mTowerWidthXY[1]);
   // Now check whether this tower is one of the non-zero towers of the cluster
   // The temporary StFmsTower only needs row and column set for the test
-  StFmsTower* tower = searchClusterTowers(row, column, *cluster);
+  const StFmsTower* tower = searchClusterTowers(row, column, *cluster);
   // If tower is non-NULL, the photon does hit in a tower in this cluster.
   if (!tower) {
     return false;
@@ -392,7 +393,7 @@ Int_t StFmsEventClusterer::fitEvent() {
     Int_t clustCatag = mClusterFinder.categorise(&(*cluster));
     // point to the real TObjArray that contains the towers to be fitted
     // it is the same tower array for the cluster or all alternative clusters
-    mFitter->setTowers(cluster->towers());
+    mFitter->setTowers(&cluster->towers());
     // Number of Degree of Freedom for the fit
     if (clustCatag == k1PhotonCluster) {
       // Do 1-photon fit
@@ -455,12 +456,13 @@ Int_t StFmsEventClusterer::fitEvent() {
     return nPh;
   }  // if
   // For global fit, add all towers from all clusters
-  TObjArray allTow(mTowers->size());
+  std::list<StFmsTower*> allTow;
   Int_t ndfg = 0 ;
   for (ClusterIter cluster = mClusters.begin(); cluster != mClusters.end();
        ++cluster) {
-    allTow.AddAll(cluster->towers());
-    ndfg += (cluster->towers()->GetEntriesFast() -
+    allTow.insert(allTow.end(), cluster->towers().begin(),
+                  cluster->towers().end());
+    ndfg += (cluster->towers().size() -
              3 * cluster->cluster()->GetNphoton());
   }  // for
   if(ndfg <= 0) {
@@ -496,11 +498,9 @@ Double_t StFmsEventClusterer::photonEnergyInCluster(
     const StFmsFittedPhoton *p_photon) const {
   Double_t eSS = 0;
   // Sum depositions by the photon in all towers of this cluster
-  for(Int_t it=0; it<p_clust->cluster()->GetNTower(); it++) {
-    eSS += photonEnergyInTower(widthLG,
-                               (StFmsTower*)p_clust->towers()->At(it),
-                               p_photon);
-  };
+  BOOST_FOREACH(const StFmsTower* tower, p_clust->towers()) {
+    eSS += photonEnergyInTower(widthLG, tower, p_photon);
+  }  // BOOST_FOREACH
   return eSS;
 }
 

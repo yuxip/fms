@@ -2,6 +2,8 @@
 
 #include <cmath>
 
+#include <boost/foreach.hpp>
+
 #include <TMath.h>
 #include <TObjArray.h>
 #include <TVector2.h>
@@ -14,14 +16,11 @@
 
 namespace FMSCluster {
 StFmsTowerCluster::StFmsTowerCluster(StFmsCluster* cluster)
-    : mTowers(NULL),  mCluster(cluster), mEnergyCutoff(0.5) {
+    : mCluster(cluster), mEnergyCutoff(0.5) {
   Clear();
 }
 
 StFmsTowerCluster::~StFmsTowerCluster() {
-  if (mTowers) {
-    delete mTowers;
-  }  // if
 }
 
 void StFmsTowerCluster::Clear(const char* /* option */) { 
@@ -30,10 +29,7 @@ void StFmsTowerCluster::Clear(const char* /* option */) {
   for (Int_t i(0); i < kMaxPhotonsPerCluster; ++i) {
     mPhotons[i].Clear();
   }  // for
-  if (mTowers) {
-    delete mTowers;
-  }  // if
-  mTowers = new TObjArray(50);
+  mTowers.clear();
 }
 
 void StFmsTowerCluster::findClusterAxis() {
@@ -68,22 +64,21 @@ Double_t StFmsTowerCluster::getSigma(Double_t theta) const {
 	// loop over all towers pointer in cluster
 	StFmsTower* oneTower;
 	float wnew =0;
-	for (Int_t it=0; it < mTowers->GetEntriesFast(); it++) {
-		oneTower = (StFmsTower*)mTowers->At(it);
+	BOOST_FOREACH(const StFmsTower* tower, mTowers) {
 		// the 2-d vector from the "center" of cluster to tower
 		// "center" are at 0.5, 1.5, etc! Need shift of 0.5
-		TVector2 v1(oneTower->column() - 0.5 - mCluster->GetX0(),
-		            oneTower->row() - 0.5 - mCluster->GetY0());
+		TVector2 v1(tower->column() - 0.5 - mCluster->GetX0(),
+		            tower->row() - 0.5 - mCluster->GetY0());
 		// perpendicular distance to the axis = length of the component of vector
 		// "v1" that is norm to "vaxis"
 		Double_t dis = (v1.Norm(vaxis)).Mod();
 		// contribution to sigma
 		//sigma += oneTower->energy * dis * dis;
-		float wtmp = log(oneTower->hit()->energy() + 1. - mEnergyCutoff) > 0 ?
-		             log(oneTower->hit()->energy() + 1. - mEnergyCutoff) : 0;
+		float wtmp = log(tower->hit()->energy() + 1. - mEnergyCutoff) > 0 ?
+		             log(tower->hit()->energy() + 1. - mEnergyCutoff) : 0;
 		wnew += wtmp;
 		sigma += wtmp * dis * dis;
-	}  // for
+	}  // BOOST_FOREACH
 	return wnew > 0 ? sqrt(sigma / wnew) : 0;
 }
 
@@ -91,22 +86,20 @@ void StFmsTowerCluster::calculateClusterMoments(Float_t Ecoff) {
   mEnergyCutoff=Ecoff;
   Float_t w0, w1, mtmp, mx, my, sigx, sigy, sigXY;
   w0 = w1 = mtmp = mx = my = sigx = sigy = sigXY = 0;
-  StFmsTower* oneTow;
-  TIter next(mTowers);
-  while (oneTow=(StFmsTower*) next()) {
+  BOOST_FOREACH(const StFmsTower* tower, mTowers) {
     Float_t xxx, yyy;
-    xxx = oneTow->column() - 0.5;
-    yyy = oneTow->row() - 0.5;
-    mtmp = log(oneTow->hit()->energy() + 1. - Ecoff) > 0 ?
-           log(oneTow->hit()->energy() + 1. - Ecoff) : 0;
+    xxx = tower->column() - 0.5;
+    yyy = tower->row() - 0.5;
+    mtmp = log(tower->hit()->energy() + 1. - Ecoff) > 0 ?
+           log(tower->hit()->energy() + 1. - Ecoff) : 0;
     w1 += mtmp;
-    w0 += oneTow->hit()->energy();
+    w0 += tower->hit()->energy();
     mx += mtmp * xxx;
     my += mtmp * yyy;
     sigx += mtmp * xxx * xxx;
     sigy += mtmp * yyy * yyy;
     sigXY += mtmp * xxx * yyy;
-  }  // while
+  }  // BOOST_FOREACH
   mCluster->SetClusterEnergy(w0);
   if (w1 > 0) {
     mCluster->SetX0(mx / w1);

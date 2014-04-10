@@ -3,6 +3,8 @@
 
 #include <TObject.h>
 
+#include <list>
+
 #include "StPSUTools/StFmsFittedPhoton.h"
 
 class TObjArray;
@@ -26,6 +28,7 @@ class StFmsCluster;
   void operator=(const TypeName&)
 
 namespace FMSCluster {  // $NMSPC
+class StFmsTower;
 /**
  A cluster of FMS towers
  
@@ -76,9 +79,9 @@ class StFmsTowerCluster {
   /** Cutoff on towers to use in moment calculations */
   float energyCutoff() const { return mEnergyCutoff; }
   /** Return the list of towers in this cluster */
-  TObjArray* towers() { return mTowers; }
+  std::list<StFmsTower*>& towers() { return mTowers; }
   /** \overload */
-  const TObjArray* towers() const { return mTowers; }
+  const std::list<StFmsTower*>& towers() const { return mTowers; }
   /** Return the array of photons creating this cluster */
   StFmsFittedPhoton* photons() { return mPhotons; }
   /** \overload */
@@ -100,7 +103,7 @@ class StFmsTowerCluster {
                        ///< of least-2nd-sigma axis
   Float_t mChiSquare;  ///< Chi-square of the fitting
   Float_t mEnergyCutoff;  //!< Cutoff on towers to use in moment calculations
-  TObjArray* mTowers;  //!<  StFmsTower objects that make the cluster
+  std::list<StFmsTower*> mTowers;  //!< Towers that make the cluster
   StFmsCluster* mCluster;  //!< Pointer to StEvent cluster structure
   StFmsFittedPhoton mPhotons[kMaxPhotonsPerCluster];  ///< Photons in cluster
 
