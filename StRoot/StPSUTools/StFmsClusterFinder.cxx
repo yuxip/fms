@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <functional>
 #include <list>
 #include <memory>
 
@@ -63,42 +64,15 @@ Bool_t couldBePeakTower(const StFmsTower* tower, TowerList* nonPeakTowers) {
   return couldBePeak;
 }
 
-/**
- Populate an STL container of pointers from a ROOT collection.
- 
- Returns the size of the filled container.
- No objects are duplicated; the STL container points to the same objects (and
- in the same order) as the ROOT collection.
- */
-template<typename StlContainer>
-typename StlContainer::size_type fillStlContainerFromRootCollection(
-    const TCollection& collection, StlContainer* container) {
-  TIter next(&collection);
-  typedef typename StlContainer::value_type Pointer;
-  Pointer element(NULL);
-  while ((element = static_cast<Pointer>(next()))) {
-    container->push_back(element);
-  }  // while
-  return container->size();
-};
+/** Comparison function to sort towers in order of ascending energy. */
+bool ascendingTowerEnergySorter(const StFmsTower* a, const StFmsTower* b) {
+  return a->Compare(b) < 0;
+}
 
-/**
- Comparison function to sort towers in order of ascending energy.
- */
-struct AscendingTowerEnergySorter {
-  bool operator()(const StFmsTower* a, const StFmsTower* b) const {
-    return a->Compare(b) < 0;
-  }
-};
-
-/**
- Comparison function to sort towers in order of descending energy.
- */
-struct DescendingTowerEnergySorter {
-  bool operator()(const StFmsTower* a, const StFmsTower* b) const {
-    return a->hit()->energy() > b->hit()->energy();
-  }
-};
+/** Comparison function to sort towers in order of descending energy. */
+bool descendingTowerEnergySorter(const StFmsTower* a, const StFmsTower* b) {
+  return a->hit()->energy() > b->hit()->energy();
+}
 
 /**
  Predicate determining if a test tower is a neighbour of a reference tower.
@@ -161,7 +135,7 @@ enum ETowerClusterDistance {
 void sortTowersEnergyDescending(FMSCluster::ClusterList* clusters,
                                int nClusters) {
   for (ClusterIter i = clusters->begin(); i != clusters->end(); ++i) {
-    i->towers().sort(DescendingTowerEnergySorter());
+    i->towers().sort(std::ptr_fun(&descendingTowerEnergySorter));
   }  // for
 }
 }  // unnamed namespace
@@ -336,6 +310,8 @@ class TowerClusterAssociation : public TObject {
 unsigned StFmsClusterFinder::locateClusterSeeds(TowerList* towers,
                                                 TowerList* neighbors,
                                                 ClusterList* clusters) const {
+  // The algorithm requires we sort towers in descending order or energy
+  towers->sort(std::ptr_fun(&descendingTowerEnergySorter));
   while (!towers->empty() && clusters->size() < kMaxNClusters) {
     // By design, this tower is the highest tower remaining in towers, but it
     // could be lower than a tower in neighbors
@@ -535,16 +511,15 @@ StFmsClusterFinder::~StFmsClusterFinder() {
 int StFmsClusterFinder::findClusters(TowerList* towers, ClusterList* clusters) {
   // Remove towers below energy threshold, but save them for later use
   TowerList belowThreshold = filterTowersBelowEnergyThreshold(towers);
-  // the neighbor TObjArray
+  // List of non-peak towers in clusters
   TowerList neighbors;
-  // Sort towers in descending order, then locate cluster seeds
-  towers->sort(DescendingTowerEnergySorter());
+  // Locate cluster seeds
   locateClusterSeeds(towers, &neighbors, clusters);
   // We have now found all seeds. Now decide the affiliation of neighbor towers
   // i.e. which peak each neighbor is associated with in a cluster.
   // First, we need to sort the neighbors towers, because we want to
   // consider them from higher towers to lower towers
-  neighbors.sort(AscendingTowerEnergySorter());
+  neighbors.sort(std::ptr_fun(&ascendingTowerEnergySorter));
   // Associated neighbor towers grow outward from the seed tower.
   // Keep trying to make tower-cluster associations until we make an entire loop
   // through all neighbors without successfully associating anything. Then stop,
