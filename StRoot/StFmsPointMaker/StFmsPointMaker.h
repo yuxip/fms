@@ -33,6 +33,8 @@ class StFmsPointMaker : public StMaker {
   Int_t Finish();
 
  private:
+  // Define a group of tower lists (tower list per sub-detector)
+  typedef std::vector<FMSCluster::StFmsTower> TowerList;
   /** Interface to the actual photon reconstruction */
   int doClustering();
   /** Return true if a detector/row/column number physically exists */
@@ -41,7 +43,6 @@ class StFmsPointMaker : public StMaker {
   bool populateTowerLists();
   StFmsDbMaker* mFmsDbMaker;  //!< Access to FMS database information
   FMSCluster::StFmsGeometry* mGeometry;  //!< Access to current FMS geometry
-  typedef std::vector<FMSCluster::StFmsTower> TowerList;
   std::vector<TowerList> mTowers; ///< One for each of four FMS sub-detectors
   ClassDef(StFmsPointMaker, 0)
 };

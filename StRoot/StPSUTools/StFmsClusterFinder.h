@@ -63,6 +63,7 @@ class StFmsClusterFinder {
 #endif  // __CINT__
 
  private:
+  static const Int_t kMaxNClusters = 6;
 #ifndef __CINT__  // Hide ClusterList from CINT
   unsigned locateClusterSeeds(TowerList* towers, TowerList* neighbors,
                               ClusterList* clusters);
@@ -77,7 +78,6 @@ class StFmsClusterFinder {
   unsigned associateSubThresholdTowersWithClusters(TowerList* towers,
                                                    ClusterList* clusters);
 #endif  // __CINT__
-  static const Int_t kMaxNClusters = 6;
   Float_t mEnergyCutoff;  
   Int_t mNClusts;
   ClassDef(StFmsClusterFinder, 3)

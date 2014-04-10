@@ -91,6 +91,7 @@ class StFmsClusterFitter : public TObject {
   static int maxNFittedPhotons() { return kMaxNPhotons; }
 
  private:  
+  static const Int_t kMaxNPhotons = 7;  // Maximum number that can be fitted
   /**
    Shower shape helper function
    
@@ -120,7 +121,6 @@ class StFmsClusterFitter : public TObject {
   static void minimizationFunction2Photon(Int_t& nparam, Double_t* grad, 
                                           Double_t& fval, Double_t* param,
                                           Int_t iflag);
-  static const Int_t kMaxNPhotons = 7;
   Double_t mSteps[3 * kMaxNPhotons + 1];
   Double_t mTowerWidth;  ///< width of one lead glass module
   TMinuit mMinuit;  // Minuit fitter

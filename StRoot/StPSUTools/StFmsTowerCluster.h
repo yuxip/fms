@@ -70,6 +70,9 @@ class StFmsTowerCluster {
   const StFmsCluster* cluster() const;
 
  protected:
+  static const int kMaxPhotonsPerCluster = 2;
+  void findClusterAxis();
+  Double_t getSigma(Double_t theta);
   Int_t mIndex;  ///< cluster number in an event, counts from 0
   Float_t mSigmaX;  ///< 2nd moment in x
   Float_t mSigmaY;  ///< 2nd moment in y
@@ -77,16 +80,13 @@ class StFmsTowerCluster {
   Float_t mThetaAxis;  ///< theta angle in x-y plane that define the direction
                        ///< of least-2nd-sigma axis
   Float_t mChiSquare;  ///< Chi-square of the fitting
+  Float_t mEnergyCutoff;  //!< Cutoff on towers to use in moment calculations
   TObjArray* mTowers;  //!<  StFmsTower objects that make the cluster
   StFmsCluster* mCluster;  //!< Pointer to StEvent cluster structure
-  static const int kMaxPhotonsPerCluster = 2;
   StFmsFittedPhoton mPhotons[kMaxPhotonsPerCluster];  ///< Photons in cluster
 
  private:
   DISALLOW_COPY_AND_ASSIGN(StFmsTowerCluster);
-  void findClusterAxis();
-  Double_t getSigma(Double_t theta);
-  Float_t mEnergyCutoff;
   ClassDef(StFmsTowerCluster, 7)
 };  // class StFmsTowerCluster
 
