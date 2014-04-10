@@ -345,7 +345,7 @@ class TowerClusterAssociation : public TObject {
 unsigned StFmsClusterFinder::locateClusterSeeds(TowerList* towers,
                                                 TowerList* neighbors,
                                                 ClusterList* clusters) {
-  while (!towers->empty() && mNClusts < mMaxNClusters) {
+  while (!towers->empty() && mNClusts < kMaxNClusters) {
     // By design, this tower is the highest tower remaining in towers, but it
     // could be lower than a tower in neighbors
     StFmsTower* high = towers->front();
