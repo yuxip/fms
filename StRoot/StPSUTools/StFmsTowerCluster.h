@@ -54,6 +54,7 @@ class StFmsTowerCluster {
   Float_t chiSquare() const;
   /** Set the &chi;<sup>2</sup> of the photon fit for this cluster */
   void setChiSquare(Float_t chi2);
+  /** angle in x-y plane that define the direction of least-2nd-sigma axis */
   Float_t thetaAxis() const;
   /** Return the list of towers in this cluster */
   TObjArray* towers();
@@ -74,18 +75,18 @@ class StFmsTowerCluster {
   Float_t mSigmaY;  ///< 2nd moment in y
   Float_t mSigmaXY;  ///< 2nd moment in x-y
   Float_t mThetaAxis;  ///< theta angle in x-y plane that define the direction
-                      ///< of least-2nd-sigma axis
+                       ///< of least-2nd-sigma axis
   Float_t mChiSquare;  ///< Chi-square of the fitting
   TObjArray* mTowers;  //!<  StFmsTower objects that make the cluster
   StFmsCluster* mCluster;  //!< Pointer to StEvent cluster structure
-  static const int mMaxPhotonsPerCluster = 2;
-  StFmsFittedPhoton mPhotons[mMaxPhotonsPerCluster];  ///< Photons in cluster
+  static const int kMaxPhotonsPerCluster = 2;
+  StFmsFittedPhoton mPhotons[kMaxPhotonsPerCluster];  ///< Photons in cluster
 
  private:
   DISALLOW_COPY_AND_ASSIGN(StFmsTowerCluster);
   void findClusterAxis();
-  Double_t GetSigma(Double_t theta);
-  Float_t Ecutoff;
+  Double_t getSigma(Double_t theta);
+  Float_t mEnergyCutoff;
   ClassDef(StFmsTowerCluster, 7)
 };  // class StFmsTowerCluster
 
@@ -118,7 +119,7 @@ inline const StFmsFittedPhoton* StFmsTowerCluster::photons() const {
 }
 
 inline void StFmsTowerCluster::findClusterAxis(Float_t Ecoff) {
-  Ecutoff = Ecoff;
+  mEnergyCutoff = Ecoff;
   findClusterAxis();
 }
 }  // namespace FMSCluster

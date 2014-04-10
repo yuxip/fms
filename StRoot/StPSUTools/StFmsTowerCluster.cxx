@@ -14,7 +14,7 @@
 
 namespace FMSCluster {
 StFmsTowerCluster::StFmsTowerCluster(StFmsCluster* cluster)
-    : mTowers(NULL),  mCluster(cluster), Ecutoff(0.5) {
+    : mTowers(NULL),  mCluster(cluster), mEnergyCutoff(0.5) {
   Clear();
 }
 
@@ -27,7 +27,7 @@ StFmsTowerCluster::~StFmsTowerCluster() {
 void StFmsTowerCluster::Clear(const char* /* option */) { 
   mSigmaX = mSigmaY = mSigmaXY = mChiSquare = -1.;
   mThetaAxis = -10;
-  for (Int_t i(0); i < mMaxPhotonsPerCluster; ++i) {
+  for (Int_t i(0); i < kMaxPhotonsPerCluster; ++i) {
     mPhotons[i].Clear();
   }  // for
   if (mTowers) {
@@ -55,13 +55,13 @@ void StFmsTowerCluster::findClusterAxis() {
 	while (mThetaAxis < -(myPi / 2.0)) {
 		mThetaAxis += myPi;
 	}  // while
-	mCluster->SetSigmaMin(GetSigma(mThetaAxis));
-	mCluster->SetSigmaMax(GetSigma(mThetaAxis - TMath::Pi() / 2.0));
+	mCluster->SetSigmaMin(getSigma(mThetaAxis));
+	mCluster->SetSigmaMax(getSigma(mThetaAxis - TMath::Pi() / 2.0));
 }
 
 // Calculate sigma w.r.t the axis going through the "center" and of an angle
 // "theta" in x-y plane
-Double_t StFmsTowerCluster::GetSigma(Double_t theta) {
+Double_t StFmsTowerCluster::getSigma(Double_t theta) {
 	Double_t sigma = 0;
 	// 2-d vector vaxis define the axis
 	TVector2 vaxis(cos(theta), sin(theta));
@@ -79,8 +79,8 @@ Double_t StFmsTowerCluster::GetSigma(Double_t theta) {
 		Double_t dis = (v1.Norm(vaxis)).Mod();
 		// contribution to sigma
 		//sigma += oneTower->energy * dis * dis;
-		float wtmp = log(oneTower->hit()->energy() + 1. - Ecutoff) > 0 ?
-		             log(oneTower->hit()->energy() + 1. - Ecutoff) : 0;
+		float wtmp = log(oneTower->hit()->energy() + 1. - mEnergyCutoff) > 0 ?
+		             log(oneTower->hit()->energy() + 1. - mEnergyCutoff) : 0;
 		wnew += wtmp;
 		sigma += wtmp * dis * dis;
 	}  // for
@@ -88,7 +88,7 @@ Double_t StFmsTowerCluster::GetSigma(Double_t theta) {
 }
 
 void StFmsTowerCluster::calculateClusterMoments(Float_t Ecoff) {
-  Ecutoff=Ecoff;
+  mEnergyCutoff=Ecoff;
   Float_t w0, w1, mtmp, mx, my, sigx, sigy, sigXY;
   w0 = w1 = mtmp = mx = my = sigx = sigy = sigXY = 0;
   StFmsTower* oneTow;
