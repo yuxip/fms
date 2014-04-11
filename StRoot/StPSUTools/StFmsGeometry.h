@@ -132,7 +132,7 @@ class StFmsGeometry : public TObject {
   static Bool_t isNorth(Int_t detectorId);
 
  private:
-  typedef std::map<int, fmsDetectorPosition_st*> Table;
+  typedef std::map<int, const fmsDetectorPosition_st*> Table;
   Table mPositions;  ///< Detector ID: position information pairs
   ClassDef(StFmsGeometry, 3)
 };  // class StFmsGeometry

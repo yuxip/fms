@@ -71,7 +71,7 @@ Bool_t StFmsGeometry::initialize(StFmsDbMaker* fmsDbMaker) {
       << "geometry will not be initialised!" << endm;
     return false;
   }  // if
-  fmsDetectorPosition_st* dbgeom = fmsDbMaker->DetectorPosition();
+  const fmsDetectorPosition_st* dbgeom = fmsDbMaker->DetectorPosition();
   if (dbgeom) {
     // Detector IDs count [0, N), so number of detectors is one greater than max
     const int nDetectors = fmsDbMaker->maxDetectorId() + 1;
