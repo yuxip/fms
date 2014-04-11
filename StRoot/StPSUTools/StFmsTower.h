@@ -34,6 +34,7 @@ class StFmsTower : public TObject {
 	 therefore have longer lifetime that the StFmsTower.
 	 */
 	StFmsTower(StFmsHit* fmsHit);
+  // Use default copy constructor and assignment operator
 	/** Destructor */
 	~StFmsTower();
 	/**

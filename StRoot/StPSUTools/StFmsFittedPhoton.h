@@ -11,6 +11,7 @@ struct StFmsFittedPhoton {
   /** Constructor with optional position and energy */
   StFmsFittedPhoton(Float_t x = -1., Float_t y = -1., Float_t e = 0.,
                     Float_t xerr = -1., Float_t yerr = -1., Float_t eerr = -1.);
+  // Use default copy constructor and assignment operator
   /** Destructor */
   ~StFmsFittedPhoton() { }
   /** Reset all values to defaults */

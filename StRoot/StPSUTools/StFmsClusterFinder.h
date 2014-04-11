@@ -27,6 +27,7 @@ class StFmsClusterFinder {
   typedef std::list<FMSCluster::StFmsTower*> TowerList;
   /** Constructor */
   StFmsClusterFinder();
+  // Use default copy constructor and assignment operator
   /** Destructor */
   ~StFmsClusterFinder();
   /**

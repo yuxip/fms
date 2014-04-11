@@ -20,6 +20,7 @@ class StFmsCluster : public StObject {
  public:
   /** Constructor */
   StFmsCluster();
+  // Use default copy constructor and assignment operator
   /** Destructor */
   ~StFmsCluster();
   /** Print cluster information to LOG_INFO */

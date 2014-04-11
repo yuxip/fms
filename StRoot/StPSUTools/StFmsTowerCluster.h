@@ -10,23 +10,6 @@
 class TObjArray;
 class StFmsCluster;
 
-/*
- http://google-styleguide.googlecode.com/svn/trunk/cppguide.xml#Copy_Constructors
- A macro to disallow the copy constructor and operator= functions
- This should be used in the private: declarations for a class e.g.
-  class Foo {
-   public:
-    Foo(int f);
-    ~Foo();
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(Foo);
-  };
-*/
-#define DISALLOW_COPY_AND_ASSIGN(TypeName) \
-  TypeName(const TypeName&);               \
-  void operator=(const TypeName&)
-
 namespace FMSCluster {  // $NMSPC
 class StFmsTower;
 /**
@@ -34,6 +17,11 @@ class StFmsTower;
  
  This is an elaborated version of the simple StFmsCluster class, storing extra
  information needed during the clustering process.
+ 
+ Neither the StFmsCluster it references nor the towers in the list
+ returned by towers() are owned by StFmsTowerCluster, so those towers and
+ cluster must have a longer lifetime than this object, and be deleted by the
+ user if dynamically allocated.
  */
 class StFmsTowerCluster {
  public:
@@ -45,6 +33,7 @@ class StFmsTowerCluster {
    so it must be deleted elsewhere if dynamically allocated.
    */
   explicit StFmsTowerCluster(StFmsCluster* cluster);
+  // Use default copy constructor and assignment operator
   /** Destructor */
   ~StFmsTowerCluster();
   /**
@@ -108,7 +97,6 @@ class StFmsTowerCluster {
   StFmsFittedPhoton mPhotons[kMaxPhotonsPerCluster];  ///< Photons in cluster
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(StFmsTowerCluster);
   ClassDef(StFmsTowerCluster, 7)
 };  // class StFmsTowerCluster
 }  // namespace FMSCluster
