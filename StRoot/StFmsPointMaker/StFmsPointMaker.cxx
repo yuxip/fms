@@ -141,18 +141,18 @@ int StFmsPointMaker::doClustering() {
       // Save photons reconstructed from this cluster
       for (Int_t np = 0; np < cluster->nPhotons(); np++) {
         StFmsPoint* clpoint = new StFmsPoint;
-        clpoint->SetEnergy(ci->photons()[np].energy);
-        clpoint->SetPhotonId(305 + 20 * instb + iPh);
+        clpoint->setEnergy(ci->photons()[np].energy);
+        clpoint->setId(305 + 20 * instb + iPh);
         iPh++;
         // Calculate photon 4 momentum
         // Photon position is in local (x, y) cm coordinates
         TVector3 xyzph = mGeometry->localToGlobalCoordinates(
           ci->photons()[np].xPos, ci->photons()[np].yPos,
           clustering.detector());
-        clpoint->SetPointXYZLab(xyzph);
+        clpoint->setXYZLab(xyzph);
         clpoint->setFourMomentum(compute4Momentum(xyzph, clpoint->energy()));
-        clpoint->SetParentCluId(cluster->id());
-        clpoint->SetParentNclPh(cluster->nPhotons());
+        clpoint->setParentClusterId(cluster->id());
+        clpoint->setNParentClusterPhotons(cluster->nPhotons());
         // Add it to both the StFmsCollection and StFmsCluster
         // StFmsCollection owns the pointer, the cluster merely references it
         fmsCollection->points().push_back(clpoint);
