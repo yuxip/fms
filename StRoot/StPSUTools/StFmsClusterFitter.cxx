@@ -29,7 +29,8 @@ TF2* StFmsClusterFitter::showerShapeFunction() {
   return &showerShapeFitFunction;
 }
 
-StFmsClusterFitter::StFmsClusterFitter(StFmsGeometry* pgeom, Int_t detectorId)
+StFmsClusterFitter::StFmsClusterFitter(const StFmsGeometry* geometry,
+                                       Int_t detectorId)
     : mMinuit(3 * kMaxNPhotons + 1) {
   // Set steps for Minuit fitting
   const Double_t step[3 * kMaxNPhotons + 1]= {
@@ -39,7 +40,7 @@ StFmsClusterFitter::StFmsClusterFitter(StFmsGeometry* pgeom, Int_t detectorId)
   for(int j = 0; j < 3 * kMaxNPhotons + 1; j++) {
     mSteps[j] = step[j];
   }  // for
-  std::vector<Float_t> towerWidth = pgeom->towerWidths(detectorId);
+  std::vector<Float_t> towerWidth = geometry->towerWidths(detectorId);
   mTowerWidth = towerWidth[0];
   StFmsClusterFitter::mTowerWidthXY[0] = towerWidth[0];
   StFmsClusterFitter::mTowerWidthXY[1] = towerWidth[1];

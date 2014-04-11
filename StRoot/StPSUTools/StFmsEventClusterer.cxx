@@ -521,9 +521,9 @@ Double_t StFmsEventClusterer::photonEnergyInTower(
   return eSS;
 }
 
-StFmsEventClusterer::StFmsEventClusterer(StFmsGeometry* pgeom,
+StFmsEventClusterer::StFmsEventClusterer(const StFmsGeometry* geometry,
                                          Int_t detectorId) {
-  mGeometry=pgeom;
+  mGeometry = geometry;
   mDetectorId = detectorId;
 }
 

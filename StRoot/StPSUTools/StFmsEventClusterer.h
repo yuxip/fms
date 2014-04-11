@@ -25,7 +25,7 @@ namespace FMSCluster {  // $NMSPC
 class StFmsEventClusterer: public TObject {
  public:
   /** Constructor */
-  StFmsEventClusterer(StFmsGeometry* pgeom, Int_t detectorId);
+  StFmsEventClusterer(const StFmsGeometry* geometry, Int_t detectorId);
   /** Destructor */
   ~StFmsEventClusterer();
   /** Return the ID of the detector for which clustering is being performed */
@@ -66,7 +66,7 @@ class StFmsEventClusterer: public TObject {
 #endif  // __CINT__
   /** Fit clusters for all towers in this detector for the event */
   StFmsClusterFinder mClusterFinder;
-  StFmsGeometry* mGeometry;
+  const StFmsGeometry* mGeometry;
   Int_t mDetectorId;
   std::vector<FMSCluster::StFmsTower>* mTowers;
   StFmsClusterFitter* mFitter;

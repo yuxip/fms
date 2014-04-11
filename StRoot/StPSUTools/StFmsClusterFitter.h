@@ -26,7 +26,7 @@ class StFmsTower;
 class StFmsClusterFitter : public TObject {
  public:
   /** Constructor using detector geometry */
-  StFmsClusterFitter(StFmsGeometry* pgeom, Int_t detectorId);
+  StFmsClusterFitter(const StFmsGeometry* geometry, Int_t detectorId);
   /** Default constructor */
   StFmsClusterFitter() { }
   /** Destructor */
