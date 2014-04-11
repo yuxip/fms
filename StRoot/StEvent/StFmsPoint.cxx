@@ -10,16 +10,6 @@ StFmsPoint::StFmsPoint() : StObject() {
   mId = -1;
 }
 
-StFmsPoint::StFmsPoint(StFmsPoint& other) {
-  LOG_DEBUG << "StFmsPoint copy constructor called " << endm;
-  mEnergy = other.energy();
-  mX = other.x();
-  mY = other.y();
-  mId = other.id();
-  mFourMomentum = other.fourMomentum();
-  mXYZLab = other.xyzLab();
-}
-
 StFmsPoint::~StFmsPoint() {}
 
 void StFmsPoint::Print(const Option_t* opt) const {

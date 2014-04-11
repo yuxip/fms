@@ -16,8 +16,10 @@ using std::vector;
 //Yuxi Pan 03/31/2013
 class StFmsPoint : public StObject {
  public:
+  /** Constructor */
   StFmsPoint();
-  StFmsPoint(StFmsPoint& other);
+  // Use default copy constructor and assignment operator
+  /** Destructor */
   ~StFmsPoint();
   void Print(const Option_t* opt = "") const;
   Float_t energy() const { return mEnergy; }
