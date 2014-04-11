@@ -53,8 +53,6 @@ class StFmsTower : public TObject {
 	 */
 	Bool_t isNeighbor(const StFmsTower& tower) const;
 	/** Returns the hit information for this tower (NULL if unknown) */
-	StFmsHit* hit() { return mHit; }
-	/** Returns the hit information for this tower (NULL if unknown) */
 	const StFmsHit* hit() const { return mHit; }
 	/** Returns the row of this tower (-1 if unknown) */
 	Int_t column() const { return mColumn; }
@@ -66,7 +64,7 @@ class StFmsTower : public TObject {
 	void setCluster(Int_t cluster) { mCluster = cluster; }
 
  protected:
-  StFmsHit* mHit;  //!< Hit information, not owned by StFmsTower
+  const StFmsHit* mHit;  //!< Hit information, not owned by StFmsTower
 	Int_t mColumn;  ///< Column number, starts at 0, horizontal (STAR x-coord)
 	Int_t mRow;  ///< Row number, starts at 0, vertical (STAR y-coord)
 	Int_t mCluster;  ///< Index of cluster the tower is associated with
