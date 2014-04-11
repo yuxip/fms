@@ -249,17 +249,17 @@ Int_t StFmsQAHistoMaker::Make() {
 		Int_t nphotons = fmspoints.size();
 		Int_t nhits = 0;
 		for(StSPtrVecFmsClusterConstIterator iclu = fmsclusters.begin(); iclu != fmsclusters.end(); iclu++){
-			nhits += (*iclu)->GetNTower();
-			Float_t clusterE = (*iclu)->GetEnergy();
+			nhits += (*iclu)->nTowers();
+			Float_t clusterE = (*iclu)->energy();
       hfmscluEvsevt->Fill(ievt,clusterE);
-      Float_t clusterEta = ((*iclu)->GetFourMomentum()).Eta();
-      Float_t clusterPhi = ((*iclu)->GetFourMomentum()).Phi();
+      Float_t clusterEta = ((*iclu)->fourMomentum()).Eta();
+      Float_t clusterPhi = ((*iclu)->fourMomentum()).Phi();
       hfmscluEvseta->Fill(clusterEta,clusterE);
       hfmscluEvsphi->Fill(clusterPhi,clusterE);
-      const int nstb = (*iclu)->GetNstb();
+      const int nstb = (*iclu)->detector();
       if (hfmsy0x0.find(nstb) != hfmsy0x0.end()) {
-  			if ((*iclu)->GetX0() > 0. && (*iclu)->GetY0() > 0.) {
-          hfmsy0x0[nstb]->Fill((*iclu)->GetX0(), (*iclu)->GetY0());
+  			if ((*iclu)->x() > 0. && (*iclu)->y() > 0.) {
+          hfmsy0x0[nstb]->Fill((*iclu)->x(), (*iclu)->y());
         }  // if
       }  // if
       //loop over hits
@@ -270,7 +270,7 @@ Int_t StFmsQAHistoMaker::Make() {
 		}
     for(StSPtrVecFmsPointConstIterator ipts = fmspoints.begin(); ipts != fmspoints.end(); ipts++){
       //(*ipts)->Print();
-      Float_t photonE = (*ipts)->GetEnergy();
+      Float_t photonE = (*ipts)->energy();
       hfmsphoEvsevt->Fill(ievt,photonE);
       Float_t photonEta = ((*ipts)->fourMomentum()).Eta();
       Float_t photonPhi = ((*ipts)->fourMomentum()).Phi();

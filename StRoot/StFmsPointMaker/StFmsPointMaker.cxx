@@ -128,18 +128,18 @@ int StFmsPointMaker::doClustering() {
     for (ClusterIter ci = clusters.begin(); ci != clusters.end(); ++ci) {
       StFmsCluster* cluster = ci->cluster();
       // Cluster id = id of the 1st photon, not necessarily the highE photon
-      cluster->SetNstb(instb + 1);
-      cluster->SetClusterId(305 + 20 * instb + iPh);
+      cluster->setDetector(instb + 1);
+      cluster->setId(305 + 20 * instb + iPh);
       // Skip clusters that don't have physically sensible coordinates
-      if (!(cluster->GetX0() > 0. && cluster->GetY0() > 0.)) {
+      if (!(cluster->x() > 0. && cluster->y() > 0.)) {
         continue;
       }  // if
       // Cluster locations are in column-row coordinates (not cm)
       TVector3 xyz = mGeometry->columnRowToGlobalCoordinates(
-        cluster->GetX0(), cluster->GetY0(), clustering.detector());
-      cluster->SetFourMomentum(compute4Momentum(xyz, cluster->GetEnergy()));
+        cluster->x(), cluster->y(), clustering.detector());
+      cluster->setFourMomentum(compute4Momentum(xyz, cluster->energy()));
       // Save photons reconstructed from this cluster
-      for (Int_t np = 0; np < cluster->GetNphoton(); np++) {
+      for (Int_t np = 0; np < cluster->nPhotons(); np++) {
         StFmsPoint* clpoint = new StFmsPoint;
         clpoint->SetEnergy(ci->photons()[np].energy);
         clpoint->SetPhotonId(305 + 20 * instb + iPh);
@@ -150,9 +150,9 @@ int StFmsPointMaker::doClustering() {
           ci->photons()[np].xPos, ci->photons()[np].yPos,
           clustering.detector());
         clpoint->SetPointXYZLab(xyzph);
-        clpoint->SetFourMomentum(compute4Momentum(xyzph, clpoint->GetEnergy()));
-        clpoint->SetParentCluId(cluster->GetClusterId());
-        clpoint->SetParentNclPh(cluster->GetNphoton());
+        clpoint->setFourMomentum(compute4Momentum(xyzph, clpoint->energy()));
+        clpoint->SetParentCluId(cluster->id());
+        clpoint->SetParentNclPh(cluster->nPhotons());
         // Add it to both the StFmsCollection and StFmsCluster
         // StFmsCollection owns the pointer, the cluster merely references it
         fmsCollection->points().push_back(clpoint);

@@ -186,7 +186,7 @@ Double_t StFmsClusterFitter::fit(const Double_t* para, const Double_t* step,
 //    suffers from this shortcoming if we let the parameters vary freely.
 // What we already know about the limits of the new parameters:
 //    xPi and yPi:   rarely do they go beyond 0.3 unit of lgd
-//    theta:         have a narrow theta range (for r=sigmaMin/sigmaMax, |theta|<0.5*r/0.65
+//    theta:         have a narrow theta range (for r=sigmaMax/sigmaMax, |theta|<0.5*r/0.65
 //                      when r<0.65, and linear increase from 0.5 to Pi/2 for 0.65<r<1)
 //    E_gg:          given by Ec (+/- 20% or less)
 //    z_gg:          should just let it vary from -1 to 1.

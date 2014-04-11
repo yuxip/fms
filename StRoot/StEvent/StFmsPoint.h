@@ -25,7 +25,7 @@ public:
 	
 	void Print(const Option_t* opt = "") const;
 
-	Float_t GetEnergy()	const { return mEnergy; }
+	Float_t energy()	const { return mEnergy; }
 	Float_t GetXpos()	const { return mXpos;	}	//in cm
 	Float_t GetYpos()	const { return mYpos;	}	//in cm
 	Int_t 	GetPhid()	const { return mPhid;	}
@@ -41,7 +41,7 @@ public:
 	void SetParentCluId( Int_t cluid  )	{ mCluid = cluid; }
 	void SetParentNclPh( Int_t nclph  )	{ mNclph = nclph; }
 
-	void SetFourMomentum ( TLorentzVector p4 ) { mFourMomentum = p4; }
+	void setFourMomentum ( TLorentzVector p4 ) { mFourMomentum = p4; }
 	void SetPointXYZLab ( TVector3 phpos3 ) { mPointXYZLab = phpos3; }
 
 

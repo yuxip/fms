@@ -184,9 +184,9 @@ class TowerClusterAssociation : public TObject {
       return separation(peak);
     } else {
       // Use calculated cluster center (x0, y0)
-      return sqrt(pow(cluster->cluster()->GetX0() - (mTower->column() - 0.5),
+      return sqrt(pow(cluster->cluster()->x() - (mTower->column() - 0.5),
                       2.) +
-                  pow(cluster->cluster()->GetY0() - (mTower->row() - 0.5),
+                  pow(cluster->cluster()->y() - (mTower->row() - 0.5),
                       2.));
     }  // if
   }
@@ -553,7 +553,7 @@ void StFmsClusterFinder::calculateClusterMoments(
     StFmsTowerCluster* cluster) const {
   if (cluster) {
     cluster->calculateClusterMoments(mEnergyCutoff);
-    cluster->cluster()->SetNumbTower(cluster->towers().size());
+    cluster->cluster()->setNTowers(cluster->towers().size());
   }  // if
 }
 
@@ -561,30 +561,30 @@ void StFmsClusterFinder::calculateClusterMoments(
 int StFmsClusterFinder::categorise(StFmsTowerCluster* cluster) {
   // If the number of towers in a cluster is less than "minTowerCatag02"
   // always consider the cluster a one-photon cluster
-  if (cluster->cluster()->GetNTower() < minTowerCatag02) {
-    cluster->cluster()->SetCatag(k1PhotonCluster);
+  if (cluster->cluster()->nTowers() < minTowerCatag02) {
+    cluster->cluster()->setCategory(k1PhotonCluster);
   } else {
     // Categorise cluster based on its properties
-    Float_t sMaxEc = cluster->cluster()->GetSigmaMax() *
-                     cluster->cluster()->GetEnergy();
-    if (cluster->cluster()->GetEnergy() < cutEcSigma[0][0] *
+    Float_t sMaxEc = cluster->cluster()->sigmaMax() *
+                     cluster->cluster()->energy();
+    if (cluster->cluster()->energy() < cutEcSigma[0][0] *
         (sMaxEc - cutEcSigma[0][1])) {
       if (sMaxEc > minEcSigma2Ph) {
-        cluster->cluster()->SetCatag(k2PhotonCluster);
+        cluster->cluster()->setCategory(k2PhotonCluster);
       } else {
-        cluster->cluster()->SetCatag(kAmbiguousCluster);
+        cluster->cluster()->setCategory(kAmbiguousCluster);
       }  // if
-    } else if (cluster->cluster()->GetEnergy() >
+    } else if (cluster->cluster()->energy() >
                cutEcSigma[1][0] * (sMaxEc - cutEcSigma[1][1])) {
       if (sMaxEc < maxEcSigma1Ph) {
-        cluster->cluster()->SetCatag(k1PhotonCluster);
+        cluster->cluster()->setCategory(k1PhotonCluster);
       } else {
-        cluster->cluster()->SetCatag(kAmbiguousCluster);
+        cluster->cluster()->setCategory(kAmbiguousCluster);
       }  // if
     } else {
-      cluster->cluster()->SetCatag(kAmbiguousCluster);
+      cluster->cluster()->setCategory(kAmbiguousCluster);
     }  // if (cluster->hit->energy()...)
   } // if (cluster->numbTower...)
-  return cluster->cluster()->GetCatag();
+  return cluster->cluster()->category();
 }
 }  // namespace FMSCluster

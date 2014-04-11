@@ -15,7 +15,7 @@ StFmsPoint::StFmsPoint():StObject(){
 StFmsPoint::StFmsPoint ( StFmsPoint& other ) {
 	
 	LOG_DEBUG << "StFmsPoint copy constructor called " <<endm;
-	mEnergy = other.GetEnergy();
+	mEnergy = other.energy();
 	mXpos	= other.GetXpos();
 	mYpos	= other.GetYpos();
 	mPhid	= other.GetPhid();
@@ -29,7 +29,7 @@ void StFmsPoint::Print( const Option_t* opt ) const { LOG_INFO << *this << endm;
 
 ostream& operator<<( ostream& os, const StFmsPoint& v ) {
 	
-	return os <<"StFmsPoint:\n\tenergy: "<<v.GetEnergy()
+	return os <<"StFmsPoint:\n\tenergy: "<<v.energy()
                   <<"\n\txpos:   "<<v.GetXpos()
                   <<"\n\typos:   "<<v.GetYpos()
                   <<"\n\tphId:   "<<v.GetPhid()

@@ -51,8 +51,8 @@ void StFmsTowerCluster::findClusterAxis() {
 	while (mThetaAxis < -(myPi / 2.0)) {
 		mThetaAxis += myPi;
 	}  // while
-	mCluster->SetSigmaMin(getSigma(mThetaAxis));
-	mCluster->SetSigmaMax(getSigma(mThetaAxis - TMath::Pi() / 2.0));
+	mCluster->setSigmaMin(getSigma(mThetaAxis));
+	mCluster->setSigmaMax(getSigma(mThetaAxis - TMath::Pi() / 2.0));
 }
 
 // Calculate sigma w.r.t the axis going through the "center" and of an angle
@@ -67,8 +67,8 @@ Double_t StFmsTowerCluster::getSigma(Double_t theta) const {
 	BOOST_FOREACH(const StFmsTower* tower, mTowers) {
 		// the 2-d vector from the "center" of cluster to tower
 		// "center" are at 0.5, 1.5, etc! Need shift of 0.5
-		TVector2 v1(tower->column() - 0.5 - mCluster->GetX0(),
-		            tower->row() - 0.5 - mCluster->GetY0());
+		TVector2 v1(tower->column() - 0.5 - mCluster->x(),
+		            tower->row() - 0.5 - mCluster->y());
 		// perpendicular distance to the axis = length of the component of vector
 		// "v1" that is norm to "vaxis"
 		Double_t dis = (v1.Norm(vaxis)).Mod();
@@ -100,16 +100,16 @@ void StFmsTowerCluster::calculateClusterMoments(Float_t Ecoff) {
     sigy += mtmp * yyy * yyy;
     sigXY += mtmp * xxx * yyy;
   }  // BOOST_FOREACH
-  mCluster->SetClusterEnergy(w0);
+  mCluster->setEnergy(w0);
   if (w1 > 0) {
-    mCluster->SetX0(mx / w1);
-    mCluster->SetY0(my / w1);
-    mSigmaX = sqrt(fabs(sigx / w1 - std::pow(mCluster->GetX0(), 2.)));
-    mSigmaY = sqrt(fabs(sigy / w1 - std::pow(mCluster->GetY0(), 2.)));
-    mSigmaXY = sigXY / w1 - mCluster->GetX0() * mCluster->GetY0();
+    mCluster->setX(mx / w1);
+    mCluster->setY(my / w1);
+    mSigmaX = sqrt(fabs(sigx / w1 - std::pow(mCluster->x(), 2.)));
+    mSigmaY = sqrt(fabs(sigy / w1 - std::pow(mCluster->y(), 2.)));
+    mSigmaXY = sigXY / w1 - mCluster->x() * mCluster->y();
   } else {
-    mCluster->SetX0(0.);
-    mCluster->SetY0(0.);
+    mCluster->setX(0.);
+    mCluster->setY(0.);
     mSigmaX = 0;
     mSigmaY = 0;
     mSigmaXY = 0;

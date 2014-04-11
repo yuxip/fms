@@ -5,33 +5,33 @@
 #define MAX_PHOTON_PER_CLUSTER 2
 
 StFmsCluster::StFmsCluster()
-    : StObject(), mCatag(0), mNumbTower(0), mNphoton(0), mEnergy(0.), mX0(0.),
-      mY0(0.), mSigmaMax(0.), mSigmaMin(0.), mChi2NdfPh1(-1.), mChi2NdfPh2(-1.),
-      mCluId(0) {}
+    : StObject(), mCategory(0), mNTowers(0), mNPhotons(0), mEnergy(0.), mX(0.),
+      mY(0.), mSigmaMax(0.), mSigmaMin(0.), mChi2Ndf1Photon(-1.),
+      mChi2Ndf2Photon(-1.), mId(0) {}
 
 StFmsCluster::~StFmsCluster() {
 }
 
 void StFmsCluster::Print(Option_t* /* not used */) const {
-	LOG_INFO << "========StFmsCluster:\n\tcatag:\t" << GetCatag()
-           << "\n\tnumberTower:\t" << GetNTower()
-           << "\n\tnPhoton:\t" << GetNphoton()
-           << "\n\tcluster energy:\t" << GetEnergy()
-           << "\n\tx0:\t" << GetX0()
-           << "\n\ty0:\t" << GetY0()
-           << "\n\tsiggmaMax:\t" << GetSigmaMax()
-           << "\n\tsigmaMin:\t" << GetSigmaMin()
-           << "\n\tchi2NdfPh1:\t" << GetChi2NdfPh1()
-           << "\n\tchi2NdfPh2:\t" << GetChi2NdfPh2()
-           << "\n\tid:\t" << GetClusterId()
+	LOG_INFO << "========StFmsCluster:\n\tcatag:\t" << category()
+           << "\n\tnumberTower:\t" << nTowers()
+           << "\n\tnPhoton:\t" << nPhotons()
+           << "\n\tcluster energy:\t" << energy()
+           << "\n\tx0:\t" << x()
+           << "\n\ty0:\t" << y()
+           << "\n\tsiggmaMax:\t" << sigmaMax()
+           << "\n\tsigmaMax:\t" << sigmaMin()
+           << "\n\tchi2NdfPh1:\t" << chi2Ndf1Photon()
+           << "\n\tchi2NdfPh2:\t" << chi2Ndf2Photon()
+           << "\n\tid:\t" << id()
            << "\n\tPhoton List:  \n" << endm;
 }
 
-Bool_t StFmsCluster::SetNphoton(Int_t nPhoton) {
+Bool_t StFmsCluster::setNPhotons(Int_t nPhoton) {
 	if (nPhoton <= 0 || nPhoton > MAX_PHOTON_PER_CLUSTER) {
-		LOG_ERROR << "StFmsCluster::SetNphoton() illegal nPhoton" << endm;
+		LOG_ERROR << "StFmsCluster::setNPhotons() illegal nPhoton" << endm;
 		return false;
 	}  // if
-	mNphoton = nPhoton;
+	mNPhotons = nPhoton;
 	return true;
 }
