@@ -4,6 +4,7 @@
 #include <TObject.h>
 
 #include <list>
+#include <memory>
 
 #include "StPSUTools/StFmsFittedPhoton.h"
 
@@ -28,9 +29,10 @@ class StFmsTowerCluster {
   /**
    Constructor
    
-   Initialise with an StFmsCluster, which the StFmsTowerCluster continues to
-   reference. However the StFmsTowerCluster does not own the StFmsCluster,
-   so it must be deleted elsewhere if dynamically allocated.
+   Initialise with a dynamically allocated StFmsCluster. The StFmsTowerCluster
+   owns the StFmsCluster until the release() method is called, after which
+   the StFmsTowerCluster no longer references a cluster and should not be used
+   any longer.
    */
   explicit StFmsTowerCluster(StFmsCluster* cluster);
   // Use default copy constructor and assignment operator
@@ -76,9 +78,11 @@ class StFmsTowerCluster {
   /** \overload */
   const StFmsFittedPhoton* photons() const { return mPhotons; }
   /** Return the StEvent cluster structure */
-  StFmsCluster* cluster() { return mCluster; }
+  StFmsCluster* cluster() { return mCluster.get(); }
   /** \overload */
-  const StFmsCluster* cluster() const{ return mCluster; }
+  const StFmsCluster* cluster() const{ return mCluster.get(); }
+  /** Return and give up ownership of the StEvent cluster structure */
+  StFmsCluster* release() { return mCluster.release(); }
 
  protected:
   static const int kMaxPhotonsPerCluster = 2;
@@ -93,7 +97,7 @@ class StFmsTowerCluster {
   Float_t mChiSquare;  ///< Chi-square of the fitting
   Float_t mEnergyCutoff;  //!< Cutoff on towers to use in moment calculations
   std::list<StFmsTower*> mTowers;  //!< Towers that make the cluster
-  StFmsCluster* mCluster;  //!< Pointer to StEvent cluster structure
+  std::auto_ptr<StFmsCluster> mCluster;  //!< Pointer to StEvent cluster
   StFmsFittedPhoton mPhotons[kMaxPhotonsPerCluster];  ///< Photons in cluster
 
  private:

@@ -163,7 +163,7 @@ int StFmsPointMaker::doClustering() {
           cluster->hits().push_back(tow->hit());
         }  // if
       }  // BOOST_FOREACH
-      fmsCollection->addCluster(cluster);
+      fmsCollection->addCluster(ci->release());
     }  // for loop over clusters
   }  // for loop over NSTB
   LOG_DEBUG << "StFmsPointMaker::FindPoint() --StFmsCluster collections filled "
