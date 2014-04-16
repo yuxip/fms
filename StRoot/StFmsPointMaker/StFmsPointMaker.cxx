@@ -201,8 +201,7 @@ bool StFmsPointMaker::populateTowerLists() {
     } else if (nstb == 3 || nstb == 4) {
       row = 25 - row;
     }  // if
-    Int_t ew  = 2;  // east=1, west=2
-    if (!isValidChannel(ew, nstb, row - 1, column - 1)) {
+    if (!isValidChannel(nstb, row - 1, column - 1)) {
       continue;
     }  // if
     unsigned index = hit->detectorId() - 8;  // FMS IDs range from 8 to 11
@@ -217,11 +216,7 @@ bool StFmsPointMaker::populateTowerLists() {
   return true;
 }
 
-bool StFmsPointMaker::isValidChannel(int iew, int nstb, int row0, int col0) {
-  // nstb starts from 1, row0, col0 starts from 0  
-  if (iew > 0 && iew < 2) {
-    return false;
-  }  // if
+bool StFmsPointMaker::isValidChannel(int nstb, int row0, int col0) {
   if (nstb < 1 || nstb > 4) {
     return false;
   }  // if
