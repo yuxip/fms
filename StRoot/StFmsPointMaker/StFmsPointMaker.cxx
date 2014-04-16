@@ -197,7 +197,7 @@ bool StFmsPointMaker::populateTowerLists() {
     } else if (hit->detectorId() == 10 || hit->detectorId() == 11) {
       row = 25 - row;
     }  // if
-    if (!isValidChannel(hit->detectorId(), row - 1, column - 1)) {
+    if (!isValidChannel(hit->detectorId(), row, column)) {
       continue;
     }  // if
     unsigned index = hit->detectorId() - 8;  // FMS IDs range from 8 to 11
@@ -212,34 +212,34 @@ bool StFmsPointMaker::populateTowerLists() {
   return true;
 }
 
-bool StFmsPointMaker::isValidChannel(int detector, int row0, int col0) {
+bool StFmsPointMaker::isValidChannel(int detector, int row, int column) {
   if (detector < 8 || detector > 11) {
     return false;
   }  // if
   if (detector > 9) {  // Small cell sub-detector
-    if (row0 < 0 || row0 > 23) {
+    if (row < 1 || row > 24) {
       return false;
     }  // if
-    if (col0 < 0 || col0 > 11) {
+    if (column < 1 || column > 12) {
       return false;
     }  // if
-    if (fabs(1. * row0 - 11.5) < 5 && col0 < 5) {
+    if (fabs(row - 12.5) < 5 && column < 6) {
       return false;
     }  // if
   } else {
-    if (row0 < 0 || row0 > 33) {
+    if (row < 1 || row > 34) {
       return false;
     }  // if
-    if (col0 < 0 || col0 > 16) {
+    if (column < 1 || column > 17) {
       return false;
     }  // if
-    if (fabs(1. * row0 - 16.5) < 8 && col0 < 8) {
+    if (fabs(row - 17.5) < 8 && column < 9) {
       return false;
     }  // if
-    if (row0 < col0 - 9.5) {
+    if (row < column - 10.5) {
       return false;
     }  // if
-    if (33 - row0 < col0 - 9.5) {
+    if (34 - row < column - 10.5) {
       return false;
     }  // if
   } // if (detector > 2)
