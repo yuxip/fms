@@ -1,7 +1,6 @@
 #include "StFmsPointMaker.h"
 
 #include <algorithm>
-#include <cassert>
 
 #include <boost/foreach.hpp>
 
@@ -76,7 +75,7 @@ Int_t StFmsPointMaker::InitRun(Int_t runNumber) {
 
 Int_t StFmsPointMaker::Finish() {
   LOG_DEBUG << "StFmsPointMaker::Finish() " << endm;
-  return kStOk;
+  return StMaker::Finish();
 }
 
 Int_t StFmsPointMaker::Make() {
@@ -87,25 +86,25 @@ Int_t StFmsPointMaker::Make() {
   }  // if
   if (doClustering() == kStOk){
      LOG_DEBUG << "Cluster finder returns successfully" <<endm;
-     return kStOk;
+     return StMaker::Make();
   }  // if
   LOG_INFO << " cluster finder returns error!!!" << endm;
   return kStErr;
 }
-  
+
 int StFmsPointMaker::doClustering() {
   LOG_DEBUG << " StFmsPointMaker::FindPoint() " << endm;
   StEvent* event = static_cast<StEvent*>(GetDataSet("StEvent"));
   if (!event) {
     LOG_ERROR << "StFmsPointMaker::populateTowerLists() did not find "
       << "an StEvent" << endm;
-      return false;
+      return kStErr;
   }  // if
   StFmsCollection* fmsCollection = event->fmsCollection();
   if (!fmsCollection) {
     LOG_ERROR << "StFmsPointMaker::populateTowerLists() did not find "
       << "an StFmsCollection in StEvent" << endm;
-      return false;
+      return kStErr;
   }  // if
   for (Int_t instb = 0; instb < 4; instb++) {
     TowerList& towers = mTowers.at(instb);
@@ -162,11 +161,6 @@ int StFmsPointMaker::doClustering() {
       BOOST_FOREACH(const FMSCluster::StFmsTower* tow, ci->towers()) {
         if (tow->hit()->adc() >= 1) {  // Min ADC = 1
           cluster->hits().push_back(tow->hit());
-          // Make sure the hit is in the original collection
-          assert(std::find(fmsCollection->hits().begin(),
-                           fmsCollection->hits().end(),
-                           cluster->hits().back()) !=
-                 fmsCollection->hits().end());
         }  // if
       }  // BOOST_FOREACH
       fmsCollection->addCluster(cluster);
