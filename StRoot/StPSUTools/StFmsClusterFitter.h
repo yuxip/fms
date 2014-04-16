@@ -95,6 +95,10 @@ class StFmsClusterFitter : public TObject {
 
  private:  
   static const Int_t kMaxNPhotons = 7;  // Maximum number that can be fitted
+  /** Disallow copy construction */
+  StFmsClusterFitter(const StFmsClusterFitter&);
+  /** Disallow assignment */
+  StFmsClusterFitter& operator=(const StFmsClusterFitter&);
   /**
    Shower shape helper function
    

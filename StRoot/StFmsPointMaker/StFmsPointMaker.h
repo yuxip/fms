@@ -35,6 +35,10 @@ class StFmsPointMaker : public StMaker {
  private:
   // Define a group of tower lists (tower list per sub-detector)
   typedef std::vector<FMSCluster::StFmsTower> TowerList;
+  /** Disallow copy construction */
+  StFmsPointMaker(const StFmsPointMaker&);
+  /** Disallow assignment */
+  StFmsPointMaker& operator=(const StFmsPointMaker&);
   /** Interface to the actual photon reconstruction */
   int doClustering();
   /** Return true if a detector/row/column number physically exists */

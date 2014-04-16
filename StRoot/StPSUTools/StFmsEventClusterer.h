@@ -51,6 +51,10 @@ class StFmsEventClusterer: public TObject {
   typedef ClusterList::iterator ClusterIter;
   typedef ClusterList::const_iterator ClusterConstIter;
 #endif  // __CINT__
+  /** Disallow copy construction */
+  StFmsEventClusterer(const StFmsEventClusterer&);
+  /** Disallow assignment */
+  StFmsEventClusterer& operator=(const StFmsEventClusterer&);
   Int_t fitEvent();
   Double_t photonEnergyInCluster(Double_t towerWidth,
                                  const StFmsTowerCluster* cluster,

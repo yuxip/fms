@@ -133,6 +133,16 @@ class StFmsGeometry : public TObject {
 
  private:
   typedef std::map<int, const fmsDetectorPosition_st*> Table;
+  /**
+   Disallow copy construction. If a new StFmsGeometry is desired it should
+   be explicitly created and initialised from the database to ensure validity
+   */
+  StFmsGeometry(const StFmsGeometry&);
+  /**
+   Disallow assignment. If a new StFmsGeometry is desired it should
+   be explicitly created and initialised from the database to ensure validity
+   */
+  StFmsGeometry& operator=(const StFmsGeometry&);
   Table mPositions;  ///< Detector ID: position information pairs
   ClassDef(StFmsGeometry, 3)
 };  // class StFmsGeometry
