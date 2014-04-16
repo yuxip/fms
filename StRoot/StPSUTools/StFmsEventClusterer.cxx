@@ -534,9 +534,7 @@ Bool_t StFmsEventClusterer::cluster(std::vector<StFmsTower>* towerList) {
   /** \todo Test of number of towers should be detector-dependent */
   if (mTowers->size() > 578) {
     LOG_ERROR << "Too many towers for Fit" << endm;
-    /** \todo Need to handle this more gracefully. We CANNOT exit during a
-              production run */
-    exit(-1);
+    return false;
   }  // if
   mFitter = new StFmsClusterFitter(mGeometry, mDetectorId);
   return fitEvent();  // Return true for success
