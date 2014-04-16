@@ -191,17 +191,13 @@ bool StFmsPointMaker::populateTowerLists() {
     Int_t row = mFmsDbMaker->getRowNumber(hit->detectorId(), hit->channel());
     Int_t column = mFmsDbMaker->getColumnNumber(hit->detectorId(),
                                                 hit->channel());
-    Int_t nstb = 0;
-    if (hit->detectorId() > 7 && hit->detectorId() < 12) {
-      nstb = hit->detectorId() - 7;
-    }  // if
-    if (nstb == 1 || nstb == 2) {
+    if (hit->detectorId() == 8 || hit->detectorId() == 9) {
       // because channel geometry in the database assigns row1 as the bottom row
       row = 35 - row;
-    } else if (nstb == 3 || nstb == 4) {
+    } else if (hit->detectorId() == 10 || hit->detectorId() == 11) {
       row = 25 - row;
     }  // if
-    if (!isValidChannel(nstb, row - 1, column - 1)) {
+    if (!isValidChannel(hit->detectorId(), row - 1, column - 1)) {
       continue;
     }  // if
     unsigned index = hit->detectorId() - 8;  // FMS IDs range from 8 to 11
@@ -216,11 +212,11 @@ bool StFmsPointMaker::populateTowerLists() {
   return true;
 }
 
-bool StFmsPointMaker::isValidChannel(int nstb, int row0, int col0) {
-  if (nstb < 1 || nstb > 4) {
+bool StFmsPointMaker::isValidChannel(int detector, int row0, int col0) {
+  if (detector < 8 || detector > 11) {
     return false;
   }  // if
-  if (nstb > 2) {
+  if (detector > 9) {  // Small cell sub-detector
     if (row0 < 0 || row0 > 23) {
       return false;
     }  // if
@@ -246,6 +242,6 @@ bool StFmsPointMaker::isValidChannel(int nstb, int row0, int col0) {
     if (33 - row0 < col0 - 9.5) {
       return false;
     }  // if
-  } // if (nstb > 2)
+  } // if (detector > 2)
   return true;
 }
