@@ -186,12 +186,6 @@ bool StFmsPointMaker::populateTowerLists() {
     Int_t row = mFmsDbMaker->getRowNumber(hit->detectorId(), hit->channel());
     Int_t column = mFmsDbMaker->getColumnNumber(hit->detectorId(),
                                                 hit->channel());
-    if (hit->detectorId() == 8 || hit->detectorId() == 9) {
-      // because channel geometry in the database assigns row1 as the bottom row
-      row = 35 - row;
-    } else if (hit->detectorId() == 10 || hit->detectorId() == 11) {
-      row = 25 - row;
-    }  // if
     if (!isValidChannel(hit->detectorId(), row, column)) {
       continue;
     }  // if
