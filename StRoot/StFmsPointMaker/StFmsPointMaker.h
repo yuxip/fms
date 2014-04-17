@@ -11,7 +11,11 @@
 class StFmsCollection;
 class StFmsDbMaker;
 
-namespace FMSCluster { class StFmsGeometry; }
+namespace FMSCluster {
+class StFmsGeometry;
+class StFmsTowerCluster;
+}  // namespace FMSCluster
+
 /**
  Find FMS clusters and fit clusters with photon hypothesis (shower fit)
  adapted from PSU code by Yuxi Pan --03/31/2013
@@ -62,6 +66,15 @@ class StFmsPointMaker : public StMaker {
    */
   int clusterDetector(TowerList* towers, int detectorId,
                       StFmsCollection* fmsCollection);
+  /**
+   Process a single StFmsTowerCluster and store it as an StFmsCluster
+
+   Update StFmsCollection with the cluster and any photons therein.
+   Return true if the cluster is processed, or false if it is skipped due to
+   bad values (e.g. unphysical coordinates).
+   */
+  bool processTowerCluster(FMSCluster::StFmsTowerCluster& towerCluster,
+                           int detectorId, StFmsCollection* fmsCollection);
   /**
    Test channel validity
 

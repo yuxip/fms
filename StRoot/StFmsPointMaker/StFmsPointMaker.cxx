@@ -130,49 +130,59 @@ int StFmsPointMaker::clusterDetector(TowerList* towers, const int detectorId,
     return kStWarn;
   }  // if
   // Saved cluser info into StFmsCluster
-  Int_t iPh = 0;  // Sequence # in StFmsEventClusterer::photons[]
   BOOST_FOREACH(StFmsTowerCluster& towerCluster, clustering.clusters()) {
-    StFmsCluster* cluster = towerCluster.cluster();
-    // Cluster id = id of the 1st photon, not necessarily the highE photon
-    cluster->setDetector(detectorId);
-    cluster->setId(305 + 20 * detectorId + iPh);
-    // Skip clusters that don't have physically sensible coordinates
-    if (!(cluster->x() > 0. && cluster->y() > 0.)) {
-      continue;
-    }  // if
-    // Cluster locations are in column-row coordinates (not cm)
-    TVector3 xyz = mGeometry->columnRowToGlobalCoordinates(
-      cluster->x(), cluster->y(), clustering.detector());
-    cluster->setFourMomentum(compute4Momentum(xyz, cluster->energy()));
-    // Save photons reconstructed from this cluster
-    for (Int_t np = 0; np < cluster->nPhotons(); np++) {
-      StFmsPoint* clpoint = new StFmsPoint;
-      clpoint->setEnergy(towerCluster.photons()[np].energy);
-      clpoint->setId(305 + 20 * detectorId + iPh);
-      iPh++;
-      // Calculate photon 4 momentum
-      // Photon position is in local (x, y) cm coordinates
-      TVector3 xyzph = mGeometry->localToGlobalCoordinates(
-        towerCluster.photons()[np].xPos, towerCluster.photons()[np].yPos,
-        clustering.detector());
-      clpoint->setXYZLab(xyzph);
-      clpoint->setFourMomentum(compute4Momentum(xyzph, clpoint->energy()));
-      clpoint->setParentClusterId(cluster->id());
-      clpoint->setNParentClusterPhotons(cluster->nPhotons());
-      // Add it to both the StFmsCollection and StFmsCluster
-      // StFmsCollection owns the pointer, the cluster merely references it
-      fmsCollection->points().push_back(clpoint);
-      cluster->points().push_back(clpoint);
-    }  // for
-    // Save the tower hit info.
-    BOOST_FOREACH(const StFmsTower* tow, towerCluster.towers()) {
-      if (tow->hit()->adc() >= 1) {  // Min ADC = 1
-        cluster->hits().push_back(tow->hit());
-      }  // if
-    }  // BOOST_FOREACH(towers)
-    fmsCollection->addCluster(towerCluster.release());
+    processTowerCluster(towerCluster, detectorId, fmsCollection);
   }  // BOOST_FOREACH(clusters)
   return kStOk;
+}
+
+bool StFmsPointMaker::processTowerCluster(
+    FMSCluster::StFmsTowerCluster& towerCluster,
+    const int detectorId,
+    StFmsCollection* fmsCollection) {
+  // Update the StFmsCluster object we want to store in StEvent with information
+  // not automatically propagated via StFmsTowerCluster
+  StFmsCluster* cluster = towerCluster.cluster();
+  // Skip clusters that don't have physically sensible coordinates
+  if (!(cluster->x() > 0. && cluster->y() > 0.)) {
+    return false;
+  }  // if
+  cluster->setDetector(detectorId);
+  // Cluster id is id of the 1st photon, not necessarily the highest-E photon
+  cluster->setId(305 + 20 * detectorId + fmsCollection->numberOfPoints());
+  // Cluster locations are in column-row coordinates (not cm)
+  TVector3 xyz = mGeometry->columnRowToGlobalCoordinates(
+    cluster->x(), cluster->y(), detectorId);
+  cluster->setFourMomentum(compute4Momentum(xyz, cluster->energy()));
+  // Save photons reconstructed from this cluster
+  for (Int_t np = 0; np < cluster->nPhotons(); np++) {
+    StFmsPoint* clpoint = new StFmsPoint;
+    clpoint->setEnergy(towerCluster.photons()[np].energy);
+    clpoint->setId(305 + 20 * detectorId + fmsCollection->numberOfPoints());
+    // Calculate photon 4 momentum
+    // Photon position is in local (x, y) cm coordinates
+    TVector3 xyzph = mGeometry->localToGlobalCoordinates(
+      towerCluster.photons()[np].xPos, towerCluster.photons()[np].yPos,
+      detectorId);
+    clpoint->setXYZLab(xyzph);
+    clpoint->setFourMomentum(compute4Momentum(xyzph, clpoint->energy()));
+    clpoint->setParentClusterId(cluster->id());
+    clpoint->setNParentClusterPhotons(cluster->nPhotons());
+    // Add it to both the StFmsCollection and StFmsCluster
+    // StFmsCollection owns the pointer, the cluster merely references it
+    fmsCollection->points().push_back(clpoint);
+    cluster->points().push_back(clpoint);
+  }  // for
+  // Save the tower hit info.
+  BOOST_FOREACH(const FMSCluster::StFmsTower* tow, towerCluster.towers()) {
+    if (tow->hit()->adc() >= 1) {  // Min ADC = 1
+      cluster->hits().push_back(tow->hit());
+    }  // if
+  }  // BOOST_FOREACH(towers)
+  // Release StFmsCluster held by towerCluster to pass ownership to
+  // StFmsCollection (and hence StEvent).
+  fmsCollection->addCluster(towerCluster.release());
+  return true;
 }
 
 bool StFmsPointMaker::populateTowerLists() {
