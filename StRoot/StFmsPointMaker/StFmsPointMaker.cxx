@@ -23,11 +23,6 @@
 #include "StPSUTools/StFmsClusterFinder.h"  // Defines ClusterList
 #include "StPSUTools/StFmsEventClusterer.h"
 
-#ifndef __CINT__
-typedef FMSCluster::ClusterList::iterator ClusterIter;
-typedef FMSCluster::ClusterList::const_iterator ClusterConstIter;
-#endif  // __CINT__
-
 namespace {
 // Calculate a 4 momentum from a direction/momentum vector and energy
 // assuming zero mass i.e. E = p
@@ -114,23 +109,21 @@ int StFmsPointMaker::doClustering() {
   if (!fmsCollection) {
     return kStErr;
   }  // if
-  std::map<int, TowerList>::iterator towersIter;
-  for (towersIter = mTowers.begin(); towersIter != mTowers.end(); ++towersIter) {
-    TowerList& towers = towersIter->second;
-    if (!validateTowerEnergySum(towers)) {
+  BOOST_FOREACH(TowerMap::value_type& subdetector, mTowers) {
+    if (!validateTowerEnergySum(subdetector.second)) {
       continue;  // To remove LED trails
     }  // if
-    const int detectorId = towersIter->first;
-    FMSCluster::StFmsEventClusterer clustering(mGeometry, detectorId);
+    const int detectorId = subdetector.first;
+    using namespace FMSCluster;
+    StFmsEventClusterer clustering(mGeometry, detectorId);
     // Perform tower clustering, skip this subdetector if an error occurs
-    if (!clustering.cluster(&towers)) {
+    if (!clustering.cluster(&subdetector.second)) {  // Cluster tower list
       continue;
     }  // if
     // Saved cluser info into StFmsCluster
     Int_t iPh = 0;  // Sequence # in StFmsEventClusterer::photons[]
-    FMSCluster::ClusterList& clusters = clustering.clusters();
-    for (ClusterIter ci = clusters.begin(); ci != clusters.end(); ++ci) {
-      StFmsCluster* cluster = ci->cluster();
+    BOOST_FOREACH(StFmsTowerCluster& towerCluster, clustering.clusters()) {
+      StFmsCluster* cluster = towerCluster.cluster();
       // Cluster id = id of the 1st photon, not necessarily the highE photon
       cluster->setDetector(detectorId);
       cluster->setId(305 + 20 * detectorId + iPh);
@@ -145,13 +138,13 @@ int StFmsPointMaker::doClustering() {
       // Save photons reconstructed from this cluster
       for (Int_t np = 0; np < cluster->nPhotons(); np++) {
         StFmsPoint* clpoint = new StFmsPoint;
-        clpoint->setEnergy(ci->photons()[np].energy);
+        clpoint->setEnergy(towerCluster.photons()[np].energy);
         clpoint->setId(305 + 20 * detectorId + iPh);
         iPh++;
         // Calculate photon 4 momentum
         // Photon position is in local (x, y) cm coordinates
         TVector3 xyzph = mGeometry->localToGlobalCoordinates(
-          ci->photons()[np].xPos, ci->photons()[np].yPos,
+          towerCluster.photons()[np].xPos, towerCluster.photons()[np].yPos,
           clustering.detector());
         clpoint->setXYZLab(xyzph);
         clpoint->setFourMomentum(compute4Momentum(xyzph, clpoint->energy()));
@@ -163,14 +156,14 @@ int StFmsPointMaker::doClustering() {
         cluster->points().push_back(clpoint);
       }  // for
       // Save the tower hit info.
-      BOOST_FOREACH(const FMSCluster::StFmsTower* tow, ci->towers()) {
+      BOOST_FOREACH(const StFmsTower* tow, towerCluster.towers()) {
         if (tow->hit()->adc() >= 1) {  // Min ADC = 1
           cluster->hits().push_back(tow->hit());
         }  // if
-      }  // BOOST_FOREACH
-      fmsCollection->addCluster(ci->release());
-    }  // for loop over clusters
-  }  // for loop over NSTB
+      }  // BOOST_FOREACH(towers)
+      fmsCollection->addCluster(towerCluster.release());
+    }  // BOOST_FOREACH(clusters)
+  }  // BOOST_FOREACH(subdetectors)
   LOG_DEBUG << "StFmsPointMaker::FindPoint() --StFmsCluster collections filled "
     << endm;
   return kStOk;
@@ -201,7 +194,7 @@ bool StFmsPointMaker::populateTowerLists() {
       FMSCluster::StFmsTower tower(hit);
       // Ensure tower information is valid before adding
       if (tower.initialize(mFmsDbMaker)) {
-        mTowers[hit->detectorId()].push_back(tower);
+        mTowers[detector].push_back(tower);
       }  // if
     }  // if
   }  // for
