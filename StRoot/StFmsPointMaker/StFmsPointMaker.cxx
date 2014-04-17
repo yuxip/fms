@@ -212,36 +212,46 @@ bool StFmsPointMaker::populateTowerLists() {
   return true;
 }
 
+/* Test channel validity by detector and row, column in the range [1, N] */
 bool StFmsPointMaker::isValidChannel(int detector, int row, int column) {
-  if (detector < 8 || detector > 11) {
+  // Simplest check first, test lower bounds are valid
+  if (row < 1 || column < 1) {
     return false;
   }  // if
-  if (detector > 9) {  // Small cell sub-detector
-    if (row < 1 || row > 24) {
+  // Omit gaps in the detector
+  switch (detector) {
+    case 8:  // Deliberate fall-through
+    case 9:  // Large-cell FMS sub-detector
+      if (fabs(row - 17.5) < 8 && column < 9) {  // Central hole
+        return false;
+      }  // if
+      if (row < column - 9.5) {  // Lower corners are missing
+        return false;
+      }  // if
+      if (34 - row < column - 10.5) {  // Upper corners are missing
+        return false;
+      }  // if
+      break;
+    case 10:  // Deliberate fall-through
+    case 11:  // Small-cell FMS sub-detector
+      if (fabs(row - 12.5) < 5 && column < 6) {  // Central hole
+        return false;
+      }  // if
+      break;
+    default:  // Don't currently support non-FMS sub-detectors
       return false;
-    }  // if
-    if (column < 1 || column > 12) {
-      return false;
-    }  // if
-    if (fabs(row - 12.5) < 5 && column < 6) {
-      return false;
-    }  // if
-  } else {
-    if (row < 1 || row > 34) {
-      return false;
-    }  // if
-    if (column < 1 || column > 17) {
-      return false;
-    }  // if
-    if (fabs(row - 17.5) < 8 && column < 9) {
-      return false;
-    }  // if
-    if (row < column - 10.5) {
-      return false;
-    }  // if
-    if (34 - row < column - 10.5) {
-      return false;
-    }  // if
-  } // if (detector > 2)
+  }  // switch (detector)
+  // Test row and column number against the numbers stored in the database for
+  // this detector. Leave this to last to avoid database calls when possible.
+  // Also serves as a double-check on detector, as the database will
+  // return -1 for both numbers in case of an invalid detector number.
+  const int nRows = mFmsDbMaker->nRow(detector);
+  if (nRows < 0 || row > nRows) {
+    return false;
+  }  // if
+  const int nColumns = mFmsDbMaker->nColumn(detector);
+  if (nColumns < 0 || column > nColumns) {
+    return false;
+  }  // if
   return true;
 }
