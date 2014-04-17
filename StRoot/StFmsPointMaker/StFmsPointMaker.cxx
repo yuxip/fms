@@ -243,13 +243,15 @@ bool StFmsPointMaker::isValidChannel(int detector, int row, int column) {
   // this detector. Leave this to last to avoid database calls when possible.
   // Also serves as a double-check on detector, as the database will
   // return -1 for both numbers in case of an invalid detector number.
-  const int nRows = mFmsDbMaker->nRow(detector);
-  if (nRows < 0 || row > nRows) {
-    return false;
-  }  // if
-  const int nColumns = mFmsDbMaker->nColumn(detector);
-  if (nColumns < 0 || column > nColumns) {
-    return false;
+  if (mFmsDbMaker) {
+    const int nRows = mFmsDbMaker->nRow(detector);
+    if (nRows < 0 || row > nRows) {
+      return false;
+    }  // if
+    const int nColumns = mFmsDbMaker->nColumn(detector);
+    if (nColumns < 0 || column > nColumns) {
+      return false;
+    }  // if
   }  // if
   return true;
 }
