@@ -9,8 +9,8 @@
 
 class StFmsDbMaker;
 class StFmsPointCollection;
-namespace FMSCluster { class StFmsGeometry; }
 
+namespace FMSCluster { class StFmsGeometry; }
 /**
  Find FMS clusters and fit clusters with photon hypothesis (shower fit)
  adapted from PSU code by Yuxi Pan --03/31/2013
@@ -39,9 +39,15 @@ class StFmsPointMaker : public StMaker {
   StFmsPointMaker(const StFmsPointMaker&);
   /** Disallow assignment */
   StFmsPointMaker& operator=(const StFmsPointMaker&);
-  /** Interface to the actual photon reconstruction */
+  /** Perform the actual photon reconstruction */
   int doClustering();
-  /** Return true if a detector/row/column number physically exists */
+  /**
+   Test channel validity
+
+   Return true if a detector/row/column number physically exists
+   Detector values should be as defined as in the database and row and column
+   numbers are in the range [1, N].
+  */
   bool isValidChannel(int detector, int row, int col);
   /** Read hits from StEvent and prepare them for clustering */
   bool populateTowerLists();
