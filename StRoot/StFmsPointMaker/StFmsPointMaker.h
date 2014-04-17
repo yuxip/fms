@@ -52,6 +52,17 @@ class StFmsPointMaker : public StMaker {
   /** Perform the actual photon reconstruction */
   int clusterEvent();
   /**
+   Perform photon reconstruction on a single sub-detector
+
+   Cluster all towers for a sub-detector with ID "detector".
+   Update the cluster and photon lists in the provided StFmsCollection with
+   the generated clusters and photons.
+
+   Return standard STAR error codes (kStOk, kStWarn, kStErr).
+   */
+  int clusterDetector(TowerList* towers, int detectorId,
+                      StFmsCollection* fmsCollection);
+  /**
    Test channel validity
 
    Return true if a detector/row/column number physically exists
