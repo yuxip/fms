@@ -47,7 +47,7 @@ class StFmsPointMaker : public StMaker {
   bool populateTowerLists();
   StFmsDbMaker* mFmsDbMaker;  //!< Access to FMS database information
   FMSCluster::StFmsGeometry* mGeometry;  //!< Access to current FMS geometry
-  std::vector<TowerList> mTowers; ///< One for each of four FMS sub-detectors
+  std::vector<TowerList> mTowers; //!< One for each of four FMS sub-detectors
   ClassDef(StFmsPointMaker, 0)
 };
 #endif
