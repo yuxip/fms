@@ -57,6 +57,13 @@ class StFmsPointMaker : public StMaker {
   bool isValidChannel(int detector, int row, int col);
   /** Read hits from StEvent and prepare them for clustering */
   bool populateTowerLists();
+  /**
+   Verify that the sum of tower energies is sensible
+
+   Return true if the sum is non-negative and does not exceed the
+   center-of-mass energy. Return false otherwise.
+   */
+  bool validateTowerEnergySum(const TowerList& towers) const;
   StFmsDbMaker* mFmsDbMaker;  //!< Access to FMS database information
   FMSCluster::StFmsGeometry* mGeometry;  //!< Access to current FMS geometry
   std::vector<TowerList> mTowers; //!< One for each of four FMS sub-detectors

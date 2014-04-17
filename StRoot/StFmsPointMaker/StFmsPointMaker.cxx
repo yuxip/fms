@@ -115,12 +115,8 @@ int StFmsPointMaker::doClustering() {
   }  // if
   for (Int_t instb = 0; instb < 4; instb++) {
     TowerList& towers = mTowers.at(instb);
-    Float_t Esum = 0.f;
-    for (TowerList::const_iterator i = towers.begin(); i != towers.end(); ++i) {
-      Esum += i->hit()->energy();
-    }  // for
-    if (Esum == 0 || Esum > 500) {
-      continue;  // To remove LED trails, for pp500 GeV
+    if (!validateTowerEnergySum(towers)) {
+      continue;  // To remove LED trails
     }  // if
     Int_t detectorId = instb + 8;  // FMS IDs from 8 to 11
     FMSCluster::StFmsEventClusterer clustering(mGeometry, detectorId);
@@ -253,4 +249,22 @@ bool StFmsPointMaker::isValidChannel(int detector, int row, int column) {
     }  // if
   }  // if
   return true;
+}
+
+bool StFmsPointMaker::validateTowerEnergySum(const TowerList& towers) const {
+  // Attempt to get center-of-mass energy from StRunInfo.
+  // If it can't be accessed assume 500 GeV running.
+  float centerOfMassEnergy(500.);
+  const StEvent* event = static_cast<const StEvent*>(GetInputDS("StEvent"));
+  if (event) {
+    if (event->runInfo()) {
+      centerOfMassEnergy = event->runInfo()->centerOfMassEnergy();
+    }  // if
+  }  // if
+  // Sum tower energies and test validity of the sum
+  float Esum = 0.f;
+  BOOST_FOREACH(const FMSCluster::StFmsTower& tower, towers) {
+    Esum += tower.hit()->energy();
+  }  // BOOST_FOREACH
+  return Esum >= 0.f && Esum <= centerOfMassEnergy;
 }
