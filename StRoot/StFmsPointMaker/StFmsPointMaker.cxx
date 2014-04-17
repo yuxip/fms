@@ -80,7 +80,7 @@ Int_t StFmsPointMaker::Make() {
     LOG_ERROR << "StFmsPointMaker::Make() - failed to initialise tower " <<
       "lists for the event" << endm;
   }  // if
-  if (doClustering() == kStOk){
+  if (clusterEvent() == kStOk){
      LOG_DEBUG << "Cluster finder returns successfully" <<endm;
      return StMaker::Make();
   }  // if
@@ -103,7 +103,7 @@ StFmsCollection* StFmsPointMaker::getFmsCollection() {
   return fms;
 }
 
-int StFmsPointMaker::doClustering() {
+int StFmsPointMaker::clusterEvent() {
   LOG_DEBUG << " StFmsPointMaker::FindPoint() " << endm;
   StFmsCollection* fmsCollection = getFmsCollection();
   if (!fmsCollection) {

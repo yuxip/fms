@@ -50,7 +50,7 @@ class StFmsPointMaker : public StMaker {
    */
   StFmsCollection* getFmsCollection();
   /** Perform the actual photon reconstruction */
-  int doClustering();
+  int clusterEvent();
   /**
    Test channel validity
 
