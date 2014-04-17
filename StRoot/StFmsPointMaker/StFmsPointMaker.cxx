@@ -225,10 +225,8 @@ bool StFmsPointMaker::isValidChannel(int detector, int row, int column) {
       if (fabs(row - 17.5) < 8 && column < 9) {  // Central hole
         return false;
       }  // if
-      if (row < column - 9.5) {  // Lower corners are missing
-        return false;
-      }  // if
-      if (34 - row < column - 10.5) {  // Upper corners are missing
+      // This cuts off a 7x7 triangle from the corners
+      if (fabs(17.5 - row) + column > 27.) {
         return false;
       }  // if
       break;
