@@ -92,19 +92,26 @@ Int_t StFmsPointMaker::Make() {
   return kStErr;
 }
 
+StFmsCollection* StFmsPointMaker::getFmsCollection() {
+  StEvent* event = static_cast<StEvent*>(GetInputDS("StEvent"));
+  StFmsCollection* fms(NULL);
+  if (event) {
+    fms = event->fmsCollection();
+  } else {
+    LOG_ERROR << "StFmsPointMaker did not find StEvent" << endm;
+  }  // if
+  if (!fms) {
+    LOG_ERROR << "StFmsPointMaker did not find "
+              << "an StFmsCollection in StEvent" << endm;
+  }  // if
+  return fms;
+}
+
 int StFmsPointMaker::doClustering() {
   LOG_DEBUG << " StFmsPointMaker::FindPoint() " << endm;
-  StEvent* event = static_cast<StEvent*>(GetDataSet("StEvent"));
-  if (!event) {
-    LOG_ERROR << "StFmsPointMaker::populateTowerLists() did not find "
-      << "an StEvent" << endm;
-      return kStErr;
-  }  // if
-  StFmsCollection* fmsCollection = event->fmsCollection();
+  StFmsCollection* fmsCollection = getFmsCollection();
   if (!fmsCollection) {
-    LOG_ERROR << "StFmsPointMaker::populateTowerLists() did not find "
-      << "an StFmsCollection in StEvent" << endm;
-      return kStErr;
+    return kStErr;
   }  // if
   for (Int_t instb = 0; instb < 4; instb++) {
     TowerList& towers = mTowers.at(instb);
@@ -172,16 +179,8 @@ int StFmsPointMaker::doClustering() {
 }
 
 bool StFmsPointMaker::populateTowerLists() {
-  StEvent* event = static_cast<StEvent*>(GetDataSet("StEvent"));
-  if (!event) {
-    LOG_ERROR << "StFmsPointMaker::populateTowerLists() did not find "
-      << "an StEvent" << endm;
-      return false;
-  }  // if
-  StFmsCollection* fmsCollection = event->fmsCollection();
+  StFmsCollection* fmsCollection = getFmsCollection();
   if (!fmsCollection) {
-    LOG_ERROR << "StFmsPointMaker::populateTowerLists() did not find "
-      << "an StFmsCollection in StEvent" << endm;
       return false;
   }  // if
   mTowers.assign(4, TowerList());

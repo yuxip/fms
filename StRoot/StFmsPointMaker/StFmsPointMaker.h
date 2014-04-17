@@ -7,8 +7,8 @@
 
 #include "StPSUTools/StFmsTower.h"
 
+class StFmsCollection;
 class StFmsDbMaker;
-class StFmsPointCollection;
 
 namespace FMSCluster { class StFmsGeometry; }
 /**
@@ -39,6 +39,12 @@ class StFmsPointMaker : public StMaker {
   StFmsPointMaker(const StFmsPointMaker&);
   /** Disallow assignment */
   StFmsPointMaker& operator=(const StFmsPointMaker&);
+  /**
+   Get the StFmsCollection from the current StEvent
+
+   Print messages to LOG_ERROR if StEvent/StFmsCollection cannot be found
+   */
+  StFmsCollection* getFmsCollection();
   /** Perform the actual photon reconstruction */
   int doClustering();
   /**
