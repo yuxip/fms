@@ -47,6 +47,7 @@ StFmsPointMaker::~StFmsPointMaker() {
 void StFmsPointMaker::Clear(Option_t* option) {
   LOG_DEBUG << "StFmsPointMaker::Clear() " << endm;
   LOG_DEBUG << "after StFmsPointMaker::Clear()" << endm;
+  mTowers.clear();
   StMaker::Clear(option);
 }
 
@@ -113,12 +114,13 @@ int StFmsPointMaker::doClustering() {
   if (!fmsCollection) {
     return kStErr;
   }  // if
-  for (Int_t instb = 0; instb < 4; instb++) {
-    TowerList& towers = mTowers.at(instb);
+  std::map<int, TowerList>::iterator towersIter;
+  for (towersIter = mTowers.begin(); towersIter != mTowers.end(); ++towersIter) {
+    TowerList& towers = towersIter->second;
     if (!validateTowerEnergySum(towers)) {
       continue;  // To remove LED trails
     }  // if
-    Int_t detectorId = instb + 8;  // FMS IDs from 8 to 11
+    const int detectorId = towersIter->first;
     FMSCluster::StFmsEventClusterer clustering(mGeometry, detectorId);
     // Perform tower clustering, skip this subdetector if an error occurs
     if (!clustering.cluster(&towers)) {
@@ -130,8 +132,8 @@ int StFmsPointMaker::doClustering() {
     for (ClusterIter ci = clusters.begin(); ci != clusters.end(); ++ci) {
       StFmsCluster* cluster = ci->cluster();
       // Cluster id = id of the 1st photon, not necessarily the highE photon
-      cluster->setDetector(instb + 1);
-      cluster->setId(305 + 20 * instb + iPh);
+      cluster->setDetector(detectorId);
+      cluster->setId(305 + 20 * detectorId + iPh);
       // Skip clusters that don't have physically sensible coordinates
       if (!(cluster->x() > 0. && cluster->y() > 0.)) {
         continue;
@@ -144,7 +146,7 @@ int StFmsPointMaker::doClustering() {
       for (Int_t np = 0; np < cluster->nPhotons(); np++) {
         StFmsPoint* clpoint = new StFmsPoint;
         clpoint->setEnergy(ci->photons()[np].energy);
-        clpoint->setId(305 + 20 * instb + iPh);
+        clpoint->setId(305 + 20 * detectorId + iPh);
         iPh++;
         // Calculate photon 4 momentum
         // Photon position is in local (x, y) cm coordinates
@@ -179,25 +181,35 @@ bool StFmsPointMaker::populateTowerLists() {
   if (!fmsCollection) {
       return false;
   }  // if
-  mTowers.assign(4, TowerList());
   StSPtrVecFmsHit& hits = fmsCollection->hits();
   for (StSPtrVecFmsHitIterator i = hits.begin(); i != hits.end(); ++i) {
     StFmsHit* hit = *i;
-    Int_t row = mFmsDbMaker->getRowNumber(hit->detectorId(), hit->channel());
-    Int_t column = mFmsDbMaker->getColumnNumber(hit->detectorId(),
-                                                hit->channel());
-    if (!isValidChannel(hit->detectorId(), row, column)) {
+    const int detector = hit->detectorId();
+    const int row = mFmsDbMaker->getRowNumber(detector, hit->channel());
+    const int column = mFmsDbMaker->getColumnNumber(detector, hit->channel());
+    if (!isValidChannel(detector, row, column)) {
       continue;
     }  // if
-    unsigned index = hit->detectorId() - 8;  // FMS IDs range from 8 to 11
-    if (hit->adc() > 0 && index >= 0 && index < mTowers.size()) {
+    if (hit->adc() > 0) {
+      // Insert a tower list for this detector ID if there isn't one already
+      // This method is faster than using find() followed by insert()
+      // http://stackoverflow.com/questions/97050/stdmap-insert-or-stdmap-find
+      TowerMap::iterator low = mTowers.lower_bound(detector);
+      if (low == mTowers.end() || mTowers.key_comp()(detector, low->first)) {
+        mTowers.insert(TowerMap::value_type(detector, TowerList()));
+      }  // if
       FMSCluster::StFmsTower tower(hit);
       // Ensure tower information is valid before adding
       if (tower.initialize(mFmsDbMaker)) {
-        mTowers.at(index).push_back(tower);
+        mTowers[hit->detectorId()].push_back(tower);
       }  // if
     }  // if
   }  // for
+  LOG_INFO << "Tower summary:" << endm;
+  BOOST_FOREACH(TowerMap::value_type& subdetector, mTowers) {
+    LOG_INFO << "detector " << subdetector.first << " nTowers = " <<
+      subdetector.second.size() << endm;
+  }  // BOOST_FOREACH
   return true;
 }
 

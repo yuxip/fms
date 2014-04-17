@@ -1,6 +1,7 @@
 #ifndef StFmsPointMaker_HH
 #define StFmsPointMaker_HH
 
+#include <map>
 #include <vector>
 
 #include "StChain/StMaker.h"
@@ -33,8 +34,11 @@ class StFmsPointMaker : public StMaker {
   Int_t Finish();
 
  private:
-  // Define a group of tower lists (tower list per sub-detector)
+  // Define a collection of towers
   typedef std::vector<FMSCluster::StFmsTower> TowerList;
+  // Define a collection of tower lists, a TowerList per sub-detector
+  // keyed by detector ID
+  typedef std::map<int, TowerList> TowerMap;
   /** Disallow copy construction */
   StFmsPointMaker(const StFmsPointMaker&);
   /** Disallow assignment */
@@ -66,7 +70,7 @@ class StFmsPointMaker : public StMaker {
   bool validateTowerEnergySum(const TowerList& towers) const;
   StFmsDbMaker* mFmsDbMaker;  //!< Access to FMS database information
   FMSCluster::StFmsGeometry* mGeometry;  //!< Access to current FMS geometry
-  std::vector<TowerList> mTowers; //!< One for each of four FMS sub-detectors
+  TowerMap mTowers;  //!< One for each sub-detector, keyed by detector ID
   ClassDef(StFmsPointMaker, 0)
 };
 #endif
