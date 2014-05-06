@@ -1,3 +1,14 @@
+// $Id$
+//
+// $Log$
+/**
+ \file      StFmsPointMaker.h
+ \brief     Declaration of StFmsPointMaker, the FMS cluster/photon maker
+ \author    Yuxi Pan <yuxipan@physics.ucla.edu>
+ \author    Thomas Burton <tpb@bnl.gov>
+ \date      2014
+ \copyright Brookhaven National Lab
+ */
 #ifndef StFmsPointMaker_HH
 #define StFmsPointMaker_HH
 
