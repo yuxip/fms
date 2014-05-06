@@ -19,7 +19,14 @@ class StFmsFittedPhoton;
 
 /**
  Find FMS clusters and fit clusters with photon hypothesis (shower fit)
- adapted from PSU code by Yuxi Pan --03/31/2013
+
+ A cluster is a collection of adjacent FMS towers with energy depositions.
+ "Point" is a generic term for the energy deposited by individual particle.
+ This will typically be a photon, but may be e.g. an electron or energy left
+ by a hadron.
+ A single cluster may be formed by more than one point, so clusters are fitted
+ with a shower shape function to disentangle depositions from different
+ particles.
  */
 class StFmsPointMaker : public StMaker {
  public:
