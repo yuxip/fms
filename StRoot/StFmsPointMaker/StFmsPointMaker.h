@@ -75,6 +75,13 @@ class StFmsPointMaker : public StMaker {
   int clusterDetector(TowerList* towers, int detectorId,
                       StFmsCollection* fmsCollection);
   /**
+   Verify that the sum of tower energies is sensible
+
+   Return true if the sum is non-negative and does not exceed the
+   center-of-mass energy. Return false otherwise.
+   */
+  bool validateTowerEnergySum(const TowerList& towers) const;
+  /**
    Process a single StFmsTowerCluster and store it as an StFmsCluster
 
    Update StFmsCollection with the cluster and any photons therein.
@@ -83,6 +90,11 @@ class StFmsPointMaker : public StMaker {
    */
   bool processTowerCluster(FMSCluster::StFmsTowerCluster& towerCluster,
                            int detectorId, StFmsCollection* fmsCollection);
+  /** Create a new StFmsPoint from an StFmsFittedPhoton */
+  StFmsPoint* makeFmsPoint(const FMSCluster::StFmsFittedPhoton& photon,
+                           int detectorId);
+  /** Read hits from StEvent and prepare them for clustering */
+  bool populateTowerLists();
   /**
    Test channel validity
 
@@ -91,18 +103,6 @@ class StFmsPointMaker : public StMaker {
    numbers are in the range [1, N].
   */
   bool isValidChannel(int detector, int row, int col);
-  /** Read hits from StEvent and prepare them for clustering */
-  bool populateTowerLists();
-  /**
-   Verify that the sum of tower energies is sensible
-
-   Return true if the sum is non-negative and does not exceed the
-   center-of-mass energy. Return false otherwise.
-   */
-  bool validateTowerEnergySum(const TowerList& towers) const;
-  /** Create a new StFmsPoint from an StFmsFittedPhoton */
-  StFmsPoint* makeFmsPoint(const FMSCluster::StFmsFittedPhoton& photon,
-                           int detectorId);
   StFmsDbMaker* mFmsDbMaker;  //!< Access to FMS database information
   FMSCluster::StFmsGeometry mGeometry;  //!< Access to current FMS geometry
   TowerMap mTowers;  //!< One for each sub-detector, keyed by detector ID

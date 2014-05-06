@@ -39,13 +39,6 @@ StFmsPointMaker::~StFmsPointMaker() {
   LOG_DEBUG << "StFmsPointMaker:: destructor " << endm;
 }
 
-void StFmsPointMaker::Clear(Option_t* option) {
-  LOG_DEBUG << "StFmsPointMaker::Clear() " << endm;
-  LOG_DEBUG << "after StFmsPointMaker::Clear()" << endm;
-  mTowers.clear();
-  StMaker::Clear(option);
-}
-
 Int_t StFmsPointMaker::Init() {
   LOG_DEBUG << "StFmsPointMaker::Init() " << endm;
   return StMaker::Init();
@@ -65,11 +58,6 @@ Int_t StFmsPointMaker::InitRun(Int_t runNumber) {
   return StMaker::InitRun(runNumber);
 }
 
-Int_t StFmsPointMaker::Finish() {
-  LOG_DEBUG << "StFmsPointMaker::Finish() " << endm;
-  return StMaker::Finish();
-}
-
 Int_t StFmsPointMaker::Make() {
   LOG_DEBUG << "StFmsPointMaker::Make() " << endm;
   if (!populateTowerLists()) {
@@ -82,6 +70,18 @@ Int_t StFmsPointMaker::Make() {
   }  // if
   LOG_INFO << " cluster finder returns error!!!" << endm;
   return kStErr;
+}
+
+void StFmsPointMaker::Clear(Option_t* option) {
+  LOG_DEBUG << "StFmsPointMaker::Clear() " << endm;
+  LOG_DEBUG << "after StFmsPointMaker::Clear()" << endm;
+  mTowers.clear();
+  StMaker::Clear(option);
+}
+
+Int_t StFmsPointMaker::Finish() {
+  LOG_DEBUG << "StFmsPointMaker::Finish() " << endm;
+  return StMaker::Finish();
 }
 
 StFmsCollection* StFmsPointMaker::getFmsCollection() {
@@ -130,6 +130,24 @@ int StFmsPointMaker::clusterDetector(TowerList* towers, const int detectorId,
     processTowerCluster(towerCluster, detectorId, fmsCollection);
   }  // BOOST_FOREACH(clusters)
   return kStOk;
+}
+
+bool StFmsPointMaker::validateTowerEnergySum(const TowerList& towers) const {
+  // Attempt to get center-of-mass energy from StRunInfo.
+  // If it can't be accessed assume 500 GeV running.
+  float centerOfMassEnergy(500.);
+  const StEvent* event = static_cast<const StEvent*>(GetInputDS("StEvent"));
+  if (event) {
+    if (event->runInfo()) {
+      centerOfMassEnergy = event->runInfo()->centerOfMassEnergy();
+    }  // if
+  }  // if
+  // Sum tower energies and test validity of the sum
+  float Esum = 0.f;
+  BOOST_FOREACH(const FMSCluster::StFmsTower& tower, towers) {
+    Esum += tower.hit()->energy();
+  }  // BOOST_FOREACH
+  return Esum >= 0.f && Esum <= centerOfMassEnergy;
 }
 
 bool StFmsPointMaker::processTowerCluster(
@@ -265,22 +283,4 @@ bool StFmsPointMaker::isValidChannel(int detector, int row, int column) {
     }  // if
   }  // if
   return true;
-}
-
-bool StFmsPointMaker::validateTowerEnergySum(const TowerList& towers) const {
-  // Attempt to get center-of-mass energy from StRunInfo.
-  // If it can't be accessed assume 500 GeV running.
-  float centerOfMassEnergy(500.);
-  const StEvent* event = static_cast<const StEvent*>(GetInputDS("StEvent"));
-  if (event) {
-    if (event->runInfo()) {
-      centerOfMassEnergy = event->runInfo()->centerOfMassEnergy();
-    }  // if
-  }  // if
-  // Sum tower energies and test validity of the sum
-  float Esum = 0.f;
-  BOOST_FOREACH(const FMSCluster::StFmsTower& tower, towers) {
-    Esum += tower.hit()->energy();
-  }  // BOOST_FOREACH
-  return Esum >= 0.f && Esum <= centerOfMassEnergy;
 }
