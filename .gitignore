@@ -36,3 +36,6 @@ StRoot/StEvent/*
 !StRoot/StEvent/StFmsPointCollection.h
 !StRoot/StEvent/StFmsPoint.cxx
 !StRoot/StEvent/StFmsPoint.h
+
+# Ignore everything in StRoot/StMuDSTMaker except the files we develop.
+StRoot/StMuDSTMaker/*
