@@ -9,8 +9,8 @@
  \date      2014
  \copyright Brookhaven National Lab
  */
-#ifndef StFmsPointMaker_HH
-#define StFmsPointMaker_HH
+#ifndef STROOT_STFMSPOINTMAKER_STFMSPOINTMAKER_H_
+#define STROOT_STFMSPOINTMAKER_STFMSPOINTMAKER_H_
 
 #include <map>
 #include <vector>
@@ -121,4 +121,4 @@ class StFmsPointMaker : public StMaker {
   TowerMap mTowers;  //!< One for each sub-detector, keyed by detector ID
   ClassDef(StFmsPointMaker, 0)
 };
-#endif
+#endif  // STROOT_STFMSPOINTMAKER_STFMSPOINTMAKER_H_
