@@ -42,7 +42,7 @@ class StFmsFittedPhoton;
 class StFmsPointMaker : public StMaker {
  public:
   /** Constructor */
-  StFmsPointMaker(const char* name = "StFmsPointMaker");
+  explicit StFmsPointMaker(const char* name = "StFmsPointMaker");
   /** Destructor */
   ~StFmsPointMaker();
   /** Called by StMaker when switch to a new run number */
