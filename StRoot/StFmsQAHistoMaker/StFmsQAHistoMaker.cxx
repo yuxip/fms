@@ -133,6 +133,8 @@ Int_t StFmsQAHistoMaker::Init() {
 		hfmsphoEvsevt = new TH2F("hfmsphoEvsevt","FMS photon energy vs event number",2e3,0,2e6,250,0,250);
 	//	hfmshitEvseta = new TH2F("hfmshitEvseta","FMS hit energy vs eta",100,2.5,4.5,250,0,250);
 	//	hfmshitEvsphi = new TH2F("hfmshitEvsphi","FMS hit energy vs phi",100,-TMath::Pi(),TMath::Pi(),250,0,250);	
+    hfmshitEvsChannel = new TH2F("hfmshitEvsChannel", "StEvent FMS hit energy vs channel", 600, 0, 600, 250, 0, 250);
+    hmufmshitEvsChannel = new TH2F("hmufmshitEvsChannel", "StMuDst FMS hit energy vs channel", 600, 0, 600, 250, 0, 250);
 		hfmscluEvseta = new TH2F("hfmscluEvseta","FMS cluster energy vs eta",100,2.5,4.5,250,0,250);
 		hfmscluEvsphi = new TH2F("hfmscluEvsphi","FMS cluster energy vs phi",100,-TMath::Pi(),TMath::Pi(),250,0,250);	
 		hfmsphoEvseta = new TH2F("hfmsphoEvseta","FMS photon energy vs eta",100,2.5,4.5,250,0,250);
@@ -242,12 +244,25 @@ Int_t StFmsQAHistoMaker::Make() {
         << "an StFmsCollection in StEvent" << endm;
         return false;
     }  // if
+    const StSPtrVecFmsHit& fmshits = fmsCollection->hits();
 		const StSPtrVecFmsCluster& fmsclusters = fmsCollection->clusters();
 		hfmsNcluvsevt->Fill(ievt,fmsclusters.size());
 		const StSPtrVecFmsPoint& fmspoints = fmsCollection->points();
 	
 		Int_t nphotons = fmspoints.size();
 		Int_t nhits = 0;
+		for (StSPtrVecFmsHitConstIterator i = fmshits.begin(); i != fmshits.end(); ++i) {
+		  StFmsHit* hit = *i;
+		  hfmshitEvsChannel->Fill(hit->channel(), hit->energy());
+		}  // for
+		// Fill the same histogram but using hits from StMuDst
+    StMuFmsCollection* mufmsCollection = muDst->muFmsCollection();
+		for (int i(0); i < mufmsCollection->numberOfHits(); ++i) {
+		  StMuFmsHit* hit = mufmsCollection->getHit(i);
+		  if (hit->detectorId() >= 8 && hit->detectorId() <= 11) {
+        hmufmshitEvsChannel->Fill(hit->channel(), hit->energy());
+		  }  // if
+		}  // for
 		for(StSPtrVecFmsClusterConstIterator iclu = fmsclusters.begin(); iclu != fmsclusters.end(); iclu++){
 			nhits += (*iclu)->nTowers();
 			Float_t clusterE = (*iclu)->energy();
