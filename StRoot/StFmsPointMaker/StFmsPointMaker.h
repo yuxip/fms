@@ -4,10 +4,9 @@
 #include <map>
 #include <vector>
 
-#include "StChain/StMaker.h"
-
-#include "StPSUTools/StFmsTower.h"
-#include "StPSUTools/StFmsGeometry.h"
+#include "StRoot/StChain/StMaker.h"
+#include "StRoot/StPSUTools/StFmsTower.h"
+#include "StRoot/StPSUTools/StFmsGeometry.h"
 
 class StFmsCollection;
 class StFmsDbMaker;

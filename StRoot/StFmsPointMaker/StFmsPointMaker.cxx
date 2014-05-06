@@ -1,27 +1,32 @@
-#include "StFmsPointMaker.h"
-
-#include <algorithm>
+// $Id$
+//
+// $Log$
+/**
+ \file      StFmsPointMaker.cxx
+ \brief     Implementation of StFmsPointMaker, the FMS cluster/photon maker
+ \author    Yuxi Pan <yuxipan@physics.ucla.edu>
+ \author    Thomas Burton <tpb@bnl.gov>
+ \date      2014
+ \copyright Brookhaven National Lab
+ */
+#include "StRoot/StFmsPointMaker/StFmsPointMaker.h"
 
 #include <boost/foreach.hpp>
 
 #include <TLorentzVector.h>
 
-#include "St_base/StMessMgr.h"
-#include "StEvent/StEvent.h"
-#include "StEvent/StFmsCluster.h"
-#include "StEvent/StFmsCollection.h"
-#include "StEvent/StFmsHit.h"
-#include "StEvent/StFmsPoint.h"
-#include "StEvent/StTriggerData.h"
-#include "StFmsDbMaker/StFmsDbMaker.h"
-#include "StMuDSTMaker/COMMON/StMuDst.h"
-#include "StMuDSTMaker/COMMON/StMuEvent.h"
+#include "StRoot/St_base/StMessMgr.h"
+#include "StRoot/StEvent/StEvent.h"
+#include "StRoot/StEvent/StFmsCluster.h"
+#include "StRoot/StEvent/StFmsCollection.h"
+#include "StRoot/StEvent/StFmsHit.h"
+#include "StRoot/StEvent/StFmsPoint.h"
+#include "StRoot/StEvent/StRunInfo.h"
+#include "StRoot/StFmsDbMaker/StFmsDbMaker.h"
 
-#include "StPSUTools/StFmsGeometry.h"
-#include "StPSUTools/StFmsTowerCluster.h"
-#include "StPSUTools/StFmsTower.h"
-#include "StPSUTools/StFmsClusterFinder.h"  // Defines ClusterList
-#include "StPSUTools/StFmsEventClusterer.h"
+#include "StRoot/StPSUTools/StFmsEventClusterer.h"
+#include "StRoot/StPSUTools/StFmsFittedPhoton.h"
+#include "StRoot/StPSUTools/StFmsTowerCluster.h"
 
 namespace {
 // Calculate a 4 momentum from a direction/momentum vector and energy
