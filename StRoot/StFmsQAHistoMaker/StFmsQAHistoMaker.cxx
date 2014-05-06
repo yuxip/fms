@@ -133,8 +133,10 @@ Int_t StFmsQAHistoMaker::Init() {
 		hfmsphoEvsevt = new TH2F("hfmsphoEvsevt","FMS photon energy vs event number",2e3,0,2e6,250,0,250);
 	//	hfmshitEvseta = new TH2F("hfmshitEvseta","FMS hit energy vs eta",100,2.5,4.5,250,0,250);
 	//	hfmshitEvsphi = new TH2F("hfmshitEvsphi","FMS hit energy vs phi",100,-TMath::Pi(),TMath::Pi(),250,0,250);	
-    hfmshitEvsChannel = new TH2F("hfmshitEvsChannel", "StEvent FMS hit energy vs channel", 600, 0, 600, 250, 0, 250);
-    hmufmshitEvsChannel = new TH2F("hmufmshitEvsChannel", "StMuDst FMS hit energy vs channel", 600, 0, 600, 250, 0, 250);
+    hfmshitEvsChannel = new TH2F("hfmshitEvsChannel", "StEvent FMS hit energy vs channel", 300, 0, 600, 250, 0.1, 250);
+    // Create via clone to ensure identical binning
+    hmufmshitEvsChannel = static_cast<TH2F*>(hfmshitEvsChannel->Clone("hmufmshitEvsChannel"));
+    hmufmshitEvsChannel->SetTitle("StMuDst FMS hit energy vs channel");
 		hfmscluEvseta = new TH2F("hfmscluEvseta","FMS cluster energy vs eta",100,2.5,4.5,250,0,250);
 		hfmscluEvsphi = new TH2F("hfmscluEvsphi","FMS cluster energy vs phi",100,-TMath::Pi(),TMath::Pi(),250,0,250);	
 		hfmsphoEvseta = new TH2F("hfmsphoEvseta","FMS photon energy vs eta",100,2.5,4.5,250,0,250);
@@ -253,13 +255,15 @@ Int_t StFmsQAHistoMaker::Make() {
 		Int_t nhits = 0;
 		for (StSPtrVecFmsHitConstIterator i = fmshits.begin(); i != fmshits.end(); ++i) {
 		  StFmsHit* hit = *i;
-		  hfmshitEvsChannel->Fill(hit->channel(), hit->energy());
+		  if (hit->detectorId() >= 8 && hit->detectorId() <= 11 && hit->adc() > 0) {
+        hfmshitEvsChannel->Fill(hit->channel(), hit->energy());
+		  }  // if
 		}  // for
 		// Fill the same histogram but using hits from StMuDst
     StMuFmsCollection* mufmsCollection = muDst->muFmsCollection();
 		for (int i(0); i < mufmsCollection->numberOfHits(); ++i) {
 		  StMuFmsHit* hit = mufmsCollection->getHit(i);
-		  if (hit->detectorId() >= 8 && hit->detectorId() <= 11) {
+		  if (hit->detectorId() >= 8 && hit->detectorId() <= 11 && hit->adc() > 0) {
         hmufmshitEvsChannel->Fill(hit->channel(), hit->energy());
 		  }  // if
 		}  // for
@@ -499,8 +503,10 @@ Int_t StFmsQAHistoMaker::Make() {
 }
 
 Int_t StFmsQAHistoMaker::Finish(){
-	
 	mFile->cd();
+	TH2F* diffEvsChannel = static_cast<TH2F*>(hfmshitEvsChannel->Clone("diffEvsChannel"));
+	diffEvsChannel->Add(hmufmshitEvsChannel, -1.);
+	diffEvsChannel->SetOption();
 	mFile->Write();
 	mFile->Close();
 	
