@@ -95,13 +95,15 @@ class StFmsPointMaker : public StMaker {
    */
   bool validateTowerEnergySum(const TowerList& towers) const;
   /**
-   Process a single StFmsTowerCluster and store it as an StFmsCluster
+   Process a single StFmsTowerCluster and store its StFmsCluster in a collection
 
-   Update StFmsCollection with the cluster and any photons therein.
+   Pass ownership of the StFmsCluster in StFmsTowerCluster to StFmsCollection.
+   Also update StFmsCollection with any photons in the cluster.
+
    Return true if the cluster is processed, or false if it is skipped due to
    bad values (e.g. unphysical coordinates).
    */
-  bool processTowerCluster(FMSCluster::StFmsTowerCluster& towerCluster,
+  bool processTowerCluster(FMSCluster::StFmsTowerCluster* towerCluster,
                            int detectorId, StFmsCollection* fmsCollection);
   /** Create a new StFmsPoint from an StFmsFittedPhoton */
   StFmsPoint* makeFmsPoint(const FMSCluster::StFmsFittedPhoton& photon,

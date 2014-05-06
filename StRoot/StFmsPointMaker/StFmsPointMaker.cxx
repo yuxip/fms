@@ -110,7 +110,7 @@ int StFmsPointMaker::clusterDetector(TowerList* towers, const int detectorId,
   }  // if
   // Saved cluser info into StFmsCluster
   BOOST_FOREACH(StFmsTowerCluster& towerCluster, clustering.clusters()) {
-    processTowerCluster(towerCluster, detectorId, fmsCollection);
+    processTowerCluster(&towerCluster, detectorId, fmsCollection);
   }  // BOOST_FOREACH(clusters)
   return kStOk;
 }
@@ -134,12 +134,12 @@ bool StFmsPointMaker::validateTowerEnergySum(const TowerList& towers) const {
 }
 
 bool StFmsPointMaker::processTowerCluster(
-    FMSCluster::StFmsTowerCluster& towerCluster,
+    FMSCluster::StFmsTowerCluster* towerCluster,
     const int detectorId,
     StFmsCollection* fmsCollection) {
   // Update the StFmsCluster object we want to store in StEvent with information
   // not automatically propagated via StFmsTowerCluster
-  StFmsCluster* cluster = towerCluster.cluster();
+  StFmsCluster* cluster = towerCluster->cluster();
   // Skip clusters that don't have physically sensible coordinates
   if (!(cluster->x() > 0. && cluster->y() > 0.)) {
     return false;
@@ -153,7 +153,7 @@ bool StFmsPointMaker::processTowerCluster(
   cluster->setFourMomentum(compute4Momentum(xyz, cluster->energy()));
   // Save photons reconstructed from this cluster
   for (Int_t np = 0; np < cluster->nPhotons(); np++) {
-    StFmsPoint* point = makeFmsPoint(towerCluster.photons()[np], detectorId);
+    StFmsPoint* point = makeFmsPoint(towerCluster->photons()[np], detectorId);
     point->setId(305 + 20 * detectorId + fmsCollection->numberOfPoints());
     point->setParentClusterId(cluster->id());
     point->setNParentClusterPhotons(cluster->nPhotons());
@@ -163,14 +163,14 @@ bool StFmsPointMaker::processTowerCluster(
     cluster->points().push_back(point);
   }  // for
   // Save the tower hit info.
-  BOOST_FOREACH(const FMSCluster::StFmsTower* tow, towerCluster.towers()) {
+  BOOST_FOREACH(const FMSCluster::StFmsTower* tow, towerCluster->towers()) {
     if (tow->hit()->adc() >= 1) {  // Min ADC = 1
       cluster->hits().push_back(tow->hit());
     }  // if
   }  // BOOST_FOREACH(towers)
   // Release StFmsCluster held by towerCluster to pass ownership to
   // StFmsCollection (and hence StEvent).
-  fmsCollection->addCluster(towerCluster.release());
+  fmsCollection->addCluster(towerCluster->release());
   return true;
 }
 
