@@ -61,7 +61,7 @@ Int_t StFmsPointMaker::Make() {
     LOG_ERROR << "StFmsPointMaker::Make() - failed to initialise tower " <<
       "lists for the event" << endm;
   }  // if
-  if (clusterEvent() == kStOk){
+  if (clusterEvent() == kStOk) {
      return StMaker::Make();
   }  // if
   return kStErr;
@@ -102,14 +102,14 @@ int StFmsPointMaker::clusterEvent() {
 /* Perform photon reconstruction on a single sub-detector */
 int StFmsPointMaker::clusterDetector(TowerList* towers, const int detectorId,
                                      StFmsCollection* fmsCollection) {
-  using namespace FMSCluster;
-  StFmsEventClusterer clustering(&mGeometry, detectorId);
+  FMSCluster::StFmsEventClusterer clustering(&mGeometry, detectorId);
   // Perform tower clustering, skip this subdetector if an error occurs
   if (!clustering.cluster(towers)) {  // Cluster tower list
     return kStWarn;
   }  // if
   // Saved cluser info into StFmsCluster
-  BOOST_FOREACH(StFmsTowerCluster& towerCluster, clustering.clusters()) {
+  BOOST_FOREACH(FMSCluster::StFmsTowerCluster& towerCluster,
+                clustering.clusters()) {
     processTowerCluster(&towerCluster, detectorId, fmsCollection);
   }  // BOOST_FOREACH(clusters)
   return kStOk;
