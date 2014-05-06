@@ -35,12 +35,9 @@ TLorentzVector compute4Momentum(const TVector3& xyz, Double_t energy) {
 StFmsPointMaker::StFmsPointMaker(const char* name)
     : StMaker(name), mFmsDbMaker(NULL) { }
 
-StFmsPointMaker::~StFmsPointMaker() {
-  LOG_DEBUG << "StFmsPointMaker:: destructor " << endm;
-}
+StFmsPointMaker::~StFmsPointMaker() { }
 
 Int_t StFmsPointMaker::Init() {
-  LOG_DEBUG << "StFmsPointMaker::Init() " << endm;
   return StMaker::Init();
 }
 
@@ -59,28 +56,22 @@ Int_t StFmsPointMaker::InitRun(Int_t runNumber) {
 }
 
 Int_t StFmsPointMaker::Make() {
-  LOG_DEBUG << "StFmsPointMaker::Make() " << endm;
   if (!populateTowerLists()) {
     LOG_ERROR << "StFmsPointMaker::Make() - failed to initialise tower " <<
       "lists for the event" << endm;
   }  // if
   if (clusterEvent() == kStOk){
-     LOG_DEBUG << "Cluster finder returns successfully" <<endm;
      return StMaker::Make();
   }  // if
-  LOG_INFO << " cluster finder returns error!!!" << endm;
   return kStErr;
 }
 
 void StFmsPointMaker::Clear(Option_t* option) {
-  LOG_DEBUG << "StFmsPointMaker::Clear() " << endm;
-  LOG_DEBUG << "after StFmsPointMaker::Clear()" << endm;
   mTowers.clear();
   StMaker::Clear(option);
 }
 
 Int_t StFmsPointMaker::Finish() {
-  LOG_DEBUG << "StFmsPointMaker::Finish() " << endm;
   return StMaker::Finish();
 }
 
@@ -89,8 +80,6 @@ StFmsCollection* StFmsPointMaker::getFmsCollection() {
   StFmsCollection* fms(NULL);
   if (event) {
     fms = event->fmsCollection();
-  } else {
-    LOG_ERROR << "StFmsPointMaker did not find StEvent" << endm;
   }  // if
   if (!fms) {
     LOG_ERROR << "StFmsPointMaker did not find "
@@ -100,7 +89,6 @@ StFmsCollection* StFmsPointMaker::getFmsCollection() {
 }
 
 int StFmsPointMaker::clusterEvent() {
-  LOG_DEBUG << " StFmsPointMaker::FindPoint() " << endm;
   StFmsCollection* fmsCollection = getFmsCollection();
   if (!fmsCollection) {
     return kStErr;
@@ -111,8 +99,6 @@ int StFmsPointMaker::clusterEvent() {
     }  // if
     clusterDetector(&subdetector.second, subdetector.first, fmsCollection);
   }  // BOOST_FOREACH(subdetectors)
-  LOG_DEBUG << "StFmsPointMaker::FindPoint() --StFmsCluster collections filled "
-    << endm;
   return kStOk;
 }
 
@@ -233,11 +219,6 @@ bool StFmsPointMaker::populateTowerLists() {
       }  // if
     }  // if
   }  // for
-  LOG_INFO << "Tower summary:" << endm;
-  BOOST_FOREACH(TowerMap::value_type& subdetector, mTowers) {
-    LOG_INFO << "detector " << subdetector.first << " nTowers = " <<
-      subdetector.second.size() << endm;
-  }  // BOOST_FOREACH
   return true;
 }
 
