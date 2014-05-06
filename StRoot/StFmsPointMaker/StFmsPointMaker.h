@@ -27,16 +27,12 @@ class StFmsPointMaker : public StMaker {
   StFmsPointMaker(const char* name = "StFmsPointMaker");
   /** Destructor */
   ~StFmsPointMaker();
-  /** Called at the start to perform one-time initialization steps */
-  Int_t Init();
   /** Called by StMaker when switch to a new run number */
   Int_t InitRun(Int_t runNumber);
   /** Called once per event to process the event */
   Int_t Make();
   /** Called after each event to reset values */
   void Clear(Option_t* option = "");
-  /** Called at the end to perform one-time cleanup steps */
-  Int_t Finish();
 
  private:
   // Define a collection of towers

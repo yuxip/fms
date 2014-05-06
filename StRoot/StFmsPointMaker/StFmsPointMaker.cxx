@@ -42,10 +42,6 @@ StFmsPointMaker::StFmsPointMaker(const char* name)
 
 StFmsPointMaker::~StFmsPointMaker() { }
 
-Int_t StFmsPointMaker::Init() {
-  return StMaker::Init();
-}
-
 Int_t StFmsPointMaker::InitRun(Int_t runNumber) {
   // Ensure we can access database information
   mFmsDbMaker = static_cast<StFmsDbMaker*>(GetMaker("fmsDb"));
@@ -74,10 +70,6 @@ Int_t StFmsPointMaker::Make() {
 void StFmsPointMaker::Clear(Option_t* option) {
   mTowers.clear();
   StMaker::Clear(option);
-}
-
-Int_t StFmsPointMaker::Finish() {
-  return StMaker::Finish();
 }
 
 StFmsCollection* StFmsPointMaker::getFmsCollection() {
