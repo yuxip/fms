@@ -37,7 +37,7 @@ struct fmsGainCorrection_st;
 
 class StFmsDbMaker : public StMaker {
  public: 
-  StFmsDbMaker(const Char_t *name="FmsDb");
+  StFmsDbMaker(const Char_t *name="fmsDb");
   virtual       ~StFmsDbMaker();
   virtual Int_t  Init();
   virtual Int_t  InitRun(Int_t runNumber);
