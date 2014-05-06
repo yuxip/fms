@@ -53,7 +53,13 @@ class StFmsPointMaker : public StMaker {
    Print messages to LOG_ERROR if StEvent/StFmsCollection cannot be found
    */
   StFmsCollection* getFmsCollection();
-  /** Perform the actual photon reconstruction */
+  /**
+   Perform photon reconstruction in all sub-detectors for a single event
+
+   Populate StFmsCollection with the generated clusters and photons.
+
+   Return kStOk upon success, kStErr in case of an error.
+   */
   int clusterEvent();
   /**
    Perform photon reconstruction on a single sub-detector
