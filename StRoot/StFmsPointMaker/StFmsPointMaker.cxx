@@ -33,7 +33,7 @@ TLorentzVector compute4Momentum(const TVector3& xyz, Double_t energy) {
 }  // unnamed namespace
 
 StFmsPointMaker::StFmsPointMaker(const char* name)
-    : StMaker(name), mFmsDbMaker(NULL), mGeometry(NULL) { }
+    : StMaker(name), mFmsDbMaker(NULL) { }
 
 StFmsPointMaker::~StFmsPointMaker() {
   LOG_DEBUG << "StFmsPointMaker:: destructor " << endm;
@@ -58,11 +58,7 @@ Int_t StFmsPointMaker::InitRun(Int_t runNumber) {
     return kStErr;
   }  // if
   // Set up geometry, which stays constant for each run
-  // Only allocate new space in the beginning, not in between runs
-  if (!mGeometry) {
-    mGeometry = new FMSCluster::StFmsGeometry;
-  }  // if
-  if (!mGeometry->initialize(mFmsDbMaker)) {
+  if (!mGeometry.initialize(mFmsDbMaker)) {
     // Return an error if geometry initialization fails
     return kStErr;
   }  // if
@@ -124,7 +120,7 @@ int StFmsPointMaker::clusterEvent() {
 int StFmsPointMaker::clusterDetector(TowerList* towers, const int detectorId,
                                      StFmsCollection* fmsCollection) {
   using namespace FMSCluster;
-  StFmsEventClusterer clustering(mGeometry, detectorId);
+  StFmsEventClusterer clustering(&mGeometry, detectorId);
   // Perform tower clustering, skip this subdetector if an error occurs
   if (!clustering.cluster(towers)) {  // Cluster tower list
     return kStWarn;
@@ -151,7 +147,7 @@ bool StFmsPointMaker::processTowerCluster(
   // Cluster id is id of the 1st photon, not necessarily the highest-E photon
   cluster->setId(305 + 20 * detectorId + fmsCollection->numberOfPoints());
   // Cluster locations are in column-row coordinates (not cm)
-  TVector3 xyz = mGeometry->columnRowToGlobalCoordinates(
+  TVector3 xyz = mGeometry.columnRowToGlobalCoordinates(
     cluster->x(), cluster->y(), detectorId);
   cluster->setFourMomentum(compute4Momentum(xyz, cluster->energy()));
   // Save photons reconstructed from this cluster
@@ -161,7 +157,7 @@ bool StFmsPointMaker::processTowerCluster(
     clpoint->setId(305 + 20 * detectorId + fmsCollection->numberOfPoints());
     // Calculate photon 4 momentum
     // Photon position is in local (x, y) cm coordinates
-    TVector3 xyzph = mGeometry->localToGlobalCoordinates(
+    TVector3 xyzph = mGeometry.localToGlobalCoordinates(
       towerCluster.photons()[np].xPos, towerCluster.photons()[np].yPos,
       detectorId);
     clpoint->setXYZLab(xyzph);

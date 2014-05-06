@@ -7,12 +7,12 @@
 #include "StChain/StMaker.h"
 
 #include "StPSUTools/StFmsTower.h"
+#include "StPSUTools/StFmsGeometry.h"
 
 class StFmsCollection;
 class StFmsDbMaker;
 
 namespace FMSCluster {
-class StFmsGeometry;
 class StFmsTowerCluster;
 }  // namespace FMSCluster
 
@@ -93,7 +93,7 @@ class StFmsPointMaker : public StMaker {
    */
   bool validateTowerEnergySum(const TowerList& towers) const;
   StFmsDbMaker* mFmsDbMaker;  //!< Access to FMS database information
-  FMSCluster::StFmsGeometry* mGeometry;  //!< Access to current FMS geometry
+  FMSCluster::StFmsGeometry mGeometry;  //!< Access to current FMS geometry
   TowerMap mTowers;  //!< One for each sub-detector, keyed by detector ID
   ClassDef(StFmsPointMaker, 0)
 };
