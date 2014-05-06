@@ -61,10 +61,10 @@ Int_t StFmsPointMaker::InitRun(Int_t runNumber) {
   // Only allocate new space in the beginning, not in between runs
   if (!mGeometry) {
     mGeometry = new FMSCluster::StFmsGeometry;
-    if (!mGeometry->initialize(mFmsDbMaker)) {
-      // Return an error if geometry initialization fails
-      return kStErr;
-    }  // if
+  }  // if
+  if (!mGeometry->initialize(mFmsDbMaker)) {
+    // Return an error if geometry initialization fails
+    return kStErr;
   }  // if
   return StMaker::InitRun(runNumber);
 }
