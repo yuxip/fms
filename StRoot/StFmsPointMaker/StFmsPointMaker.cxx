@@ -231,8 +231,8 @@ bool StFmsPointMaker::isValidChannel(int detector, int row, int column) {
   }  // if
   // Omit gaps in the detector
   switch (detector) {
-    case 8:  // Deliberate fall-through
-    case 9:  // Large-cell FMS sub-detector
+    case FMSCluster::kFmsNorthLarge:  // Deliberate fall-through
+    case FMSCluster::kFmsSouthLarge:  // Large-cell FMS sub-detector
       if (fabs(row - 17.5) < 8 && column < 9) {  // Central hole
         return false;
       }  // if
@@ -241,8 +241,8 @@ bool StFmsPointMaker::isValidChannel(int detector, int row, int column) {
         return false;
       }  // if
       break;
-    case 10:  // Deliberate fall-through
-    case 11:  // Small-cell FMS sub-detector
+    case FMSCluster::kFmsNorthSmall:  // Deliberate fall-through
+    case FMSCluster::kFmsSouthSmall:  // Small-cell FMS sub-detector
       if (fabs(row - 12.5) < 5 && column < 6) {  // Central hole
         return false;
       }  // if
