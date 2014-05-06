@@ -11,9 +11,11 @@
 
 class StFmsCollection;
 class StFmsDbMaker;
+class StFmsPoint;
 
 namespace FMSCluster {
 class StFmsTowerCluster;
+class StFmsFittedPhoton;
 }  // namespace FMSCluster
 
 /**
@@ -98,6 +100,9 @@ class StFmsPointMaker : public StMaker {
    center-of-mass energy. Return false otherwise.
    */
   bool validateTowerEnergySum(const TowerList& towers) const;
+  /** Create a new StFmsPoint from an StFmsFittedPhoton */
+  StFmsPoint* makeFmsPoint(const FMSCluster::StFmsFittedPhoton& photon,
+                           int detectorId);
   StFmsDbMaker* mFmsDbMaker;  //!< Access to FMS database information
   FMSCluster::StFmsGeometry mGeometry;  //!< Access to current FMS geometry
   TowerMap mTowers;  //!< One for each sub-detector, keyed by detector ID

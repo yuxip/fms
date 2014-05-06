@@ -146,28 +146,20 @@ bool StFmsPointMaker::processTowerCluster(
   cluster->setDetector(detectorId);
   // Cluster id is id of the 1st photon, not necessarily the highest-E photon
   cluster->setId(305 + 20 * detectorId + fmsCollection->numberOfPoints());
-  // Cluster locations are in column-row coordinates (not cm)
+  // Cluster locations are in column-row coordinates so convert to cm
   TVector3 xyz = mGeometry.columnRowToGlobalCoordinates(
     cluster->x(), cluster->y(), detectorId);
   cluster->setFourMomentum(compute4Momentum(xyz, cluster->energy()));
   // Save photons reconstructed from this cluster
   for (Int_t np = 0; np < cluster->nPhotons(); np++) {
-    StFmsPoint* clpoint = new StFmsPoint;
-    clpoint->setEnergy(towerCluster.photons()[np].energy);
-    clpoint->setId(305 + 20 * detectorId + fmsCollection->numberOfPoints());
-    // Calculate photon 4 momentum
-    // Photon position is in local (x, y) cm coordinates
-    TVector3 xyzph = mGeometry.localToGlobalCoordinates(
-      towerCluster.photons()[np].xPos, towerCluster.photons()[np].yPos,
-      detectorId);
-    clpoint->setXYZLab(xyzph);
-    clpoint->setFourMomentum(compute4Momentum(xyzph, clpoint->energy()));
-    clpoint->setParentClusterId(cluster->id());
-    clpoint->setNParentClusterPhotons(cluster->nPhotons());
+    StFmsPoint* point = makeFmsPoint(towerCluster.photons()[np], detectorId);
+    point->setId(305 + 20 * detectorId + fmsCollection->numberOfPoints());
+    point->setParentClusterId(cluster->id());
+    point->setNParentClusterPhotons(cluster->nPhotons());
     // Add it to both the StFmsCollection and StFmsCluster
     // StFmsCollection owns the pointer, the cluster merely references it
-    fmsCollection->points().push_back(clpoint);
-    cluster->points().push_back(clpoint);
+    fmsCollection->points().push_back(point);
+    cluster->points().push_back(point);
   }  // for
   // Save the tower hit info.
   BOOST_FOREACH(const FMSCluster::StFmsTower* tow, towerCluster.towers()) {
@@ -179,6 +171,19 @@ bool StFmsPointMaker::processTowerCluster(
   // StFmsCollection (and hence StEvent).
   fmsCollection->addCluster(towerCluster.release());
   return true;
+}
+
+StFmsPoint* StFmsPointMaker::makeFmsPoint(
+    const FMSCluster::StFmsFittedPhoton& photon, const int detectorId) {
+  StFmsPoint* point = new StFmsPoint;
+  point->setEnergy(photon.energy);
+  // Calculate photon 4 momentum
+  // Photon position is in local (x, y) cm coordinates
+  TVector3 xyz = mGeometry.localToGlobalCoordinates(
+    photon.xPos, photon.yPos, detectorId);
+  point->setXYZLab(xyz);
+  point->setFourMomentum(compute4Momentum(xyz, point->energy()));
+  return point;
 }
 
 bool StFmsPointMaker::populateTowerLists() {
