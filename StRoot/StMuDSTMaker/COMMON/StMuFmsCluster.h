@@ -47,6 +47,16 @@ class StMuFmsCluster : public StObject {
   TRefArray* photons() { return &mPhotons; }
   /** \overload */
   const TRefArray* photons() const { return &mPhotons; }
+  /** Set ID of the sub-detector with which the cluster is associated */
+  void setDetectorId(unsigned short id) { mDetectorId = id; }
+  /** Set category of the cluster (see EFmsClusterCategory) */
+  void setCategory(unsigned short category) { mCategory = category; }
+  /** Set total cluster energy (sum over towers) */
+  void setEnergy(float energy) { mEnergy = energy; }
+  /** Set x "center of gravity" of the cluster */
+  void setX(float x) { mX = x; }
+  /** Set y "center of gravity" of the cluster */
+  void setY(float y) { mY = y; }
 
  protected:
   UShort_t mDetectorId;  ///< Detector ID as defined in database
