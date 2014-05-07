@@ -26,9 +26,9 @@ class StMuFmsCluster : public StObject {
  public:
   /** Constructor */
   StMuFmsCluster(int detectorId = 0, int category = -1, float energy = 0.f,
-                 float x = 0.f, float y = 0.f) { }
+                 float x = 0.f, float y = 0.f);
   /** Destructor */
-  virtual ~StMuFmsCluster() { }
+  virtual ~StMuFmsCluster();
 
  protected:
   Int_t mDetector;  ///< Detector ID as defined in database
