@@ -212,12 +212,14 @@ void bfc(Int_t First, Int_t Last,
   //
   // <---- Add FMS makers here
   //
-  gSystem->Load("StFmsQAHistoMaker");
   gSystem->Load("StPSUTools");
   gSystem->Load("StFmsPointMaker");
+  gSystem->Load("StFmsQAHistoMaker");
   StFmsPointMaker* fmspoint = new StFmsPointMaker("fmsPoint");
   StFmsQAHistoMaker* fmsQa = new StFmsQAHistoMaker;
   fmsQa->SetOutputFile("stfmsQAhisto.root");
+  fmsQa->SetEmcQA(false);
+  fmsQa->SetTrackQA(false);
   Int_t iInit = chain->Init();
   if (iInit >=  kStEOF) {chain->FatalErr(iInit,"on init"); return;}
   if (Last == 0) return;
