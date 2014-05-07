@@ -29,6 +29,24 @@ class StMuFmsCluster : public StObject {
                  float x = 0.f, float y = 0.f);
   /** Destructor */
   virtual ~StMuFmsCluster();
+  /** ID of the sub-detector with which the cluster is associated */
+  unsigned short detectorId() const { return mDetector; }
+  /** Category of the cluster (see EFmsClusterCategory) */
+  unsigned short category() const { return mCategory; }
+  /** Total cluster energy (sum over towers) */
+  float energy() const { return mEnergy; }
+  /** x "center of gravity" of the cluster */
+  float x() const { return mX; }
+  /** y "center of gravity" of the cluster */
+  float y() const { return mY; }
+  /** The collection of hits in the cluster */
+  TRefArray* hits() { return &mHits; }
+  /** \overload */
+  const TRefArray* hits() const { return &mHits; }
+  /** Photons in this cluster */
+  TRefArray* photons() { return &mPhotons; }
+  /** \overload */
+  const TRefArray* photons() const { return &mPhotons; }
 
  protected:
   Int_t mDetector;  ///< Detector ID as defined in database
