@@ -13,7 +13,7 @@
 
 StMuFmsCluster::StMuFmsCluster(int detectorId, int category, float energy,
                                float x, float y)
-    : mDetector(detectorId), mCategory(category), mEnergy(energy),
+    : mDetectorId(detectorId), mCategory(category), mEnergy(energy),
       mX(x), mY(y) { }
 
 StMuFmsCluster::~StMuFmsCluster() { }
