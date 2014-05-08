@@ -26,7 +26,18 @@ ClassImp(StMuFmsCollection)
 
 StMuFmsCollection::StMuFmsCollection() { mHits = 0; mClusters = 0; mPoints = 0;}
 
-StMuFmsCollection::~StMuFmsCollection() { delete mHits; mHits = 0; }
+StMuFmsCollection::~StMuFmsCollection() {
+  if (mHits) {
+    delete mHits;
+  }  // if
+  if (mClusters) {
+    delete mClusters;
+  }  // if
+  if (mPoints) {
+    delete mPoints;
+  }  // if
+  mHits = mClusters = mPoints = NULL;
+}
 
 void StMuFmsCollection::init() { mHits = new TClonesArray("StMuFmsHit",0); }
 
