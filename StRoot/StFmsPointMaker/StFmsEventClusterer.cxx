@@ -14,7 +14,7 @@
 #include "StEvent/StFmsCluster.h"
 #include "StEvent/StFmsHit.h"
 
-#include "StPSUTools/StFmsTower.h"
+#include "StFmsPointMaker/StFmsTower.h"
 
 using namespace std;
 using namespace FMSCluster;

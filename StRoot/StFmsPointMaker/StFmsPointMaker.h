@@ -16,8 +16,8 @@
 #include <vector>
 
 #include "StRoot/StChain/StMaker.h"
-#include "StRoot/StPSUTools/StFmsTower.h"
-#include "StRoot/StPSUTools/StFmsGeometry.h"
+#include "StRoot/StFmsPointMaker/StFmsTower.h"
+#include "StRoot/StFmsPointMaker/StFmsGeometry.h"
 
 class StFmsCollection;
 class StFmsDbMaker;

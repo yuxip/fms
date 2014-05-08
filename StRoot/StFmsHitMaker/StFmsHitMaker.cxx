@@ -16,7 +16,7 @@
 #include "StTriggerData2009.h"
 
 // PSU-FMS package
-#include "StPSUTools/StFmsClusterFitter.h"
+#include "StFmsPointMaker/StFmsClusterFitter.h"
 
 #include <iostream>
 #include <fstream>

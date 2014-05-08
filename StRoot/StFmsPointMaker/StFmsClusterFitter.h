@@ -6,7 +6,7 @@
 #include <TMinuit.h>
 #include <TObject.h>
 
-#include "StPSUTools/StFmsFittedPhoton.h"
+#include "StFmsPointMaker/StFmsFittedPhoton.h"
 
 class TF2;
 

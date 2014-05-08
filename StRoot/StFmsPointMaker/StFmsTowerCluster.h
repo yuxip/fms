@@ -6,7 +6,7 @@
 #include <list>
 #include <memory>
 
-#include "StPSUTools/StFmsFittedPhoton.h"
+#include "StFmsPointMaker/StFmsFittedPhoton.h"
 
 class TObjArray;
 class StFmsCluster;

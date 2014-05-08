@@ -1,4 +1,4 @@
-#include "StPSUTools/StFmsTower.h"
+#include "StFmsPointMaker/StFmsTower.h"
 
 #include "StEvent/StFmsHit.h"
 #include "StFmsDbMaker/StFmsDbMaker.h"

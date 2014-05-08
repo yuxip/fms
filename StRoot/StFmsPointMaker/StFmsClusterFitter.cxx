@@ -10,8 +10,8 @@
 #include "StRoot/St_base/StMessMgr.h"
 #include "StEvent/StFmsHit.h"
 
-#include "StPSUTools/StFmsGeometry.h"
-#include "StPSUTools/StFmsTower.h"
+#include "StFmsPointMaker/StFmsGeometry.h"
+#include "StFmsPointMaker/StFmsTower.h"
 
 namespace {
 Int_t numbPara = 10;

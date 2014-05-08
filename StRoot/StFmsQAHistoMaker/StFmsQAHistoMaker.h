@@ -21,7 +21,7 @@ class StMuDstMaker;
 class StBemcTables;
 class StEEmcDb;
 
-#include "StRoot/StPSUTools/StFmsGeometry.h"
+#include "StRoot/StFmsPointMaker/StFmsGeometry.h"
 
 //only save event QA histograms (run-by-run). Lighter version of StFmsQAMaker
 class StFmsQAHistoMaker : public StMaker {

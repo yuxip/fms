@@ -1,4 +1,4 @@
-#include "StPSUTools/StFmsTowerCluster.h"
+#include "StFmsPointMaker/StFmsTowerCluster.h"
 
 #include <cmath>
 
@@ -11,8 +11,8 @@
 #include "StEvent/StFmsCluster.h"
 #include "StEvent/StFmsHit.h"
 
-#include "StPSUTools/StFmsTower.h"
-#include "StPSUTools/StFmsFittedPhoton.h"
+#include "StFmsPointMaker/StFmsTower.h"
+#include "StFmsPointMaker/StFmsFittedPhoton.h"
 
 namespace FMSCluster {
 StFmsTowerCluster::StFmsTowerCluster(StFmsCluster* cluster)

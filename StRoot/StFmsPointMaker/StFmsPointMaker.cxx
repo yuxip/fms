@@ -24,9 +24,9 @@
 #include "StRoot/StEvent/StRunInfo.h"
 #include "StRoot/StFmsDbMaker/StFmsDbMaker.h"
 
-#include "StRoot/StPSUTools/StFmsEventClusterer.h"
-#include "StRoot/StPSUTools/StFmsFittedPhoton.h"
-#include "StRoot/StPSUTools/StFmsTowerCluster.h"
+#include "StRoot/StFmsPointMaker/StFmsEventClusterer.h"
+#include "StRoot/StFmsPointMaker/StFmsFittedPhoton.h"
+#include "StRoot/StFmsPointMaker/StFmsTowerCluster.h"
 
 namespace {
 // Calculate a 4 momentum from a direction/momentum vector and energy

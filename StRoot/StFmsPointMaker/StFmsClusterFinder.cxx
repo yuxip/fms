@@ -15,8 +15,8 @@
 #include "StEvent/StFmsCluster.h"
 #include "StEvent/StFmsHit.h"
 
-#include "StPSUTools/StFmsTower.h"
-#include "StPSUTools/StFmsTowerCluster.h"
+#include "StFmsPointMaker/StFmsTower.h"
+#include "StFmsPointMaker/StFmsTowerCluster.h"
 
 namespace {
 /*
