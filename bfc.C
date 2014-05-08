@@ -212,7 +212,6 @@ void bfc(Int_t First, Int_t Last,
   //
   // <---- Add FMS makers here
   //
-  gSystem->Load("StPSUTools");
   gSystem->Load("StFmsPointMaker");
   gSystem->Load("StFmsQAHistoMaker");
   StFmsPointMaker* fmspoint = new StFmsPointMaker("fmsPoint");
