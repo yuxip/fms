@@ -14,6 +14,8 @@
  * Added FMS and Roman pot arrays
  *
  **************************************************************************/
+#include "StFmsCluster.h"
+#include "StMuFmsCluster.h"
 #include "StMuFmsHit.h"
 #include "StMuFmsUtil.h"
 #include "StMuFmsCollection.h"
@@ -76,7 +78,17 @@ void StMuFmsUtil::fillMuFms(StMuFmsCollection *muFms,StFmsCollection *fmscol)
     muFmsHit->setTdc(tdc);
     muFmsHit->setEnergy(ene);
   }
-
+  // Fill clusters
+  for (int i(0); i < fmscol->numberOfClusters(); ++i) {
+    const StFmsCluster* cluster = fmscol->clusters()[i];
+    muFms->addCluster();
+    StMuFmsCluster* muCluster = muFms->getCluster(i);
+    muCluster->setDetectorId(cluster->detector());
+    muCluster->setCategory(cluster->category());
+    muCluster->setEnergy(cluster->energy());
+    muCluster->setX(cluster->x());
+    muCluster->setY(cluster->y());
+  }  // for
   return;
 }
 
