@@ -39,8 +39,8 @@ public:
     void          setFmsPointArray(TClonesArray* array) {mPoints=array;}
 
     StMuFmsHit* getHit(int hitId);
-    StMuFmsCluster* getCluster(int index) { return NULL; }
-    StMuFmsPoint* getPoint(int index) { return NULL; }
+    StMuFmsCluster* getCluster(int index);
+    StMuFmsPoint* getPoint(int index);
     TClonesArray* getHitArray() { return mHits; };
     TClonesArray* getClusterArray() { return mClusters; }
     TClonesArray* getPointArray() { return mPoints; }

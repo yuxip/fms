@@ -18,7 +18,9 @@
  *
  **************************************************************************/
 #include "StMuFmsCollection.h"
+#include "StMuFmsCluster.h"
 #include "StMuFmsHit.h"
+#include "StMuFmsPoint.h"
 
 static const char rcsid[] = "$Id: StMuFmsCollection.cxx,v 1.2 2012/11/26 23:14:33 fisyak Exp $";
 
@@ -72,3 +74,12 @@ StMuFmsHit*  StMuFmsCollection::getHit(int hitId){
   return (StMuFmsHit*) mHits->At(hitId);
 }
 
+StMuFmsCluster* StMuFmsCollection::getCluster(int index) {
+  if (!mClusters) return NULL;
+  return static_cast<StMuFmsCluster*>(mClusters->At(index));
+}
+
+StMuFmsPoint* StMuFmsCollection::getPoint(int index) {
+  if (!mPoints) return NULL;
+  return static_cast<StMuFmsPoint*>(mPoints->At(index));
+}
