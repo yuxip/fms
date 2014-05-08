@@ -48,10 +48,22 @@ void StMuFmsCollection::init() {
 }
 
 void StMuFmsCollection::addHit(){
-  if(!(mHits && mClusters && mPoints)) init();
+  if(!mHits) init();
   int counter = mHits->GetEntriesFast();
   new ((*mHits)[counter]) StMuFmsHit();
   return;
+}
+
+void StMuFmsCollection::addCluster() {
+  if (!mClusters) init();
+  int counter = mClusters->GetEntriesFast();
+  new ((*mClusters)[counter]) StMuFmsCluster;
+}
+
+void StMuFmsCollection::addPoint() {
+  if (!mPoints) init();
+  int counter = mPoints->GetEntriesFast();
+  new ((*mPoints)[counter]) StMuFmsPoint;
 }
 
 unsigned int StMuFmsCollection::numberOfHits() const{

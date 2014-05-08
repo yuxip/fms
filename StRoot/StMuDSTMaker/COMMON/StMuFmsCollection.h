@@ -31,6 +31,8 @@ public:
     
     void          init();
     void          addHit();
+    void          addCluster();
+    void          addPoint();
     unsigned int  numberOfHits() const;
     unsigned int  numberOfClusters() const;
     unsigned int  numberOfPoints() const;
