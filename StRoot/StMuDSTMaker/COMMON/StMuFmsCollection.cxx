@@ -39,10 +39,14 @@ StMuFmsCollection::~StMuFmsCollection() {
   mHits = mClusters = mPoints = NULL;
 }
 
-void StMuFmsCollection::init() { mHits = new TClonesArray("StMuFmsHit",0); }
+void StMuFmsCollection::init() {
+  mHits = new TClonesArray("StMuFmsHit", 0);
+  mClusters = new TClonesArray("StMuFmsCluster", 0);
+  mPoints = new TClonesArray("StMuFmsPoint", 0);
+}
 
 void StMuFmsCollection::addHit(){
-  if(!mHits) init();
+  if(!(mHits && mClusters && mPoints)) init();
   int counter = mHits->GetEntriesFast();
   new ((*mHits)[counter]) StMuFmsHit();
   return;
