@@ -24,7 +24,7 @@ static const char rcsid[] = "$Id: StMuFmsCollection.cxx,v 1.2 2012/11/26 23:14:3
 
 ClassImp(StMuFmsCollection)
 
-StMuFmsCollection::StMuFmsCollection() { mHits = 0;}
+StMuFmsCollection::StMuFmsCollection() { mHits = 0; mClusters = 0; mPoints = 0;}
 
 StMuFmsCollection::~StMuFmsCollection() { delete mHits; mHits = 0; }
 

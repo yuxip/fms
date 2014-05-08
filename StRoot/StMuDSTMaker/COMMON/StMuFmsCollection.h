@@ -21,8 +21,8 @@
 #include "TClonesArray.h"
 
 class StMuFmsHit;
-//class StMuFmsCluster;
-//class StMuFmsPoint;
+class StMuFmsCluster;
+class StMuFmsPoint;
 
 class StMuFmsCollection : public StObject {
 public:
@@ -32,14 +32,24 @@ public:
     void          init();
     void          addHit();
     unsigned int  numberOfHits() const;
+    unsigned int  numberOfClusters() const { return 0; }
+    unsigned int  numberOfPoints() const { return 0; }
     void          setFmsHitArray(TClonesArray *array) {mHits=array;};
+    void          setFmsClusterArray(TClonesArray* array) {mClusters=array;}
+    void          setFmsPointArray(TClonesArray* array) {mPoints=array;}
 
     StMuFmsHit* getHit(int hitId);
+    StMuFmsCluster* getCluster(int index) { return NULL; }
+    StMuFmsPoint* getPoint(int index) { return NULL; }
     TClonesArray* getHitArray() { return mHits; };
+    TClonesArray* getClusterArray() { return mClusters; }
+    TClonesArray* getPointArray() { return mPoints; }
     
 private:
     TClonesArray* mHits;
+    TClonesArray* mClusters;
+    TClonesArray* mPoints;
     
-    ClassDef(StMuFmsCollection,1)
+    ClassDef(StMuFmsCollection,2)
 };
 #endif
