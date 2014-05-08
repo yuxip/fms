@@ -165,6 +165,8 @@ Int_t StFmsQAHistoMaker::Init() {
 		hmufmsphoEvseta = static_cast<TH2F*>(hfmsphoEvseta->Clone("hmufmsphoEvseta"));
 		hmufmsphoEvseta->SetTitle("StMuDst FMS photon energy vs eta");
 		hfmsphoEvsphi = new TH2F("hfmsphoEvsphi","FMS photon energy vs phi",100,-TMath::Pi(),TMath::Pi(),250,0,250);	
+		hmufmsphoEvsphi = static_cast<TH2F*>(hfmsphoEvsphi->Clone("hmufmsphoEvsphi"));
+		hmufmsphoEvsphi->SetTitle("StMuDst FMS photon energy vs phi");
     for (int nstb(1); nstb < 5; ++nstb) {
       std::ostringstream oss;
       oss << "hfmsy0x0_" << nstb;
@@ -325,6 +327,7 @@ Int_t StFmsQAHistoMaker::Make() {
 		  TVector3 xyz = mGeometry.localToGlobalCoordinates(
 		    point->x(), point->y(), point->detectorId());
 		  hmufmsphoEvseta->Fill(xyz.Eta(), point->energy());
+		  hmufmsphoEvsphi->Fill(xyz.Phi(), point->energy());
 		}  // for
     for(StSPtrVecFmsPointConstIterator ipts = fmspoints.begin(); ipts != fmspoints.end(); ipts++){
       //(*ipts)->Print();
