@@ -32,8 +32,8 @@ public:
     void          init();
     void          addHit();
     unsigned int  numberOfHits() const;
-    unsigned int  numberOfClusters() const { return 0; }
-    unsigned int  numberOfPoints() const { return 0; }
+    unsigned int  numberOfClusters() const;
+    unsigned int  numberOfPoints() const;
     void          setFmsHitArray(TClonesArray *array) {mHits=array;};
     void          setFmsClusterArray(TClonesArray* array) {mClusters=array;}
     void          setFmsPointArray(TClonesArray* array) {mPoints=array;}
