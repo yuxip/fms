@@ -75,6 +75,7 @@ private:
 	TH2F* hfmscluEvseta;
 	TH2F* hmufmscluEvseta;  // Like hfmscluEvseta but for StMuDst clusters
 	TH2F* hfmscluEvsphi;
+	TH2F* hmufmscluEvsphi;  // Like hfmscluEvsphi but for StMuDst clusters
 	TH2F* hfmsphoEvseta;
 	TH2F* hfmsphoEvsphi;
   std::map<int, TH2F*> hfmsy0x0;

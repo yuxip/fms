@@ -158,6 +158,8 @@ Int_t StFmsQAHistoMaker::Init() {
 		hmufmscluEvseta = static_cast<TH2F*>(hfmscluEvseta->Clone("hmufmscluEvseta"));
 		hmufmscluEvseta->SetTitle("StMuDst FMS cluster energy vs eta");
 		hfmscluEvsphi = new TH2F("hfmscluEvsphi","FMS cluster energy vs phi",100,-TMath::Pi(),TMath::Pi(),250,0,250);	
+		hmufmscluEvsphi = static_cast<TH2F*>(hfmscluEvsphi->Clone("hmufmscluEvsphi"));
+		hmufmscluEvsphi->SetTitle("StMuDst FMS cluster energy vs phi");
 		hfmsphoEvseta = new TH2F("hfmsphoEvseta","FMS photon energy vs eta",100,2.5,4.5,250,0,250);
 		hfmsphoEvsphi = new TH2F("hfmsphoEvsphi","FMS photon energy vs phi",100,-TMath::Pi(),TMath::Pi(),250,0,250);	
     for (int nstb(1); nstb < 5; ++nstb) {
@@ -292,6 +294,7 @@ Int_t StFmsQAHistoMaker::Make() {
 		    TVector3 xyz = mGeometry.columnRowToGlobalCoordinates(
 		      cluster->x(), cluster->y(), cluster->detectorId());
 		    hmufmscluEvseta->Fill(xyz.Eta(), cluster->energy());
+		    hmufmscluEvsphi->Fill(xyz.Phi(), cluster->energy());
 		  }  // if
 		}  // for
 		for(StSPtrVecFmsClusterConstIterator iclu = fmsclusters.begin(); iclu != fmsclusters.end(); iclu++){
