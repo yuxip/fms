@@ -30,7 +30,6 @@ void load(Bool_t personal=true) {
 	if (personal) {  // Load our shared libraries here
     gSystem->Load("libMinuit.so");
     gSystem->Load("StFmsDbMaker");
-    gSystem->Load("StPSUTools");
     gSystem->Load("StFmsHitMaker");
     gSystem->Load("StFmsPointMaker");
     gSystem->Load("StFmsQAHistoMaker");
