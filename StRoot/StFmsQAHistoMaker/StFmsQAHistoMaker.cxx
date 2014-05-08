@@ -51,6 +51,7 @@
 
 #include "StRoot/StFmsDbMaker/StFmsDbMaker.h"
 #include "StRoot/StMuDSTMaker/COMMON/StMuFmsCluster.h"
+#include "StRoot/StMuDSTMaker/COMMON/StMuFmsPoint.h"
 
 #include <assert.h>
 
@@ -161,6 +162,8 @@ Int_t StFmsQAHistoMaker::Init() {
 		hmufmscluEvsphi = static_cast<TH2F*>(hfmscluEvsphi->Clone("hmufmscluEvsphi"));
 		hmufmscluEvsphi->SetTitle("StMuDst FMS cluster energy vs phi");
 		hfmsphoEvseta = new TH2F("hfmsphoEvseta","FMS photon energy vs eta",100,2.5,4.5,250,0,250);
+		hmufmsphoEvseta = static_cast<TH2F*>(hfmsphoEvseta->Clone("hmufmsphoEvseta"));
+		hmufmsphoEvseta->SetTitle("StMuDst FMS photon energy vs eta");
 		hfmsphoEvsphi = new TH2F("hfmsphoEvsphi","FMS photon energy vs phi",100,-TMath::Pi(),TMath::Pi(),250,0,250);	
     for (int nstb(1); nstb < 5; ++nstb) {
       std::ostringstream oss;
@@ -317,6 +320,12 @@ Int_t StFmsQAHistoMaker::Make() {
         hfmshitEvsevt->Fill(ievt,hitE);
       }
 		}
+		for (int i(0); i < mufmsCollection->numberOfPoints(); ++i) {
+		  StMuFmsPoint* point = mufmsCollection->getPoint(i);
+		  TVector3 xyz = mGeometry.localToGlobalCoordinates(
+		    point->x(), point->y(), point->detectorId());
+		  hmufmsphoEvseta->Fill(xyz.Eta(), point->energy());
+		}  // for
     for(StSPtrVecFmsPointConstIterator ipts = fmspoints.begin(); ipts != fmspoints.end(); ipts++){
       //(*ipts)->Print();
       Float_t photonE = (*ipts)->energy();
