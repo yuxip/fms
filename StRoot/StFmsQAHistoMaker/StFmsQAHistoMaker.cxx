@@ -50,6 +50,7 @@
 #include "StEEmcUtil/EEmcGeom/EEmcGeomSimple.h"
 
 #include "StRoot/StFmsDbMaker/StFmsDbMaker.h"
+#include "StRoot/StMuDSTMaker/COMMON/StMuFmsCluster.h"
 
 #include <assert.h>
 
@@ -154,6 +155,8 @@ Int_t StFmsQAHistoMaker::Init() {
     hmufmshitEvsChannel = static_cast<TH2F*>(hfmshitEvsChannel->Clone("hmufmshitEvsChannel"));
     hmufmshitEvsChannel->SetTitle("StMuDst FMS hit energy vs channel");
 		hfmscluEvseta = new TH2F("hfmscluEvseta","FMS cluster energy vs eta",100,2.5,4.5,250,0,250);
+		hmufmscluEvseta = static_cast<TH2F*>(hfmscluEvseta->Clone("hmufmscluEvseta"));
+		hmufmscluEvseta->SetTitle("StMuDst FMS cluster energy vs eta");
 		hfmscluEvsphi = new TH2F("hfmscluEvsphi","FMS cluster energy vs phi",100,-TMath::Pi(),TMath::Pi(),250,0,250);	
 		hfmsphoEvseta = new TH2F("hfmsphoEvseta","FMS photon energy vs eta",100,2.5,4.5,250,0,250);
 		hfmsphoEvsphi = new TH2F("hfmsphoEvsphi","FMS photon energy vs phi",100,-TMath::Pi(),TMath::Pi(),250,0,250);	
@@ -281,6 +284,14 @@ Int_t StFmsQAHistoMaker::Make() {
 		  StMuFmsHit* hit = mufmsCollection->getHit(i);
 		  if (hit->detectorId() >= 8 && hit->detectorId() <= 11 && hit->adc() > 0) {
         hmufmshitEvsChannel->Fill(hit->channel(), hit->energy());
+		  }  // if
+		}  // for
+		for (int i(0); i < mufmsCollection->numberOfClusters(); ++i) {
+		  StMuFmsCluster* cluster = mufmsCollection->getCluster(i);
+		  if (cluster) {
+		    TVector3 xyz = mGeometry.columnRowToGlobalCoordinates(
+		      cluster->x(), cluster->y(), cluster->detectorId());
+		    hmufmscluEvseta->Fill(xyz.Eta(), cluster->energy());
 		  }  // if
 		}  // for
 		for(StSPtrVecFmsClusterConstIterator iclu = fmsclusters.begin(); iclu != fmsclusters.end(); iclu++){

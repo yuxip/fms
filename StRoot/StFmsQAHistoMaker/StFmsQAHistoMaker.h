@@ -73,6 +73,7 @@ private:
   TH2F* hfmshitEvsChannel;
   TH2F* hmufmshitEvsChannel;  // Like hfmshitEvsChannel but for StMuDst hits
 	TH2F* hfmscluEvseta;
+	TH2F* hmufmscluEvseta;  // Like hfmscluEvseta but for StMuDst clusters
 	TH2F* hfmscluEvsphi;
 	TH2F* hfmsphoEvseta;
 	TH2F* hfmsphoEvsphi;
