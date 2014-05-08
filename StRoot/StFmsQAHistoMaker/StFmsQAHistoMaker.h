@@ -21,6 +21,8 @@ class StMuDstMaker;
 class StBemcTables;
 class StEEmcDb;
 
+#include "StRoot/StPSUTools/StFmsGeometry.h"
+
 //only save event QA histograms (run-by-run). Lighter version of StFmsQAMaker
 class StFmsQAHistoMaker : public StMaker {
 
@@ -35,6 +37,7 @@ public:
 	void SetEmcQA ( Bool_t emcqa = true ) { mEmcQA = emcqa; }
 	void SetEmcEt ( Float_t emcet = 0.2 ) { mEmcEt = emcet; }
 	void SetTrackQA ( Bool_t trackqa = true ) { mTrackQA = trackqa; }
+	Int_t InitRun(Int_t runNumber);
 	Int_t Init();
         Int_t Make();
         Int_t Finish();
@@ -114,7 +117,7 @@ private:
 	TH2F* htpcetavsphi;
 
 	Bool_t isUsableTrack(const StMuTrack& track);
-
+  FMSCluster::StFmsGeometry mGeometry;
 	ClassDef(StFmsQAHistoMaker,0)
 };
 

@@ -49,6 +49,8 @@
 #include "StEEmcUtil/database/EEmcDbItem.h"
 #include "StEEmcUtil/EEmcGeom/EEmcGeomSimple.h"
 
+#include "StRoot/StFmsDbMaker/StFmsDbMaker.h"
+
 #include <assert.h>
 
 ClassImp(StFmsQAHistoMaker)
@@ -114,6 +116,20 @@ void StFmsQAHistoMaker::Clear( const char* opt ) {
 void StFmsQAHistoMaker::SetOutputFile( Char_t* filename = "default.root" ) {
 	
 	mFilename = filename;
+}
+
+Int_t StFmsQAHistoMaker::InitRun(Int_t runNumber) {
+  // Ensure we can access database information
+  StFmsDbMaker* fmsDbMaker = static_cast<StFmsDbMaker*>(GetMaker("fmsDb"));
+  if (!fmsDbMaker) {
+    return kStErr;
+  }  // if
+  // Set up geometry, which stays constant for each run
+  if (!mGeometry.initialize(fmsDbMaker)) {
+    // Return an error if geometry initialization fails
+    return kStErr;
+  }  // if
+  return StMaker::InitRun(runNumber);
 }
 
 Int_t StFmsQAHistoMaker::Init() {
