@@ -16,6 +16,8 @@
 
 #include "StRoot/St_base/StObject.h"
 
+class StFmsCluster;  // Equivalent class in StEvent
+
 /**
  Micro-DST FMS cluster class
 
@@ -27,6 +29,8 @@ class StMuFmsCluster : public StObject {
   /** Constructor */
   StMuFmsCluster(int detectorId = 0, int category = -1, float energy = 0.f,
                  float x = 0.f, float y = 0.f);
+  /** Initialise from an equivalent StEvent cluster */
+  StMuFmsCluster(const StFmsCluster&);
   /** Destructor */
   virtual ~StMuFmsCluster();
   /** ID of the sub-detector with which the cluster is associated */
