@@ -310,7 +310,7 @@ Int_t StFmsQAHistoMaker::Make() {
       Float_t clusterPhi = ((*iclu)->fourMomentum()).Phi();
       hfmscluEvseta->Fill(clusterEta,clusterE);
       hfmscluEvsphi->Fill(clusterPhi,clusterE);
-      const int nstb = (*iclu)->detector();
+      const int nstb = (*iclu)->detectorId();
       if (hfmsy0x0.find(nstb) != hfmsy0x0.end()) {
   			if ((*iclu)->x() > 0. && (*iclu)->y() > 0.) {
           hfmsy0x0[nstb]->Fill((*iclu)->x(), (*iclu)->y());

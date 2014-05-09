@@ -26,7 +26,7 @@ class StFmsCluster : public StObject {
   /** Print cluster information to LOG_INFO */
   void Print(Option_t* optionNotUsed = "") const;
   /** Sub-detector */
-  UShort_t detector() const { return mDetector; }
+  UShort_t detectorId() const { return mDetectorId; }
   /** Cluster category (see EFmsClusterCategory) */
   Int_t category() const { return mCategory; }
   /** Number of towers (hits) in this cluster */
@@ -52,7 +52,7 @@ class StFmsCluster : public StObject {
   /** Cluster four-momentum (px, py, pz E) */
   TLorentzVector fourMomentum() const { return mFourMomentum; }
   /** Set sub-detector */
-  void setDetector(Int_t nstb) { mDetector = nstb; }
+  void setDetectorId(UShort_t detector) { mDetectorId = detector; }
   /** Set cluster category (see EFmsClusterCategory) */
   void setCategory(Int_t catag) { mCategory = catag; }
   /** Set number of towers (hits) in this cluster */
@@ -83,7 +83,7 @@ class StFmsCluster : public StObject {
   StPtrVecFmsPoint& points() { return mPhotons; }
 
  protected:
-  UShort_t mDetector;  ///< Detector starts from 1
+  UShort_t mDetectorId;  ///< Detector starts from 1
   Int_t mCategory;  ///< catagory of cluster (see EFmsClusterCategory)
   Int_t mNTowers;  ///< Number of non_zero towers in the cluster
   Int_t mNPhotons;  ///< Number of photons contained in this cluster

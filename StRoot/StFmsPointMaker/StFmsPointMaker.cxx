@@ -144,7 +144,7 @@ bool StFmsPointMaker::processTowerCluster(
   if (!(cluster->x() > 0. && cluster->y() > 0.)) {
     return false;
   }  // if
-  cluster->setDetector(detectorId);
+  cluster->setDetectorId(detectorId);
   // Cluster id is id of the 1st photon, not necessarily the highest-E photon
   cluster->setId(305 + 20 * detectorId + fmsCollection->numberOfPoints());
   // Cluster locations are in column-row coordinates so convert to cm

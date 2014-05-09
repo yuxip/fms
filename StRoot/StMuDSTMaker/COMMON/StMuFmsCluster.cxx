@@ -19,7 +19,7 @@ StMuFmsCluster::StMuFmsCluster(int detectorId, int category, float energy,
       mX(x), mY(y) { }
 
 StMuFmsCluster::StMuFmsCluster(const StFmsCluster& cluster)
-    : mDetectorId(cluster.detector()), mCategory(cluster.category()),
+    : mDetectorId(cluster.detectorId()), mCategory(cluster.category()),
       mX(cluster.x()), mY(cluster.y()) { }
 
 StMuFmsCluster::~StMuFmsCluster() { }

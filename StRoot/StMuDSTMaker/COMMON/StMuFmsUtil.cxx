@@ -84,7 +84,7 @@ void StMuFmsUtil::fillMuFms(StMuFmsCollection *muFms,StFmsCollection *fmscol)
     const StFmsCluster* cluster = fmscol->clusters()[i];
     muFms->addCluster();
     StMuFmsCluster* muCluster = muFms->getCluster(i);
-    muCluster->setDetectorId(cluster->detector());
+    muCluster->setDetectorId(cluster->detectorId());
     muCluster->setCategory(cluster->category());
     muCluster->setEnergy(cluster->energy());
     muCluster->setX(cluster->x());
