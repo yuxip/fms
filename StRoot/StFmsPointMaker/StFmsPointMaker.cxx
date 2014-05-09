@@ -154,6 +154,7 @@ bool StFmsPointMaker::processTowerCluster(
   // Save photons reconstructed from this cluster
   for (Int_t np = 0; np < cluster->nPhotons(); np++) {
     StFmsPoint* point = makeFmsPoint(towerCluster->photons()[np], detectorId);
+    point->setDetectorId(detectorId);
     point->setId(305 + 20 * detectorId + fmsCollection->numberOfPoints());
     point->setParentClusterId(cluster->id());
     point->setNParentClusterPhotons(cluster->nPhotons());
