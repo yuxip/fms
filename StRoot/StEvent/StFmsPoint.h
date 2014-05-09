@@ -22,6 +22,8 @@ class StFmsPoint : public StObject {
   /** Destructor */
   ~StFmsPoint();
   void Print(const Option_t* opt = "") const;
+  /** Sub-detector */
+  UShort_t detectorId() const { return mDetectorId; }
   Float_t energy() const { return mEnergy; }
   Float_t x() const { return mX; }  //in cm
   Float_t y() const { return mY; }  //in cm
@@ -30,6 +32,8 @@ class StFmsPoint : public StObject {
   Int_t nParentClusterPhotons() const { return mNParentClusterPhotons; }
   TLorentzVector fourMomentum() const { return mFourMomentum; }
   TVector3 xyzLab() const { return mXYZLab; }
+  /** Set sub-detector */
+  void setDetectorId(UShort_t detector) { mDetectorId = detector; }
   void setEnergy(Float_t energy) { mEnergy = energy; }
   void setX(Float_t xpos) { mX = xpos; }
   void setY(Float_t ypos) { mY = ypos; }
@@ -40,6 +44,7 @@ class StFmsPoint : public StObject {
   void setXYZLab(TVector3 phpos3) { mXYZLab = phpos3; }
 
  protected:
+  UShort_t mDetectorId;  ///< Detector starts from 1
   Float_t mEnergy;  ///< fitted energy
   Float_t mX;  ///< fitted(relative) x-position
   Float_t mY;  ///< fitted(relative) y-position
