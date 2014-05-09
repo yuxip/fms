@@ -39,3 +39,6 @@ StRoot/StEvent/*
 
 # Ignore everything in StRoot/StMuDSTMaker except the files we develop.
 StRoot/StMuDSTMaker/*
+
+# Ignore everything in StRoot/StBFChain except the files we develop.
+StRoot/StBFChain/*
