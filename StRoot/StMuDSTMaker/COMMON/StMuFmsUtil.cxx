@@ -121,8 +121,8 @@ void StMuFmsUtil::fillMuFms(StMuFmsCollection *muFms,StFmsCollection *fmscol)
     StMuFmsPoint* muPoint = muFms->getPoint(i);
     muPoint->setDetectorId(point->detectorId());
     muPoint->setEnergy(point->energy());
-    muPoint->setX(point->xyzLab().x());
-    muPoint->setY(point->xyzLab().y());
+    muPoint->setX(point->x());
+    muPoint->setY(point->y());
   }  // for
   // Fill clusters
   for (int i(0); i < fmscol->numberOfClusters(); ++i) {

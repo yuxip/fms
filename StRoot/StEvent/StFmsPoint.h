@@ -31,7 +31,6 @@ class StFmsPoint : public StObject {
   Int_t parentClusterId() const { return mParentClusterId; }
   Int_t nParentClusterPhotons() const { return mNParentClusterPhotons; }
   TLorentzVector fourMomentum() const { return mFourMomentum; }
-  TVector3 xyzLab() const { return mXYZLab; }
   /** Set sub-detector */
   void setDetectorId(UShort_t detector) { mDetectorId = detector; }
   void setEnergy(Float_t energy) { mEnergy = energy; }
@@ -41,7 +40,6 @@ class StFmsPoint : public StObject {
   void setParentClusterId(Int_t cluid) { mParentClusterId = cluid; }
   void setNParentClusterPhotons(Int_t nclph) { mNParentClusterPhotons = nclph; }
   void setFourMomentum(TLorentzVector p4) { mFourMomentum = p4; }
-  void setXYZLab(TVector3 phpos3) { mXYZLab = phpos3; }
 
  protected:
   UShort_t mDetectorId;  ///< Detector starts from 1
@@ -52,7 +50,6 @@ class StFmsPoint : public StObject {
   Int_t mParentClusterId;  ///< id of the parent cluster
   Int_t mNParentClusterPhotons;  ///< # of photons in by the parent cluster
   TLorentzVector mFourMomentum;
-  TVector3 mXYZLab;  ///< photon coordinate in lab fraom
   ClassDef(StFmsPoint, 1)
 };
 
