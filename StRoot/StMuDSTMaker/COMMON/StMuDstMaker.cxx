@@ -1806,6 +1806,8 @@ void StMuDstMaker::connectEmcCollection() {
 //-----------------------------------------------------------------------
 void StMuDstMaker::connectFmsCollection() {
   mFmsCollection->setFmsHitArray(mFmsArrays[muFmsHit]);
+  mFmsCollection->setFmsClusterArray(mFmsArrays[muFmsCluster]);
+  mFmsCollection->setFmsPointArray(mFmsArrays[muFmsPoint]);
 }
 //-----------------------------------------------------------------------
 void StMuDstMaker::connectPmdCollection() {
