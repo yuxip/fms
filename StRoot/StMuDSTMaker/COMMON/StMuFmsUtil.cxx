@@ -17,6 +17,7 @@
 #include "StFmsCluster.h"
 #include "StMuFmsCluster.h"
 #include "StMuFmsHit.h"
+#include "StMuFmsPoint.h"
 #include "StMuFmsUtil.h"
 #include "StMuFmsCollection.h"
 #include "StEvent.h"
@@ -88,6 +89,16 @@ void StMuFmsUtil::fillMuFms(StMuFmsCollection *muFms,StFmsCollection *fmscol)
     muCluster->setEnergy(cluster->energy());
     muCluster->setX(cluster->x());
     muCluster->setY(cluster->y());
+  }  // for
+  // Fill points
+  for (int i(0); i < fmscol->numberOfPoints(); ++i) {
+    const StFmsPoint* point = fmscol->points()[i];
+    muFms->addPoint();
+    StMuFmsPoint* muPoint = muFms->getPoint(i);
+    //muPoint->setDetectorId(point->detectorId());
+    muPoint->setEnergy(point->energy());
+    muPoint->setX(point->x());
+    muPoint->setY(point->y());
   }  // for
   return;
 }
