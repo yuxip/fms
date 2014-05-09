@@ -26,7 +26,7 @@ class StFmsCluster : public StObject {
   /** Print cluster information to LOG_INFO */
   void Print(Option_t* optionNotUsed = "") const;
   /** Sub-detector */
-  int detector() const { return mDetector; }
+  UShort_t detector() const { return mDetector; }
   /** Cluster category (see EFmsClusterCategory) */
   Int_t category() const { return mCategory; }
   /** Number of towers (hits) in this cluster */
@@ -83,7 +83,7 @@ class StFmsCluster : public StObject {
   StPtrVecFmsPoint& points() { return mPhotons; }
 
  protected:
-  Int_t mDetector;  ///< Detector starts from 1
+  UShort_t mDetector;  ///< Detector starts from 1
   Int_t mCategory;  ///< catagory of cluster (see EFmsClusterCategory)
   Int_t mNTowers;  ///< Number of non_zero towers in the cluster
   Int_t mNPhotons;  ///< Number of photons contained in this cluster

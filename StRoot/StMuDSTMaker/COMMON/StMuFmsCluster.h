@@ -34,7 +34,7 @@ class StMuFmsCluster : public StObject {
   /** Destructor */
   virtual ~StMuFmsCluster();
   /** ID of the sub-detector with which the cluster is associated */
-  unsigned short detectorId() const { return mDetectorId; }
+  UShort_t detectorId() const { return mDetectorId; }
   /** Category of the cluster (see EFmsClusterCategory) */
   unsigned short category() const { return mCategory; }
   /** Total cluster energy (sum over towers) */
@@ -52,7 +52,7 @@ class StMuFmsCluster : public StObject {
   /** \overload */
   const TRefArray* photons() const { return &mPhotons; }
   /** Set ID of the sub-detector with which the cluster is associated */
-  void setDetectorId(unsigned short id) { mDetectorId = id; }
+  void setDetectorId(UShort_t detector) { mDetectorId = detector; }
   /** Set category of the cluster (see EFmsClusterCategory) */
   void setCategory(unsigned short category) { mCategory = category; }
   /** Set total cluster energy (sum over towers) */

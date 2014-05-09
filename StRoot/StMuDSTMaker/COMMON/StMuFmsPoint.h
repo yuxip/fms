@@ -28,7 +28,7 @@ class StMuFmsPoint : public StObject {
   /** Destructor */
   virtual ~StMuFmsPoint();
   /** ID of the sub-detector with which the point is associated */
-  unsigned short detectorId() const { return mDetectorId; }
+  UShort_t detectorId() const { return mDetectorId; }
   /** Total point energy */
   float energy() const { return mEnergy; }
   /** x "center of gravity" of the point */
@@ -36,7 +36,7 @@ class StMuFmsPoint : public StObject {
   /** y "center of gravity" of the point */
   float y() const { return mY; }
   /** Set ID of the sub-detector with which the point is associated */
-  void setDetectorId(unsigned short id) { mDetectorId = id; }
+  void setDetectorId(UShort_t detector) { mDetectorId = detector; }
   /** Set total point energy (sum over towers) */
   void setEnergy(float energy) { mEnergy = energy; }
   /** Set x "center of gravity" of the point */
