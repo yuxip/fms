@@ -24,6 +24,8 @@
 #include "StMessMgr.h"
 #include "StEventTypes.h"
 
+#include <TVector3.h>
+
 ClassImp(StMuFmsUtil)
 
 
@@ -97,8 +99,8 @@ void StMuFmsUtil::fillMuFms(StMuFmsCollection *muFms,StFmsCollection *fmscol)
     StMuFmsPoint* muPoint = muFms->getPoint(i);
     muPoint->setDetectorId(point->detectorId());
     muPoint->setEnergy(point->energy());
-    muPoint->setX(point->x());
-    muPoint->setY(point->y());
+    muPoint->setX(point->xyzLab().x());
+    muPoint->setY(point->xyzLab().y());
   }  // for
   return;
 }
