@@ -324,8 +324,8 @@ Int_t StFmsQAHistoMaker::Make() {
 		}
 		for (int i(0); i < mufmsCollection->numberOfPoints(); ++i) {
 		  StMuFmsPoint* point = mufmsCollection->getPoint(i);
-		  TVector3 xyz = mGeometry.localToGlobalCoordinates(
-		    point->x(), point->y(), point->detectorId());
+		  TVector3 xyz = TVector3(point->x(), point->y(),
+		                          mGeometry.z(point->detectorId()));
 		  hmufmsphoEvseta->Fill(xyz.Eta(), point->energy());
 		  hmufmsphoEvsphi->Fill(xyz.Phi(), point->energy());
 		}  // for
