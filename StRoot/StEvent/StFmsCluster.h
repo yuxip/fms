@@ -79,8 +79,12 @@ class StFmsCluster : public StObject {
   void setFourMomentum(TLorentzVector p4) { mFourMomentum = p4; }
   /** Towers/hits in this cluster */
   StPtrVecFmsHit& hits() { return mHits; }
+  /** \overload */
+  const StPtrVecFmsHit& hits() const { return mHits; }
   /** Points/photons forming this cluster */
   StPtrVecFmsPoint& points() { return mPhotons; }
+  /** \overload */
+  const StPtrVecFmsPoint& points() const { return mPhotons; }
 
  protected:
   UShort_t mDetectorId;  ///< Detector starts from 1
