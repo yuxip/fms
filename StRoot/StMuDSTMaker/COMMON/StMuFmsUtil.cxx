@@ -24,10 +24,40 @@
 #include "StMessMgr.h"
 #include "StEventTypes.h"
 
+#include <algorithm>  // For std::find
+#include <iterator>  // For std::distance
+
 #include <TVector3.h>
 
 ClassImp(StMuFmsUtil)
 
+namespace {
+/*
+ Return the index of an element in an StPtrVec-like array.
+
+ The element should be of the pointer type in the StPtrVec.
+ Return -1 if the element cannot be located in the array.
+ See StEvent/StArray.h for the definition of St[S]PtrVec arrays.
+ */
+template<class StPtrVec, class Element>
+int findElementIndex(const StPtrVec& array, const Element* element) {
+  // This typedef is equivalent to an iterator to an Element in the StPtrVec,
+  // as defined in StArray.h. The StPtrVec definition does not include a
+  // template iterator typedef itself, but this the same as what
+  // StPtrVec::const_iterator would do.
+  typedef Element* const * ElementConstIter;
+  // Find where the element is in the array
+  ElementConstIter location = std::find(array.begin(), array.end(), element);
+  // Ensure the desired element actually is in the array, as the behaviour
+  // of std::distance is undefined otherwise.
+  // Return -1 if the element isn't in the array, otherwise return its index
+  if (location == array.end()) {  // Not in the array
+    return -1;
+  } else {
+    return std::distance(array.begin(), location);
+  }  // if
+}
+}  // namespace
 
 StMuFmsUtil::StMuFmsUtil()
 {
