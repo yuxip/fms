@@ -27,6 +27,7 @@
 #include <algorithm>  // For std::find
 #include <iterator>  // For std::distance
 
+#include <TRefArray.h>
 #include <TVector3.h>
 
 ClassImp(StMuFmsUtil)
@@ -121,6 +122,16 @@ void StMuFmsUtil::fillMuFms(StMuFmsCollection *muFms,StFmsCollection *fmscol)
     muCluster->setEnergy(cluster->energy());
     muCluster->setX(cluster->x());
     muCluster->setY(cluster->y());
+    // Propagate hits-in-cluster information
+    // Remember, clusters don't *own* hits, they just reference them.
+    // For each StFmsHit in the cluster, find the index of that hit in the main
+    // StFmsCollection hit array. Then add the StMuFmsHit (from the main
+    // StMuFmsCollection hit array) at the same index to the StMuFmsCluster.
+    StPtrVecFmsHitConstIterator hit;  // Iterate over StFmsHits
+    for (hit = cluster->hits().begin(); hit != cluster->hits().end(); ++hit) {
+      const int index = findElementIndex(cluster->hits(), hit);
+      muCluster->hits()->Add(muFms->getHit(index));
+    }  // for
   }  // for
   // Fill points
   for (int i(0); i < fmscol->numberOfPoints(); ++i) {
