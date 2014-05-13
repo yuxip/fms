@@ -43,7 +43,8 @@ public:
         Int_t Finish();
 	
 private:
-	
+  void fmsEventQa();
+  void fmsMuDstQa();
 	TFile* mFile;
 	Bool_t mFmsQA;
 	Bool_t mEmcQA;

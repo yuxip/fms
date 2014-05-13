@@ -260,86 +260,8 @@ Int_t StFmsQAHistoMaker::Make() {
 	hbunchid->Fill(bunchid);
 
 	if(mFmsQA){
-
-		StEvent *event = static_cast<StEvent*>(GetDataSet("StEvent"));
-		if(!event){
-			LOG_ERROR << " no StEvent " << endm;
-			return kStErr;
-		}		
-    StFmsCollection* fmsCollection = event->fmsCollection();
-    if (!fmsCollection) {
-      LOG_ERROR << "StFmsPointMaker::populateTowerLists() did not find "
-        << "an StFmsCollection in StEvent" << endm;
-        return false;
-    }  // if
-    const StSPtrVecFmsHit& fmshits = fmsCollection->hits();
-		const StSPtrVecFmsCluster& fmsclusters = fmsCollection->clusters();
-		hfmsNcluvsevt->Fill(ievt,fmsclusters.size());
-		const StSPtrVecFmsPoint& fmspoints = fmsCollection->points();
-	
-		Int_t nphotons = fmspoints.size();
-		Int_t nhits = 0;
-		for (StSPtrVecFmsHitConstIterator i = fmshits.begin(); i != fmshits.end(); ++i) {
-		  StFmsHit* hit = *i;
-		  if (hit->detectorId() >= 8 && hit->detectorId() <= 11 && hit->adc() > 0) {
-        hfmshitEvsChannel->Fill(hit->channel(), hit->energy());
-		  }  // if
-		}  // for
-		// Fill the same histogram but using hits from StMuDst
-    StMuFmsCollection* mufmsCollection = muDst->muFmsCollection();
-		for (int i(0); i < mufmsCollection->numberOfHits(); ++i) {
-		  StMuFmsHit* hit = mufmsCollection->getHit(i);
-		  if (hit->detectorId() >= 8 && hit->detectorId() <= 11 && hit->adc() > 0) {
-        hmufmshitEvsChannel->Fill(hit->channel(), hit->energy());
-		  }  // if
-		}  // for
-		for (int i(0); i < mufmsCollection->numberOfClusters(); ++i) {
-		  StMuFmsCluster* cluster = mufmsCollection->getCluster(i);
-		  if (cluster) {
-		    TVector3 xyz = mGeometry.columnRowToGlobalCoordinates(
-		      cluster->x(), cluster->y(), cluster->detectorId());
-		    hmufmscluEvseta->Fill(xyz.Eta(), cluster->energy());
-		    hmufmscluEvsphi->Fill(xyz.Phi(), cluster->energy());
-		  }  // if
-		}  // for
-		for(StSPtrVecFmsClusterConstIterator iclu = fmsclusters.begin(); iclu != fmsclusters.end(); iclu++){
-			nhits += (*iclu)->nTowers();
-			Float_t clusterE = (*iclu)->energy();
-      hfmscluEvsevt->Fill(ievt,clusterE);
-      Float_t clusterEta = ((*iclu)->fourMomentum()).Eta();
-      Float_t clusterPhi = ((*iclu)->fourMomentum()).Phi();
-      hfmscluEvseta->Fill(clusterEta,clusterE);
-      hfmscluEvsphi->Fill(clusterPhi,clusterE);
-      const int nstb = (*iclu)->detectorId();
-      if (hfmsy0x0.find(nstb) != hfmsy0x0.end()) {
-  			if ((*iclu)->x() > 0. && (*iclu)->y() > 0.) {
-          hfmsy0x0[nstb]->Fill((*iclu)->x(), (*iclu)->y());
-        }  // if
-      }  // if
-      //loop over hits
-      for(StPtrVecFmsHitConstIterator ihit = (*iclu)->hits().begin(); ihit != (*iclu)->hits().end(); ihit++){
-        Float_t hitE = (*ihit)->energy();
-        hfmshitEvsevt->Fill(ievt,hitE);
-      }
-		}
-		for (int i(0); i < mufmsCollection->numberOfPoints(); ++i) {
-		  StMuFmsPoint* point = mufmsCollection->getPoint(i);
-		  TVector3 xyz = TVector3(point->x(), point->y(),
-		                          mGeometry.z(point->detectorId()));
-		  hmufmsphoEvseta->Fill(xyz.Eta(), point->energy());
-		  hmufmsphoEvsphi->Fill(xyz.Phi(), point->energy());
-		}  // for
-    for(StSPtrVecFmsPointConstIterator ipts = fmspoints.begin(); ipts != fmspoints.end(); ipts++){
-      //(*ipts)->Print();
-      Float_t photonE = (*ipts)->energy();
-      hfmsphoEvsevt->Fill(ievt,photonE);
-      Float_t photonEta = ((*ipts)->fourMomentum()).Eta();
-      Float_t photonPhi = ((*ipts)->fourMomentum()).Phi();
-      hfmsphoEvseta->Fill(photonEta,photonE);
-      hfmsphoEvsphi->Fill(photonPhi,photonE);
-    }
-		hfmsNhitvsevt->Fill(ievt,nhits);
-		hfmsNphovsevt->Fill(ievt,nphotons);
+	  fmsEventQa();
+    fmsMuDstQa();
 	}//mFmsQA
 //	LOG_INFO << "begin reading EMC" << endm;
 	if(mEmcQA){
@@ -587,6 +509,93 @@ Bool_t StFmsQAHistoMaker::isUsableTrack(const StMuTrack& track)
    return true;
 }
 
+void StFmsQAHistoMaker::fmsEventQa() {
+  StEvent *event = static_cast<StEvent*>(GetDataSet("StEvent"));
+  if(!event){
+    LOG_ERROR << " no StEvent " << endm;
+    return;
+  }
+  StFmsCollection* fmsCollection = event->fmsCollection();
+  if (!fmsCollection) {
+    LOG_ERROR << "StFmsQAHistoMaker did not find "
+      << "an StFmsCollection in StEvent" << endm;
+      return;
+  }  // if
+  const StSPtrVecFmsHit& fmshits = fmsCollection->hits();
+  const StSPtrVecFmsCluster& fmsclusters = fmsCollection->clusters();
+  hfmsNcluvsevt->Fill(ievt,fmsclusters.size());
+  const StSPtrVecFmsPoint& fmspoints = fmsCollection->points();
+  Int_t nphotons = fmspoints.size();
+  Int_t nhits = 0;
+  for (StSPtrVecFmsHitConstIterator i = fmshits.begin(); i != fmshits.end(); ++i) {
+    StFmsHit* hit = *i;
+    if (hit->detectorId() >= 8 && hit->detectorId() <= 11 && hit->adc() > 0) {
+      hfmshitEvsChannel->Fill(hit->channel(), hit->energy());
+    }  // if
+  }  // for
+  for(StSPtrVecFmsClusterConstIterator iclu = fmsclusters.begin(); iclu != fmsclusters.end(); iclu++){
+    nhits += (*iclu)->nTowers();
+    Float_t clusterE = (*iclu)->energy();
+    hfmscluEvsevt->Fill(ievt,clusterE);
+    Float_t clusterEta = ((*iclu)->fourMomentum()).Eta();
+    Float_t clusterPhi = ((*iclu)->fourMomentum()).Phi();
+    hfmscluEvseta->Fill(clusterEta,clusterE);
+    hfmscluEvsphi->Fill(clusterPhi,clusterE);
+    const int nstb = (*iclu)->detectorId();
+    if (hfmsy0x0.find(nstb) != hfmsy0x0.end()) {
+      if ((*iclu)->x() > 0. && (*iclu)->y() > 0.) {
+        hfmsy0x0[nstb]->Fill((*iclu)->x(), (*iclu)->y());
+      }  // if
+    }  // if
+    //loop over hits
+    for(StPtrVecFmsHitConstIterator ihit = (*iclu)->hits().begin(); ihit != (*iclu)->hits().end(); ihit++){
+      Float_t hitE = (*ihit)->energy();
+      hfmshitEvsevt->Fill(ievt,hitE);
+    }
+  }
+  for(StSPtrVecFmsPointConstIterator ipts = fmspoints.begin(); ipts != fmspoints.end(); ipts++){
+    //(*ipts)->Print();
+    Float_t photonE = (*ipts)->energy();
+    hfmsphoEvsevt->Fill(ievt,photonE);
+    Float_t photonEta = ((*ipts)->fourMomentum()).Eta();
+    Float_t photonPhi = ((*ipts)->fourMomentum()).Phi();
+    hfmsphoEvseta->Fill(photonEta,photonE);
+    hfmsphoEvsphi->Fill(photonPhi,photonE);
+  }
+  hfmsNhitvsevt->Fill(ievt,nhits);
+  hfmsNphovsevt->Fill(ievt,nphotons);
+}
+
+void StFmsQAHistoMaker::fmsMuDstQa() {
+	StMuDst* muDst = (StMuDst*)GetInputDS("MuDst");
+	if(!muDst){
+		return;
+	}  // if
+  // Fill histograms using hits from StMuDst
+  StMuFmsCollection* mufmsCollection = muDst->muFmsCollection();
+  for (int i(0); i < mufmsCollection->numberOfHits(); ++i) {
+    StMuFmsHit* hit = mufmsCollection->getHit(i);
+    if (hit->detectorId() >= 8 && hit->detectorId() <= 11 && hit->adc() > 0) {
+      hmufmshitEvsChannel->Fill(hit->channel(), hit->energy());
+    }  // if
+  }  // for
+  for (int i(0); i < mufmsCollection->numberOfClusters(); ++i) {
+    StMuFmsCluster* cluster = mufmsCollection->getCluster(i);
+    if (cluster) {
+      TVector3 xyz = mGeometry.columnRowToGlobalCoordinates(
+        cluster->x(), cluster->y(), cluster->detectorId());
+      hmufmscluEvseta->Fill(xyz.Eta(), cluster->energy());
+      hmufmscluEvsphi->Fill(xyz.Phi(), cluster->energy());
+    }  // if
+  }  // for
+  for (int i(0); i < mufmsCollection->numberOfPoints(); ++i) {
+    StMuFmsPoint* point = mufmsCollection->getPoint(i);
+    TVector3 xyz = TVector3(point->x(), point->y(),
+                            mGeometry.z(point->detectorId()));
+    hmufmsphoEvseta->Fill(xyz.Eta(), point->energy());
+    hmufmsphoEvsphi->Fill(xyz.Phi(), point->energy());
+  }  // for
+}
 
 /*
 void StFmsQAHistoMaker::SetFmsPhotonEcut ( Float_t ecutsmall, Float_t ecutlarge ) {
