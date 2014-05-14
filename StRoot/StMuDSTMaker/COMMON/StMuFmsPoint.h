@@ -12,7 +12,7 @@
 #ifndef STROOT_STMUDSTMAKER_COMMON_STMUFMSPOINT_H_
 #define STROOT_STMUDSTMAKER_COMMON_STMUFMSPOINT_H_
 
-#include "StRoot/St_base/StObject.h"
+#include <TObject.h>
 
 /**
  Micro-DST FMS "point" class
@@ -20,7 +20,7 @@
  Describes a "point" - an energy deposition from a single particle.
  One or more points may be form a cluster of adjacent towers in the FMS.
  */
-class StMuFmsPoint : public StObject {
+class StMuFmsPoint : public TObject {
  public:
   /** Constructor */
   StMuFmsPoint(int detectorId = 0, float energy = 0.f,
