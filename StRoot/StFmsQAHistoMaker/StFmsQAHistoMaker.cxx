@@ -63,11 +63,6 @@ StFmsQAHistoMaker::StFmsQAHistoMaker(const char* name):StMaker(name) {
 	SetEmcQA();
 	mEmcEt = 0.2; //Et threshold for EMC qa
 	SetTrackQA();
-	// If data, StEmcADCtoEMaker will be in the chain
-  	if (StEmcADCtoEMaker* adc2e = (StEmcADCtoEMaker*)StMaker::GetChain()->GetMakerInheritsFrom("StEmcADCtoEMaker")) {
-    		mBemcTables = adc2e->getBemcData()->getTables();
-  	}
-	assert(mBemcTables);
 }
 
 StFmsQAHistoMaker::~StFmsQAHistoMaker() {
@@ -135,8 +130,14 @@ Int_t StFmsQAHistoMaker::InitRun(Int_t runNumber) {
 }
 
 Int_t StFmsQAHistoMaker::Init() {
-	
-	LOG_INFO << "StFmsQAHistoMaker::Init() " << endm;
+  LOG_INFO << "StFmsQAHistoMaker::Init() " << endm;
+  if (mEmcQA) {
+    // If data, StEmcADCtoEMaker will be in the chain
+    if (StEmcADCtoEMaker* adc2e = (StEmcADCtoEMaker*)StMaker::GetChain()->GetMakerInheritsFrom("StEmcADCtoEMaker")) {
+      mBemcTables = adc2e->getBemcData()->getTables();
+    }  // if
+    assert(mBemcTables);
+  }  // if
 	mFile = new TFile(mFilename,"recreate");
 	assert(mFile);
 	
