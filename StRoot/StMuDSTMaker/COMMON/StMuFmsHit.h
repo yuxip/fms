@@ -17,10 +17,11 @@
 #ifndef StMuFmsHit_hh
 #define StMuFmsHit_hh
 
-#include "Stiostream.h"
-#include "StObject.h"
+#include <TObject.h>
 
-class StMuFmsHit : public StObject {
+#include "Stiostream.h"
+
+class StMuFmsHit : public TObject {
 public:
     StMuFmsHit();
     StMuFmsHit(unsigned short det, unsigned short ch,
