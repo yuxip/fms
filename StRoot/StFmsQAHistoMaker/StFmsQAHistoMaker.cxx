@@ -167,6 +167,8 @@ Int_t StFmsQAHistoMaker::Init() {
 		hfmsphoEvseta = new TH2F("hfmsphoEvseta","FMS photon energy vs eta",100,2.5,4.5,250,0,250);
 		hmufmsphoEvseta = static_cast<TH2F*>(hfmsphoEvseta->Clone("hmufmsphoEvseta"));
 		hmufmsphoEvseta->SetTitle("StMuDst FMS photon energy vs eta");
+		hmufms1stphoEvseta = static_cast<TH2F*>(hmufmsphoEvseta->Clone("hmufms1stphoEvseta"));
+		hmufms1stphoEvseta->SetTitle("StMuDst FMS 1st photon in cluster energy vs eta");
 		hfmsphoEvsphi = new TH2F("hfmsphoEvsphi","FMS photon energy vs phi",100,-TMath::Pi(),TMath::Pi(),250,0,250);	
 		hmufmsphoEvsphi = static_cast<TH2F*>(hfmsphoEvsphi->Clone("hmufmsphoEvsphi"));
 		hmufmsphoEvsphi->SetTitle("StMuDst FMS photon energy vs phi");
@@ -600,6 +602,12 @@ void StFmsQAHistoMaker::fmsMuDstQa() {
         hmufms1stHitEvsChannel->Fill(hit->channel(), hit->energy());
       } else {
         LOG_ERROR << "First hit in cluster is NULL!!!" << endm;
+      }  // if
+      StMuFmsPoint* point = static_cast<StMuFmsPoint*>(cluster->photons()->At(0));
+      if (point) {
+        TVector3 xyz = TVector3(point->x(), point->y(),
+                                mGeometry.z(point->detectorId()));
+        hmufms1stphoEvseta->Fill(xyz.Eta(), point->energy());
       }  // if
     }  // if
   }  // for

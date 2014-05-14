@@ -80,6 +80,7 @@ private:
 	TH2F* hmufmscluEvsphi;  // Like hfmscluEvsphi but for StMuDst clusters
 	TH2F* hfmsphoEvseta;
 	TH2F* hmufmsphoEvseta;  // Like hfmsphoEvseta but for StMuDst photons
+	TH2F* hmufms1stphoEvseta;  // 1st photon in cluster
 	TH2F* hfmsphoEvsphi;
 	TH2F* hmufmsphoEvsphi;  // Like hfmsphoEvsphi but for StMuDst photons
   std::map<int, TH2F*> hfmsy0x0;
