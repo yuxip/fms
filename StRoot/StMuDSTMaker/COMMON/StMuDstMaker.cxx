@@ -702,6 +702,7 @@ void StMuDstMaker::setBranchAddresses(TChain* chain) {
   TString ts;
   Int_t emc_oldformat=0;
   Int_t pmd_oldformat=0;
+  chain->BranchRef();  // Activate autoloading of TRef-referenced objects
   for ( int i=0; i<__NALLARRAYS__; i++) {
     if (mStatusArrays[i]==0) continue;
     const char *bname=StMuArrays::arrayNames[i];
@@ -888,6 +889,7 @@ void StMuDstMaker::openWrite(string fileName) {
   if (mSplit) bufsize /= 4;
   //  all stuff
   mTTree = new TTree("MuDst", "StMuDst",mSplit);
+  mTTree->BranchRef();  // Activate autoloading of TRef-referenced objects
 #if ROOT_VERSION_CODE < ROOT_VERSION(5,26,0)
   Long64_t MAXLONG=100000000000LL; // 100 GB
   LOG_INFO << "Tree size MAX will be " << (float) MAXLONG/1000/1000/1000 << " GB " << endm;
