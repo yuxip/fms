@@ -129,6 +129,16 @@ Int_t StFmsQAHistoMaker::InitRun(Int_t runNumber) {
   return StMaker::InitRun(runNumber);
 }
 
+namespace {
+template<class Histogram>
+Histogram* duplicate(const Histogram& histogram, const TString& name,
+                     const TString& title) {
+  Histogram* copy = static_cast<Histogram*>(histogram.Clone(name));
+  copy->SetTitle(title);
+  return copy;
+}
+}  // namespace
+
 Int_t StFmsQAHistoMaker::Init() {
   LOG_INFO << "StFmsQAHistoMaker::Init() " << endm;
   if (mEmcQA) {
@@ -158,6 +168,9 @@ Int_t StFmsQAHistoMaker::Init() {
     hmufmshitEvsChannel->SetTitle("StMuDst FMS hit energy vs channel");
     hmufms1stHitEvsChannel = static_cast<TH2F*>(hmufmshitEvsChannel->Clone("hmufms1stHitEvsChannel"));
     hmufms1stHitEvsChannel->SetTitle("StMuDst FMS 1st hit in cluster energy vs channel");
+    hmufmsClusterHitEvsChannel = duplicate(
+      *hmufmshitEvsChannel, "hmufmsClusterHitEvsChannel",
+      "StMuDst FMS all hits in clusters energy vs channel");
 		hfmscluEvseta = new TH2F("hfmscluEvseta","FMS cluster energy vs eta",100,2.5,4.5,250,0,250);
 		hmufmscluEvseta = static_cast<TH2F*>(hfmscluEvseta->Clone("hmufmscluEvseta"));
 		hmufmscluEvseta->SetTitle("StMuDst FMS cluster energy vs eta");
@@ -591,18 +604,16 @@ void StFmsQAHistoMaker::fmsMuDstQa() {
         cluster->x(), cluster->y(), cluster->detectorId());
       hmufmscluEvseta->Fill(xyz.Eta(), cluster->energy());
       hmufmscluEvsphi->Fill(xyz.Phi(), cluster->energy());
-      StMuFmsHit* hit = static_cast<StMuFmsHit*>(cluster->hits()->At(0));
-      LOG_DEBUG << "Event contains " << mufmsCollection->numberOfHits() << " hits and "
-      << mufmsCollection->numberOfClusters() << " clusters" << endm;
-      LOG_DEBUG << "Cluster " << i << " contains " << cluster->hits()->GetEntries() << " hits" << endm;
-      cluster->hits()->Dump();
-      if (hit) {
-        LOG_DEBUG << "First hit in cluster:" << endm;
-        hit->Dump();
-        hmufms1stHitEvsChannel->Fill(hit->channel(), hit->energy());
-      } else {
-        LOG_ERROR << "First hit in cluster is NULL!!!" << endm;
-      }  // if
+      // Loop over hits in the cluster and fill histograms
+      for (int j(0); j < cluster->hits()->GetEntries(); ++j) {
+        StMuFmsHit* hit = static_cast<StMuFmsHit*>(cluster->hits()->At(j));
+        if (hit) {
+          if (j == 0) {
+            hmufms1stHitEvsChannel->Fill(hit->channel(), hit->energy());
+          }  // if
+          hmufmsClusterHitEvsChannel->Fill(hit->channel(), hit->energy());
+        }  // if
+      }  // for
       StMuFmsPoint* point = static_cast<StMuFmsPoint*>(cluster->photons()->At(0));
       if (point) {
         TVector3 xyz = TVector3(point->x(), point->y(),
