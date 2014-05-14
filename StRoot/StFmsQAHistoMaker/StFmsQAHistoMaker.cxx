@@ -156,6 +156,8 @@ Int_t StFmsQAHistoMaker::Init() {
     // Create via clone to ensure identical binning
     hmufmshitEvsChannel = static_cast<TH2F*>(hfmshitEvsChannel->Clone("hmufmshitEvsChannel"));
     hmufmshitEvsChannel->SetTitle("StMuDst FMS hit energy vs channel");
+    hmufms1stHitEvsChannel = static_cast<TH2F*>(hmufmshitEvsChannel->Clone("hmufms1stHitEvsChannel"));
+    hmufms1stHitEvsChannel->SetTitle("StMuDst FMS 1st hit in cluster energy vs channel");
 		hfmscluEvseta = new TH2F("hfmscluEvseta","FMS cluster energy vs eta",100,2.5,4.5,250,0,250);
 		hmufmscluEvseta = static_cast<TH2F*>(hfmscluEvseta->Clone("hmufmscluEvseta"));
 		hmufmscluEvseta->SetTitle("StMuDst FMS cluster energy vs eta");
@@ -587,6 +589,18 @@ void StFmsQAHistoMaker::fmsMuDstQa() {
         cluster->x(), cluster->y(), cluster->detectorId());
       hmufmscluEvseta->Fill(xyz.Eta(), cluster->energy());
       hmufmscluEvsphi->Fill(xyz.Phi(), cluster->energy());
+      StMuFmsHit* hit = static_cast<StMuFmsHit*>(cluster->hits()->At(0));
+      LOG_DEBUG << "Event contains " << mufmsCollection->numberOfHits() << " hits and "
+      << mufmsCollection->numberOfClusters() << " clusters" << endm;
+      LOG_DEBUG << "Cluster " << i << " contains " << cluster->hits()->GetEntries() << " hits" << endm;
+      cluster->hits()->Dump();
+      if (hit) {
+        LOG_DEBUG << "First hit in cluster:" << endm;
+        hit->Dump();
+        hmufms1stHitEvsChannel->Fill(hit->channel(), hit->energy());
+      } else {
+        LOG_ERROR << "First hit in cluster is NULL!!!" << endm;
+      }  // if
     }  // if
   }  // for
   for (int i(0); i < mufmsCollection->numberOfPoints(); ++i) {
