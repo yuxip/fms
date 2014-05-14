@@ -447,7 +447,6 @@ void  StMuDstMaker::streamerOff() {
   StMuHelix::Class()->IgnoreTObjectStreamer();
   StMuEmcHit::Class()->IgnoreTObjectStreamer();
   StMuEmcTowerData::Class()->IgnoreTObjectStreamer();
-  StMuFmsHit::Class()->IgnoreTObjectStreamer();
    StMuPmdHit::Class()->IgnoreTObjectStreamer();
   StMuPmdCluster::Class()->IgnoreTObjectStreamer();
   EztEventHeader::Class()->IgnoreTObjectStreamer();
