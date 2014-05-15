@@ -94,7 +94,6 @@ void StMuFmsUtil::fillMuFms(StMuFmsCollection *muFms,StFmsCollection *fmscol)
   fillMuFmsHits(muFms, fmscol);
   fillMuFmsPoints(muFms, fmscol);
   fillMuFmsClusters(muFms, fmscol);
-  return;
 }
 
 void StMuFmsUtil::fillFms(StFmsCollection* fmscol,StMuFmsCollection* muFms)
@@ -124,9 +123,6 @@ void StMuFmsUtil::fillFms(StFmsCollection* fmscol,StMuFmsCollection* muFms)
     hit->setEnergy(ene);
     fmscol->addHit(hit);
   }
-
-
-  return;
 }
 
 void StMuFmsUtil::fillMuFmsHits(StMuFmsCollection* muFms,
