@@ -32,7 +32,7 @@ class StFmsPoint : public StObject {
   void setId(Int_t phid) { mId = phid; }
   void setParentClusterId(Int_t cluid) { mParentClusterId = cluid; }
   void setNParentClusterPhotons(Int_t nclph) { mNParentClusterPhotons = nclph; }
-  void setFourMomentum(TLorentzVector p4) { mFourMomentum = p4; }
+  void setFourMomentum(const TLorentzVector& p4) { mFourMomentum = p4; }
 
  protected:
   UShort_t mDetectorId;  ///< Detector starts from 1
@@ -42,7 +42,7 @@ class StFmsPoint : public StObject {
   Int_t mId;  ///< photon id within event, also include det12 info
   Int_t mParentClusterId;  ///< id of the parent cluster
   Int_t mNParentClusterPhotons;  ///< # of photons in by the parent cluster
-  TLorentzVector mFourMomentum;
+  TLorentzVector mFourMomentum;  ///< Photon 4-momentum
   ClassDef(StFmsPoint, 1)
 };
 
