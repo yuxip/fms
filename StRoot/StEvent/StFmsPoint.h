@@ -14,7 +14,6 @@ class StFmsPoint : public StObject {
   // Use default copy constructor and assignment operator
   /** Destructor */
   ~StFmsPoint();
-  void Print(const Option_t* opt = "") const;
   /** Sub-detector */
   UShort_t detectorId() const { return mDetectorId; }
   Float_t energy() const { return mEnergy; }

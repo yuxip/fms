@@ -1,4 +1,3 @@
-#include "StMessMgr.h"
 #include "StFmsPoint.h"
 
 ClassImp(StFmsPoint)
@@ -12,10 +11,6 @@ StFmsPoint::StFmsPoint() : StObject() {
 }
 
 StFmsPoint::~StFmsPoint() {}
-
-void StFmsPoint::Print(const Option_t* opt) const {
-  LOG_INFO << *this << endm;
-}
 
 ostream& operator<<(ostream& os, const StFmsPoint& v) {
   return os << "StFmsPoint:\n\tenergy: " << v.energy()

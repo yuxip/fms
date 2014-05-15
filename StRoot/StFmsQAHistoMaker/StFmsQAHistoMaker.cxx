@@ -574,7 +574,6 @@ void StFmsQAHistoMaker::fmsEventQa() {
     }
   }
   for(StSPtrVecFmsPointConstIterator ipts = fmspoints.begin(); ipts != fmspoints.end(); ipts++){
-    //(*ipts)->Print();
     Float_t photonE = (*ipts)->energy();
     hfmsphoEvsevt->Fill(ievt,photonE);
     Float_t photonEta = ((*ipts)->fourMomentum()).Eta();
