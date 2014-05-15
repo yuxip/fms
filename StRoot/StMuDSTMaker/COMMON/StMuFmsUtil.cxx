@@ -142,13 +142,17 @@ void StMuFmsUtil::fillMuFms(StMuFmsCollection *muFms,StFmsCollection *fmscol)
     StPtrVecFmsHitConstIterator hit;  // Iterate over StFmsHits
     for (hit = cluster->hits().begin(); hit != cluster->hits().end(); ++hit) {
       const int index = findElementIndex(fmscol->hits(), *hit);
-      muCluster->hits()->Add(muFms->getHit(index));
+      if (index != -1) {
+        muCluster->hits()->Add(muFms->getHit(index));
+      }  // if
     }  // for
     // Do the same procedure for photon-in-cluster information
     StPtrVecFmsPointConstIterator p;
     for (p = cluster->points().begin(); p != cluster->points().end(); ++p) {
       const int index = findElementIndex(fmscol->points(), *p);
-      muCluster->photons()->Add(muFms->getPoint(index));
+      if (index != -1) {
+        muCluster->photons()->Add(muFms->getPoint(index));
+      } // if
     }  // for
   }  // for
   return;
