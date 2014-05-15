@@ -2,15 +2,8 @@
 #define StStFmsPoint_HH
 
 #include "StObject.h"
-#include "Stiostream.h"
 
 #include "TLorentzVector.h"
-
-#include <vector>
-
-#ifndef ST_NO_NAMESPACES
-using std::vector;
-#endif
 
 //class that represents a fitted photon
 //Yuxi Pan 03/31/2013
