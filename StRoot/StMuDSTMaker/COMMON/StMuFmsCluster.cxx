@@ -23,3 +23,8 @@ StMuFmsCluster::StMuFmsCluster(const StFmsCluster& cluster)
       mX(cluster.x()), mY(cluster.y()) { }
 
 StMuFmsCluster::~StMuFmsCluster() { }
+
+void StMuFmsCluster::Clear(Option_t* /* option */) {
+  mHits.Clear();
+  mPhotons.Clear();
+}

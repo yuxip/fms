@@ -32,6 +32,7 @@ class StMuFmsCluster : public TObject {
   StMuFmsCluster(const StFmsCluster&);
   /** Destructor */
   virtual ~StMuFmsCluster();
+  virtual void Clear(Option_t* option = "");
   /** ID of the sub-detector with which the cluster is associated */
   UShort_t detectorId() const { return mDetectorId; }
   /** Category of the cluster (see EFmsClusterCategory) */
