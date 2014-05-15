@@ -9,8 +9,8 @@
  \date      2014
  \copyright Brookhaven National Lab
  */
-#ifndef StStFmsPoint_HH
-#define StStFmsPoint_HH
+#ifndef STROOT_STEVENT_STFMSPOINT_H_
+#define STROOT_STEVENT_STFMSPOINT_H_
 
 #include <TLorentzVector.h>
 
@@ -69,4 +69,4 @@ class StFmsPoint : public StObject {
   ClassDef(StFmsPoint, 1)
 };
 
-#endif
+#endif  // STROOT_STEVENT_STFMSPOINT_H_
