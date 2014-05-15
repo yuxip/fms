@@ -32,7 +32,10 @@ class StMuFmsUtil : public TObject
     StFmsCollection*   getFms(StMuFmsCollection*);
     void               fillMuFms(StMuFmsCollection*,StFmsCollection*);
     void               fillFms(StFmsCollection*,StMuFmsCollection*);
-              
+
+ protected:
+  /** Create StMuFmsHits from StFmsHits and fill StMuFmsCollection */
+  void fillMuFmsHits(StMuFmsCollection*, StFmsCollection*);
   ClassDef(StMuFmsUtil,1)
 };
 

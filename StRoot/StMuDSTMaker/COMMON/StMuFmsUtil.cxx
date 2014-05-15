@@ -88,30 +88,7 @@ void StMuFmsUtil::fillMuFms(StMuFmsCollection *muFms,StFmsCollection *fmscol)
 {
   if(!fmscol) return;
   if(!muFms) return;
-      
-  // starting by hits;
-  //cout <<"Filling StMuFmsCollection hits\n";
-  StSPtrVecFmsHit vecHit = fmscol->hits();
-  for(unsigned int i=0; i<fmscol->numberOfHits(); i++){
-    unsigned short detId = vecHit[i]->detectorId();
-    unsigned short ch    = vecHit[i]->channel();
-    unsigned short crate = vecHit[i]->qtCrate();
-    unsigned short slot  = vecHit[i]->qtSlot();
-    unsigned short qtch  = vecHit[i]->qtChannel();
-    unsigned short adc   = vecHit[i]->adc();
-    unsigned short tdc   = vecHit[i]->tdc();
-    float          ene   = vecHit[i]->energy();
-    muFms->addHit();
-    StMuFmsHit* muFmsHit = muFms->getHit(i);
-    muFmsHit->setDetectorId(detId);
-    muFmsHit->setChannel(ch);
-    muFmsHit->setQtCrate(crate);
-    muFmsHit->setQtSlot(slot);
-    muFmsHit->setQtChannel(qtch);
-    muFmsHit->setAdc(adc);
-    muFmsHit->setTdc(tdc);
-    muFmsHit->setEnergy(ene);
-  }
+  fillMuFmsHits(muFms, fmscol);
   // Fill points
   // Do this before clusters, so that the point list is populated before we
   // try to set photon-in-cluster information during the cluster loop
@@ -190,3 +167,27 @@ void StMuFmsUtil::fillFms(StFmsCollection* fmscol,StMuFmsCollection* muFms)
   return;
 }
 
+void StMuFmsUtil::fillMuFmsHits(StMuFmsCollection* muFms,
+                                StFmsCollection* fmscol) {
+  StSPtrVecFmsHit vecHit = fmscol->hits();
+  for(unsigned int i=0; i<fmscol->numberOfHits(); i++){
+    unsigned short detId = vecHit[i]->detectorId();
+    unsigned short ch    = vecHit[i]->channel();
+    unsigned short crate = vecHit[i]->qtCrate();
+    unsigned short slot  = vecHit[i]->qtSlot();
+    unsigned short qtch  = vecHit[i]->qtChannel();
+    unsigned short adc   = vecHit[i]->adc();
+    unsigned short tdc   = vecHit[i]->tdc();
+    float          ene   = vecHit[i]->energy();
+    muFms->addHit();
+    StMuFmsHit* muFmsHit = muFms->getHit(i);
+    muFmsHit->setDetectorId(detId);
+    muFmsHit->setChannel(ch);
+    muFmsHit->setQtCrate(crate);
+    muFmsHit->setQtSlot(slot);
+    muFmsHit->setQtChannel(qtch);
+    muFmsHit->setAdc(adc);
+    muFmsHit->setTdc(tdc);
+    muFmsHit->setEnergy(ene);
+  }
+}
