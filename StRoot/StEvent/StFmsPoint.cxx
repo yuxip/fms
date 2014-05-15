@@ -9,7 +9,7 @@
  \date      2014
  \copyright Brookhaven National Lab
  */
-#include "StFmsPoint.h"
+#include "StRoot/StEvent/StFmsPoint.h"
 
 ClassImp(StFmsPoint)
 

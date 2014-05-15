@@ -12,9 +12,9 @@
 #ifndef StStFmsPoint_HH
 #define StStFmsPoint_HH
 
-#include "StObject.h"
+#include <TLorentzVector.h>
 
-#include "TLorentzVector.h"
+#include "StRoot/St_base/StObject.h"
 
 /** Represents a point (photon etc) fitted to a cluster of FMS towers */
 class StFmsPoint : public StObject {
