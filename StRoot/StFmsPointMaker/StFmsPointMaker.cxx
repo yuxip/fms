@@ -14,6 +14,7 @@
 #include <boost/foreach.hpp>
 
 #include <TLorentzVector.h>
+#include <TProcessID.h>
 
 #include "StRoot/St_base/StMessMgr.h"
 #include "StRoot/StEvent/StEvent.h"
@@ -38,7 +39,7 @@ TLorentzVector compute4Momentum(const TVector3& xyz, Double_t energy) {
 }  // unnamed namespace
 
 StFmsPointMaker::StFmsPointMaker(const char* name)
-    : StMaker(name), mFmsDbMaker(NULL) { }
+    : StMaker(name), mFmsDbMaker(NULL), mObjectCount(0) { }
 
 StFmsPointMaker::~StFmsPointMaker() { }
 
@@ -57,6 +58,13 @@ Int_t StFmsPointMaker::InitRun(Int_t runNumber) {
 }
 
 Int_t StFmsPointMaker::Make() {
+  // Cache the current count of referenced objects, as discussed here
+  // http://root.cern.ch/root/htmldoc/TRef.html
+  /** \note Object count caching should probably be done in e.g. StMuDstMaker
+      however we do it in StFmsPointMaker for now until we can verify changes
+      with the MuDST coordinator. It should work OK as I don't think any other
+      STAR makers use TRef. */
+  mObjectCount = TProcessID::GetObjectCount();
   if (!populateTowerLists()) {
     LOG_ERROR << "StFmsPointMaker::Make() - failed to initialise tower " <<
       "lists for the event" << endm;
@@ -69,6 +77,9 @@ Int_t StFmsPointMaker::Make() {
 
 void StFmsPointMaker::Clear(Option_t* option) {
   mTowers.clear();
+  // Reset the count of referenced objects to the value before the previous
+  // call to Make(), in order prevent ever-growing table of objects
+  TProcessID::SetObjectCount(mObjectCount);
   StMaker::Clear(option);
 }
 

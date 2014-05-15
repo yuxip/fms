@@ -121,6 +121,7 @@ class StFmsPointMaker : public StMaker {
   StFmsDbMaker* mFmsDbMaker;  //!< Access to FMS database information
   FMSCluster::StFmsGeometry mGeometry;  //!< Access to current FMS geometry
   TowerMap mTowers;  //!< One for each sub-detector, keyed by detector ID
+  int mObjectCount;  //!
   ClassDef(StFmsPointMaker, 0)
 };
 #endif  // STROOT_STFMSPOINTMAKER_STFMSPOINTMAKER_H_
