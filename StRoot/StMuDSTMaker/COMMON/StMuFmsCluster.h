@@ -12,9 +12,8 @@
 #ifndef STROOT_STMUDSTMAKER_COMMON_STMUFMSCLUSTER_H_
 #define STROOT_STMUDSTMAKER_COMMON_STMUFMSCLUSTER_H_
 
+#include <TObject.h>
 #include <TRefArray.h>
-
-#include "StRoot/St_base/StObject.h"
 
 class StFmsCluster;  // Equivalent class in StEvent
 
@@ -24,7 +23,7 @@ class StFmsCluster;  // Equivalent class in StEvent
  Describes a cluster (collection of adjacent towers) in the FMS.
  May be created by one or more photons.
  */
-class StMuFmsCluster : public StObject {
+class StMuFmsCluster : public TObject {
  public:
   /** Constructor */
   StMuFmsCluster(int detectorId = 0, int category = -1, float energy = 0.f,
