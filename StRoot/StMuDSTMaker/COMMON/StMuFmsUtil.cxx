@@ -88,19 +88,11 @@ void StMuFmsUtil::fillMuFms(StMuFmsCollection *muFms,StFmsCollection *fmscol)
 {
   if(!fmscol) return;
   if(!muFms) return;
+  // Do hits and points before clusters, so that the hit and point lists are
+  // populated before we try to set hit- and photon-in-cluster information
+  // during the cluster loop
   fillMuFmsHits(muFms, fmscol);
-  // Fill points
-  // Do this before clusters, so that the point list is populated before we
-  // try to set photon-in-cluster information during the cluster loop
-  for (int i(0); i < fmscol->numberOfPoints(); ++i) {
-    const StFmsPoint* point = fmscol->points()[i];
-    muFms->addPoint();
-    StMuFmsPoint* muPoint = muFms->getPoint(i);
-    muPoint->setDetectorId(point->detectorId());
-    muPoint->setEnergy(point->energy());
-    muPoint->setX(point->x());
-    muPoint->setY(point->y());
-  }  // for
+  fillMuFmsPoints(muFms, fmscol);
   fillMuFmsClusters(muFms, fmscol);
   return;
 }
@@ -194,5 +186,18 @@ void StMuFmsUtil::fillMuFmsClusters(StMuFmsCollection* muFms,
         muCluster->photons()->Add(muFms->getPoint(index));
       } // if
     }  // for
+  }  // for
+}
+
+void StMuFmsUtil::fillMuFmsPoints(StMuFmsCollection* muFms,
+                                  StFmsCollection* fmscol) {
+  for (int i(0); i < fmscol->numberOfPoints(); ++i) {
+    const StFmsPoint* point = fmscol->points()[i];
+    muFms->addPoint();
+    StMuFmsPoint* muPoint = muFms->getPoint(i);
+    muPoint->setDetectorId(point->detectorId());
+    muPoint->setEnergy(point->energy());
+    muPoint->setX(point->x());
+    muPoint->setY(point->y());
   }  // for
 }
