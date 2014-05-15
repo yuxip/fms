@@ -171,6 +171,8 @@ Int_t StFmsQAHistoMaker::Init() {
     hmufmsClusterHitEvsChannel = duplicate(
       *hmufmshitEvsChannel, "hmufmsClusterHitEvsChannel",
       "StMuDst FMS all hits in clusters energy vs channel");
+    hmufmsNHitsPerCluster = new TH1F("hmufmsNHitsPerCluster", "Hits per cluster",
+      20, 0, 20);
 		hfmscluEvseta = new TH2F("hfmscluEvseta","FMS cluster energy vs eta",100,2.5,4.5,250,0,250);
 		hmufmscluEvseta = static_cast<TH2F*>(hfmscluEvseta->Clone("hmufmscluEvseta"));
 		hmufmscluEvseta->SetTitle("StMuDst FMS cluster energy vs eta");
@@ -600,6 +602,7 @@ void StFmsQAHistoMaker::fmsMuDstQa() {
   for (int i(0); i < mufmsCollection->numberOfClusters(); ++i) {
     StMuFmsCluster* cluster = mufmsCollection->getCluster(i);
     if (cluster) {
+      hmufmsNHitsPerCluster->Fill(cluster->hits()->GetEntries());
       TVector3 xyz = mGeometry.columnRowToGlobalCoordinates(
         cluster->x(), cluster->y(), cluster->detectorId());
       hmufmscluEvseta->Fill(xyz.Eta(), cluster->energy());
