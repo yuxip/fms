@@ -11,11 +11,3 @@ StFmsPoint::StFmsPoint() : StObject() {
 }
 
 StFmsPoint::~StFmsPoint() {}
-
-ostream& operator<<(ostream& os, const StFmsPoint& v) {
-  return os << "StFmsPoint:\n\tenergy: " << v.energy()
-                  << "\n\txpos:   " << v.x()
-                  << "\n\typos:   " << v.y()
-                  << "\n\tphId:   " << v.id()
-                  << "\n";
-}

@@ -45,6 +45,4 @@ class StFmsPoint : public StObject {
   ClassDef(StFmsPoint, 1)
 };
 
-ostream& operator<<(ostream&, const StFmsPoint&);
-
 #endif
