@@ -100,29 +100,7 @@ void StMuFmsUtil::fillFms(StFmsCollection* fmscol,StMuFmsCollection* muFms)
 {
   if(!muFms) return;
   if(!fmscol) return;
-  //cout <<"Filling StMuFmsCollection hits\n";
-  TClonesArray* arrHit = muFms->getHitArray();
-  for(unsigned int i=0; i<muFms->numberOfHits(); i++){
-    unsigned short detId = ((StMuFmsHit*)(arrHit->At(i)))->detectorId();
-    unsigned short ch    = ((StMuFmsHit*)(arrHit->At(i)))->channel();
-    unsigned short crate = ((StMuFmsHit*)(arrHit->At(i)))->qtCrate();
-    unsigned short slot  = ((StMuFmsHit*)(arrHit->At(i)))->qtSlot();
-    unsigned short qtch  = ((StMuFmsHit*)(arrHit->At(i)))->qtChannel();
-    unsigned short adc   = ((StMuFmsHit*)(arrHit->At(i)))->adc();
-    unsigned short tdc   = ((StMuFmsHit*)(arrHit->At(i)))->tdc();
-    float          ene   = ((StMuFmsHit*)(arrHit->At(i)))->energy();
-
-    StFmsHit* hit = new StFmsHit();
-    hit->setDetectorId(detId);
-    hit->setChannel(ch);
-    hit->setQtCrate(crate);
-    hit->setQtSlot(slot);
-    hit->setQtChannel(qtch);
-    hit->setAdc(adc);
-    hit->setTdc(tdc);
-    hit->setEnergy(ene);
-    fmscol->addHit(hit);
-  }
+  fillFmsHits(fmscol, muFms);
 }
 
 void StMuFmsUtil::fillMuFmsHits(StMuFmsCollection* muFms,
@@ -195,5 +173,30 @@ void StMuFmsUtil::fillMuFmsPoints(StMuFmsCollection* muFms,
     muPoint->setEnergy(point->energy());
     muPoint->setX(point->x());
     muPoint->setY(point->y());
+  }  // for
+}
+
+void StMuFmsUtil::fillFmsHits(StFmsCollection* fmscol,
+                              StMuFmsCollection* muFms) {
+  TClonesArray* arrHit = muFms->getHitArray();
+  for(unsigned int i=0; i<muFms->numberOfHits(); i++){
+    unsigned short detId = ((StMuFmsHit*)(arrHit->At(i)))->detectorId();
+    unsigned short ch    = ((StMuFmsHit*)(arrHit->At(i)))->channel();
+    unsigned short crate = ((StMuFmsHit*)(arrHit->At(i)))->qtCrate();
+    unsigned short slot  = ((StMuFmsHit*)(arrHit->At(i)))->qtSlot();
+    unsigned short qtch  = ((StMuFmsHit*)(arrHit->At(i)))->qtChannel();
+    unsigned short adc   = ((StMuFmsHit*)(arrHit->At(i)))->adc();
+    unsigned short tdc   = ((StMuFmsHit*)(arrHit->At(i)))->tdc();
+    float          ene   = ((StMuFmsHit*)(arrHit->At(i)))->energy();
+    StFmsHit* hit = new StFmsHit();
+    hit->setDetectorId(detId);
+    hit->setChannel(ch);
+    hit->setQtCrate(crate);
+    hit->setQtSlot(slot);
+    hit->setQtChannel(qtch);
+    hit->setAdc(adc);
+    hit->setTdc(tdc);
+    hit->setEnergy(ene);
+    fmscol->addHit(hit);
   }  // for
 }
