@@ -511,6 +511,16 @@ int StMuDstMaker::Init(){
 //-----------------------------------------------------------------------
 void StMuDstMaker::Clear(const char *){
   DEBUGMESSAGE2("");
+  // We need to clear the StMuFmsCluster array even when reading events, in
+  // order to clear the TRefArrays of hits and photons it holds. Otherwise
+  // the references from the previous event may be re-used.
+  const int fmsClusterIndex = __NARRAYS__ +
+#ifndef __NO_STRANGE_MUDST__
+    __NSTRANGEARRAYS__ +
+#endif
+    // FMS arrays follow PMD arrays. Hits = 0th, clusters = 1st, photons = 2nd
+    __NMCARRAYS__ + __NEMCARRAYS__ + __NPMDARRAYS__ + 1;
+  mAArrays[fmsClusterIndex]->Clear("C");  // "C" calls StMuFmsCluster::Clear
   if (mIoMode==ioRead)
     return;
   clearArrays();
