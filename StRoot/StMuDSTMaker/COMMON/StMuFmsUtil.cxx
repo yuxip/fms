@@ -27,6 +27,7 @@
 #include <algorithm>  // For std::find
 #include <iterator>  // For std::distance
 
+#include <TCollection.h>  // For TIter
 #include <TRefArray.h>
 #include <TVector3.h>
 
@@ -101,6 +102,7 @@ void StMuFmsUtil::fillFms(StFmsCollection* fmscol,StMuFmsCollection* muFms)
   if(!muFms) return;
   if(!fmscol) return;
   fillFmsHits(fmscol, muFms);
+  fillFmsClusters(fmscol, muFms);
 }
 
 void StMuFmsUtil::fillMuFmsHits(StMuFmsCollection* muFms,
@@ -192,5 +194,29 @@ void StMuFmsUtil::fillFmsHits(StFmsCollection* fmscol,
     hit->setAdc(muHit->adc());
     hit->setTdc(muHit->tdc());
     hit->setEnergy(muHit->energy());
+  }  // while
+}
+
+void StMuFmsUtil::fillFmsClusters(StFmsCollection* fmscol,
+                                  StMuFmsCollection* muFms) {
+  // Using TIter to iterate is safe in the case of clusters being NULL
+  TIter next(muFms->getClusterArray());
+  StMuFmsCluster* muCluster(NULL);
+  while ((muCluster = static_cast<StMuFmsCluster*>(next()))) {
+    // Create an StFmsCluster from this StMuFmsCluster
+    fmscol->addCluster(new StFmsCluster);
+    StFmsCluster* cluster = fmscol->clusters().back();
+    cluster->setDetectorId(muCluster->detectorId());
+    cluster->setCategory(muCluster->category());
+    cluster->setNTowers(muCluster->hits()->GetEntries());
+    cluster->setNPhotons(muCluster->photons()->GetEntries());
+    cluster->setEnergy(muCluster->energy());
+    cluster->setX(muCluster->x());
+    cluster->setY(muCluster->y());
+    // StMuFmsCluster does not store all the information in StFmsCluster, so
+    // sigmaMin, sigmaMax, chi2Ndf1Photon, chi2Ndf2Photon and id will not be
+    // filled
+    /** \todo fill 4-momentum. Requires adding z field to StMuFmsPoint */
+    /** \todo propagate hit- and photon-in-cluster information */
   }  // while
 }
