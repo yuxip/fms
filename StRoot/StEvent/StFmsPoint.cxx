@@ -11,12 +11,7 @@
  */
 #include "StRoot/StEvent/StFmsPoint.h"
 
-StFmsPoint::StFmsPoint() : StObject() {
-  mDetectorId = 0;
-  mEnergy = -1.0;
-  mX = -99.0;
-  mY = -99.0;
-  mId = -1;
-}
+StFmsPoint::StFmsPoint()
+    : mDetectorId(0), mEnergy(-1.0), mX(-99.0), mY(-99.0), mId(-1) { }
 
-StFmsPoint::~StFmsPoint() {}
+StFmsPoint::~StFmsPoint() { }
