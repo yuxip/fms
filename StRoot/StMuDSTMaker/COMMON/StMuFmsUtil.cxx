@@ -101,37 +101,7 @@ void StMuFmsUtil::fillMuFms(StMuFmsCollection *muFms,StFmsCollection *fmscol)
     muPoint->setX(point->x());
     muPoint->setY(point->y());
   }  // for
-  // Fill clusters
-  for (int i(0); i < fmscol->numberOfClusters(); ++i) {
-    const StFmsCluster* cluster = fmscol->clusters()[i];
-    muFms->addCluster();
-    StMuFmsCluster* muCluster = muFms->getCluster(i);
-    muCluster->setDetectorId(cluster->detectorId());
-    muCluster->setCategory(cluster->category());
-    muCluster->setEnergy(cluster->energy());
-    muCluster->setX(cluster->x());
-    muCluster->setY(cluster->y());
-    // Propagate hits-in-cluster information
-    // Remember, clusters don't *own* hits, they just reference them.
-    // For each StFmsHit in the cluster, find the index of that hit in the main
-    // StFmsCollection hit array. Then add the StMuFmsHit (from the main
-    // StMuFmsCollection hit array) at the same index to the StMuFmsCluster.
-    StPtrVecFmsHitConstIterator hit;  // Iterate over StFmsHits
-    for (hit = cluster->hits().begin(); hit != cluster->hits().end(); ++hit) {
-      const int index = findElementIndex(fmscol->hits(), *hit);
-      if (index != -1) {
-        muCluster->hits()->Add(muFms->getHit(index));
-      }  // if
-    }  // for
-    // Do the same procedure for photon-in-cluster information
-    StPtrVecFmsPointConstIterator p;
-    for (p = cluster->points().begin(); p != cluster->points().end(); ++p) {
-      const int index = findElementIndex(fmscol->points(), *p);
-      if (index != -1) {
-        muCluster->photons()->Add(muFms->getPoint(index));
-      } // if
-    }  // for
-  }  // for
+  fillMuFmsClusters(muFms, fmscol);
   return;
 }
 
@@ -190,4 +160,39 @@ void StMuFmsUtil::fillMuFmsHits(StMuFmsCollection* muFms,
     muFmsHit->setTdc(tdc);
     muFmsHit->setEnergy(ene);
   }
+}
+
+void StMuFmsUtil::fillMuFmsClusters(StMuFmsCollection* muFms,
+                                    StFmsCollection* fmscol) {
+  // Fill clusters
+  for (int i(0); i < fmscol->numberOfClusters(); ++i) {
+    const StFmsCluster* cluster = fmscol->clusters()[i];
+    muFms->addCluster();  // Expand StMuFmsCollection cluster array by 1
+    StMuFmsCluster* muCluster = muFms->getCluster(i);
+    muCluster->setDetectorId(cluster->detectorId());
+    muCluster->setCategory(cluster->category());
+    muCluster->setEnergy(cluster->energy());
+    muCluster->setX(cluster->x());
+    muCluster->setY(cluster->y());
+    // Propagate hits-in-cluster information
+    // Remember, clusters don't *own* hits, they just reference them.
+    // For each StFmsHit in the cluster, find the index of that hit in the main
+    // StFmsCollection hit array. Then add the StMuFmsHit (from the main
+    // StMuFmsCollection hit array) at the same index to the StMuFmsCluster.
+    StPtrVecFmsHitConstIterator hit;  // Iterate over StFmsHits
+    for (hit = cluster->hits().begin(); hit != cluster->hits().end(); ++hit) {
+      const int index = findElementIndex(fmscol->hits(), *hit);
+      if (index != -1) {
+        muCluster->hits()->Add(muFms->getHit(index));
+      }  // if
+    }  // for
+    // Do the same procedure for photon-in-cluster information
+    StPtrVecFmsPointConstIterator p;
+    for (p = cluster->points().begin(); p != cluster->points().end(); ++p) {
+      const int index = findElementIndex(fmscol->points(), *p);
+      if (index != -1) {
+        muCluster->photons()->Add(muFms->getPoint(index));
+      } // if
+    }  // for
+  }  // for
 }

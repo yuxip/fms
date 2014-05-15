@@ -36,6 +36,8 @@ class StMuFmsUtil : public TObject
  protected:
   /** Create StMuFmsHits from StFmsHits and fill StMuFmsCollection */
   void fillMuFmsHits(StMuFmsCollection*, StFmsCollection*);
+  /** Create StMuFmsClusters from StFmsClusters and fill StMuFmsCollection */
+  void fillMuFmsClusters(StMuFmsCollection*, StFmsCollection*);
   ClassDef(StMuFmsUtil,1)
 };
 
