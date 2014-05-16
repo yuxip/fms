@@ -178,25 +178,19 @@ void StMuFmsUtil::fillMuFmsPoints(StMuFmsCollection* muFms,
 
 void StMuFmsUtil::fillFmsHits(StFmsCollection* fmscol,
                               StMuFmsCollection* muFms) {
-  TClonesArray* arrHit = muFms->getHitArray();
-  for(unsigned int i=0; i<muFms->numberOfHits(); i++){
-    unsigned short detId = ((StMuFmsHit*)(arrHit->At(i)))->detectorId();
-    unsigned short ch    = ((StMuFmsHit*)(arrHit->At(i)))->channel();
-    unsigned short crate = ((StMuFmsHit*)(arrHit->At(i)))->qtCrate();
-    unsigned short slot  = ((StMuFmsHit*)(arrHit->At(i)))->qtSlot();
-    unsigned short qtch  = ((StMuFmsHit*)(arrHit->At(i)))->qtChannel();
-    unsigned short adc   = ((StMuFmsHit*)(arrHit->At(i)))->adc();
-    unsigned short tdc   = ((StMuFmsHit*)(arrHit->At(i)))->tdc();
-    float          ene   = ((StMuFmsHit*)(arrHit->At(i)))->energy();
-    StFmsHit* hit = new StFmsHit();
-    hit->setDetectorId(detId);
-    hit->setChannel(ch);
-    hit->setQtCrate(crate);
-    hit->setQtSlot(slot);
-    hit->setQtChannel(qtch);
-    hit->setAdc(adc);
-    hit->setTdc(tdc);
-    hit->setEnergy(ene);
-    fmscol->addHit(hit);
-  }  // for
+  // Using TIter to iterate is safe in the case of hits being NULL
+  TIter next(muFms->getHitArray());
+  StMuFmsHit* muHit(NULL);
+  while ((muHit = static_cast<StMuFmsHit*>(next()))) {
+    fmscol->addHit(new StFmsHit);
+    StFmsHit* hit = fmscol->hits().back();
+    hit->setDetectorId(muHit->detectorId());
+    hit->setChannel(muHit->channel());
+    hit->setQtCrate(muHit->qtCrate());
+    hit->setQtSlot(muHit->qtSlot());
+    hit->setQtChannel(muHit->qtChannel());
+    hit->setAdc(muHit->adc());
+    hit->setTdc(muHit->tdc());
+    hit->setEnergy(muHit->energy());
+  }  // while
 }
