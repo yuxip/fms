@@ -44,6 +44,8 @@ class StMuFmsUtil : public TObject
   void fillFmsHits(StFmsCollection*, StMuFmsCollection*);
   /** Create StFmsClusters from StMuFmsClusters and fill StFmsCollection */
   void fillFmsClusters(StFmsCollection*, StMuFmsCollection*);
+  /** Create StFmsPoints from StMuFmsPoints and fill StFmsCollection */
+  void fillFmsPoints(StFmsCollection*, StMuFmsCollection*);
   ClassDef(StMuFmsUtil,1)
 };
 

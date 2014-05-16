@@ -102,6 +102,7 @@ void StMuFmsUtil::fillFms(StFmsCollection* fmscol,StMuFmsCollection* muFms)
   if(!muFms) return;
   if(!fmscol) return;
   fillFmsHits(fmscol, muFms);
+  fillFmsPoints(fmscol, muFms);
   fillFmsClusters(fmscol, muFms);
 }
 
@@ -218,5 +219,21 @@ void StMuFmsUtil::fillFmsClusters(StFmsCollection* fmscol,
     // filled
     /** \todo fill 4-momentum. Requires adding z field to StMuFmsPoint */
     /** \todo propagate hit- and photon-in-cluster information */
+  }  // while
+}
+
+void StMuFmsUtil::fillFmsPoints(StFmsCollection* fmscol,
+                                StMuFmsCollection* muFms) {
+  // Using TIter to iterate is safe in the case of points being NULL
+  TIter next(muFms->getPointArray());
+  StMuFmsPoint* muPoint(NULL);
+  while ((muPoint = static_cast<StMuFmsPoint*>(next()))) {
+    // Create an StFmsPoint from this StMuFmsPoint
+    fmscol->addPoint(new StFmsPoint);
+    StFmsPoint* point = fmscol->points().back();
+    point->setDetectorId(muPoint->detectorId());
+    point->setEnergy(muPoint->energy());
+    point->setX(muPoint->x());
+    point->setY(muPoint->y());
   }  // while
 }
