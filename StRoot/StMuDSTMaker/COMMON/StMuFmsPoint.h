@@ -14,6 +14,8 @@
 
 #include <TObject.h>
 
+class StFmsPoint;  // The equivalent point structure in StEvent
+
 /**
  Micro-DST FMS "point" class
 
@@ -25,6 +27,8 @@ class StMuFmsPoint : public TObject {
   /** Constructor */
   StMuFmsPoint(int detectorId = 0, float energy = 0.f,
                float x = 0.f, float y = 0.f, float z = 0.f);
+  /** Construct from the equivalent StEvent point structure */
+  StMuFmsPoint(const StFmsPoint&);
   /** Destructor */
   virtual ~StMuFmsPoint();
   /** ID of the sub-detector with which the point is associated */
