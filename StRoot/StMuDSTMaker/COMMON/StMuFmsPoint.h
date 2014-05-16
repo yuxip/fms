@@ -24,17 +24,19 @@ class StMuFmsPoint : public TObject {
  public:
   /** Constructor */
   StMuFmsPoint(int detectorId = 0, float energy = 0.f,
-               float x = 0.f, float y = 0.f);
+               float x = 0.f, float y = 0.f, float z = 0.f);
   /** Destructor */
   virtual ~StMuFmsPoint();
   /** ID of the sub-detector with which the point is associated */
   UShort_t detectorId() const { return mDetectorId; }
   /** Total point energy */
   float energy() const { return mEnergy; }
-  /** x "center of gravity" of the point */
+  /** x "center of gravity" of the point (cm) */
   float x() const { return mX; }
-  /** y "center of gravity" of the point */
+  /** y "center of gravity" of the point (cm) */
   float y() const { return mY; }
+  /** z position of front face of sub-detector (cm) */
+  float z() const { return mZ; }
   /** Set ID of the sub-detector with which the point is associated */
   void setDetectorId(UShort_t detector) { mDetectorId = detector; }
   /** Set total point energy (sum over towers) */
@@ -43,12 +45,15 @@ class StMuFmsPoint : public TObject {
   void setX(float x) { mX = x; }
   /** Set y "center of gravity" of the point */
   void setY(float y) { mY = y; }
+  /** Set z position of front face of sub-detector (cm) */
+  void setZ(float z) { mZ = z; }
 
  protected:
   UShort_t mDetectorId;  ///< Detector ID as defined in database
   Float_t mEnergy;  ///< Total energy contained in the point
   Float_t mX;  ///< Mean x ("center of gravity")
   Float_t mY;  ///< Mean y ("center of gravity")
+  Float_t mZ;  ///< z at front face of sub-detector
 
  private:
   /**

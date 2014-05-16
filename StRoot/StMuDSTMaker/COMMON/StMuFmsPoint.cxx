@@ -11,7 +11,8 @@
 
 #include "StMuFmsPoint.h"
 
-StMuFmsPoint::StMuFmsPoint(int detectorId, float energy, float x, float y)
-    : mDetectorId(detectorId), mEnergy(energy), mX(x), mY(y) { }
+StMuFmsPoint::StMuFmsPoint(int detectorId, float energy,
+                           float x, float y, float z)
+    : mDetectorId(detectorId), mEnergy(energy), mX(x), mY(y), mZ(z) { }
 
 StMuFmsPoint::~StMuFmsPoint() { }
