@@ -44,6 +44,12 @@ class StMuFmsPoint : public TObject {
   float z() const { return mZ; }
   /** (x, y, z) position of point at sub-detector face */
   TVector3 xyz() const { return TVector3(mX, mY, mZ); }
+  /**
+   (px, py, pz) of point
+
+   Assumes an uncharged particle of some mass, which must be <= energy
+   */
+  TVector3 momentum(float m = 0.f) const;
   /** Set ID of the sub-detector with which the point is associated */
   void setDetectorId(UShort_t detector) { mDetectorId = detector; }
   /** Set total point energy (sum over towers) */
