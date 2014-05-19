@@ -1,5 +1,5 @@
-#ifndef STFMSCLUSTERFINDER_H
-#define STFMSCLUSTERFINDER_H
+#ifndef STROOT_STFMSPOINTMAKER_STFMSCLUSTERFINDER_H_
+#define STROOT_STFMSPOINTMAKER_STFMSCLUSTERFINDER_H_
 
 #include <list>
 
@@ -84,4 +84,4 @@ class StFmsClusterFinder {
   ClassDef(StFmsClusterFinder, 3)
 };  // class StFmsClusterFinder
 }  // namespace FMSCluster
-#endif
+#endif  // STROOT_STFMSPOINTMAKER_STFMSCLUSTERFINDER_H_

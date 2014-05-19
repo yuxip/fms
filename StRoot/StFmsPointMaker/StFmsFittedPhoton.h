@@ -1,5 +1,5 @@
-#ifndef STFMSFITTEDPHOTON_H
-#define STFMSFITTEDPHOTON_H
+#ifndef STROOT_STFMSPOINTMAKER_STFMSFITTEDPHOTON_H_
+#define STROOT_STFMSPOINTMAKER_STFMSFITTEDPHOTON_H_
 
 #include <Rtypes.h>
 
@@ -26,4 +26,4 @@ struct StFmsFittedPhoton {
 };  // class StFmsFittedPhoton
 }  // namespace FMSCluster
 
-#endif
+#endif  // STROOT_STFMSPOINTMAKER_STFMSFITTEDPHOTON_H_

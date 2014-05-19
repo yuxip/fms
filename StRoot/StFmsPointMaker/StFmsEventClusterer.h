@@ -1,5 +1,5 @@
-#ifndef STFMSEVENTCLUSTERER_H
-#define STFMSEVENTCLUSTERER_H
+#ifndef STROOT_STFMSPOINTMAKER_STFMSEVENTCLUSTERER_H_
+#define STROOT_STFMSPOINTMAKER_STFMSEVENTCLUSTERER_H_
 
 #include <vector>
 
@@ -78,4 +78,4 @@ class StFmsEventClusterer: public TObject {
   ClassDef(StFmsEventClusterer, 7)
 };
 }  // namespace FMSCluster
-#endif
+#endif  // STROOT_STFMSPOINTMAKER_STFMSEVENTCLUSTERER_H_

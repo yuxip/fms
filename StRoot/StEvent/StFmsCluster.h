@@ -1,6 +1,6 @@
 //Yuxi Pan 03/31/2013
-#ifndef StStFmsCluster_HH
-#define StStFmsCluster_HH
+#ifndef STROOT_STEVENT_STFMSCLUSTER_H_
+#define STROOT_STEVENT_STFMSCLUSTER_H_
 
 #include <TLorentzVector.h>
 
@@ -107,4 +107,4 @@ class StFmsCluster : public StObject {
   ClassDef(StFmsCluster, 1)
 };
 
-#endif
+#endif  // STROOT_STEVENT_STFMSCLUSTER_H_

@@ -1,5 +1,5 @@
-#ifndef STFMSTOWERCLUSTER_H
-#define STFMSTOWERCLUSTER_H
+#ifndef STROOT_STFMSPOINTMAKER_STFMSTOWERCLUSTER_H_
+#define STROOT_STFMSPOINTMAKER_STFMSTOWERCLUSTER_H_
 
 #include <TObject.h>
 
@@ -104,4 +104,4 @@ class StFmsTowerCluster {
   ClassDef(StFmsTowerCluster, 7)
 };  // class StFmsTowerCluster
 }  // namespace FMSCluster
-#endif
+#endif  // STROOT_STFMSPOINTMAKER_STFMSTOWERCLUSTER_H_

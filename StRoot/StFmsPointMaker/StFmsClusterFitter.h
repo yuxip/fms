@@ -1,5 +1,5 @@
-#ifndef FIT_TOWER_H
-#define FIT_TOWER_H
+#ifndef STROOT_STFMSPOINTMAKER_STFMSCLUSTERFITTER_H_
+#define STROOT_STFMSPOINTMAKER_STFMSCLUSTERFITTER_H_
 
 #include <list>
 
@@ -136,4 +136,4 @@ class StFmsClusterFitter : public TObject {
   ClassDef(StFmsClusterFitter, 4)
 };  // class StFmsClusterFitter
 }  // namespace FMSCluster
-#endif
+#endif  // STROOT_STFMSPOINTMAKER_STFMSCLUSTERFITTER_H_

@@ -1,5 +1,5 @@
-#ifndef FPD_TOWER_H
-#define FPD_TOWER_H
+#ifndef STROOT_STFMSPOINTMAKER_STFMSTOWER_H_
+#define STROOT_STFMSPOINTMAKER_STFMSTOWER_H_
 
 #include <TObjArray.h>
 
@@ -72,4 +72,4 @@ class StFmsTower : public TObject {
 	ClassDef(StFmsTower, 7)
 };
 }  // namespace FMSCluster
-#endif
+#endif  // STROOT_STFMSPOINTMAKER_STFMSTOWER_H_

@@ -1,5 +1,5 @@
-#ifndef StFmsGeometry_
-#define StFmsGeometry_
+#ifndef STROOT_STFMSPOINTMAKER_STFMSGEOMETRY_H_
+#define STROOT_STFMSPOINTMAKER_STFMSGEOMETRY_H_
 
 #include <map>
 #include <vector>
@@ -147,4 +147,4 @@ class StFmsGeometry : public TObject {
   ClassDef(StFmsGeometry, 3)
 };  // class StFmsGeometry
 }  // namespace FMSCluster
-#endif
+#endif  // STROOT_STFMSPOINTMAKER_STFMSGEOMETRY_H_
