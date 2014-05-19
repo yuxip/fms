@@ -51,6 +51,8 @@ class StMuFmsPoint : public TObject {
   void setY(float y) { mY = y; }
   /** Set z position of front face of sub-detector (cm) */
   void setZ(float z) { mZ = z; }
+  /** Set properties from an StFmsPoint */
+  void set(const StFmsPoint&);
 
  protected:
   UShort_t mDetectorId;  ///< Detector ID as defined in database

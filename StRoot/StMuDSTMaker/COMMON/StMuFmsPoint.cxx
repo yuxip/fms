@@ -19,13 +19,19 @@ StMuFmsPoint::StMuFmsPoint(int detectorId, float energy,
                            float x, float y, float z)
     : mDetectorId(detectorId), mEnergy(energy), mX(x), mY(y), mZ(z) { }
 
-StMuFmsPoint::StMuFmsPoint(const StFmsPoint& point)
-    : mDetectorId(point.detectorId()), mEnergy(point.energy()),
-      mX(point.x()), mY(point.y()), mZ(0.) {
+StMuFmsPoint::StMuFmsPoint(const StFmsPoint& point) {
+  set(point);
+}
+
+StMuFmsPoint::~StMuFmsPoint() { }
+
+void StMuFmsPoint::set(const StFmsPoint& point) {
+  mDetectorId = point.detectorId();
+  mEnergy = point.energy();
+  mX = point.x();
+  mY = point.y();
   // Calculate z coordinate from StFmsPoint 4-momentum as it doesn't store
   // z directly. z / x = pz / px, so...
   const TLorentzVector vec4 = point.fourMomentum();
   mZ = point.x() * vec4.Pz() / vec4.Px();
 }
-
-StMuFmsPoint::~StMuFmsPoint() { }
