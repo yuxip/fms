@@ -13,6 +13,7 @@
 #define STROOT_STMUDSTMAKER_COMMON_STMUFMSPOINT_H_
 
 #include <TObject.h>
+#include <TVector3.h>
 
 class StFmsPoint;  // The equivalent point structure in StEvent
 
@@ -41,6 +42,8 @@ class StMuFmsPoint : public TObject {
   float y() const { return mY; }
   /** z position of front face of sub-detector (cm) */
   float z() const { return mZ; }
+  /** (x, y, z) position of point at sub-detector face */
+  TVector3 xyz() const { return TVector3(mX, mY, mZ); }
   /** Set ID of the sub-detector with which the point is associated */
   void setDetectorId(UShort_t detector) { mDetectorId = detector; }
   /** Set total point energy (sum over towers) */
