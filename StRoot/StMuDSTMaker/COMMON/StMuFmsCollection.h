@@ -32,7 +32,7 @@ public:
     void          init();
     void          addHit();
     void          addCluster();
-    void          addPoint();
+    StMuFmsPoint* addPoint();
     unsigned int  numberOfHits() const;
     unsigned int  numberOfClusters() const;
     unsigned int  numberOfPoints() const;

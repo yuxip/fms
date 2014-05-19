@@ -60,10 +60,10 @@ void StMuFmsCollection::addCluster() {
   new ((*mClusters)[counter]) StMuFmsCluster;
 }
 
-void StMuFmsCollection::addPoint() {
+StMuFmsPoint* StMuFmsCollection::addPoint() {
   if (!mPoints) init();
   int counter = mPoints->GetEntriesFast();
-  new ((*mPoints)[counter]) StMuFmsPoint;
+  return new ((*mPoints)[counter]) StMuFmsPoint;
 }
 
 unsigned int StMuFmsCollection::numberOfHits() const{
