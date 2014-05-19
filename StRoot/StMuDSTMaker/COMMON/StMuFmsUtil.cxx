@@ -170,9 +170,10 @@ void StMuFmsUtil::fillMuFmsPoints(StMuFmsCollection* muFms,
                                   StFmsCollection* fmscol) {
   for (int i(0); i < fmscol->numberOfPoints(); ++i) {
     const StFmsPoint* point = fmscol->points()[i];
-    muFms->addPoint();
-    StMuFmsPoint* muPoint = muFms->getPoint(i);
-    muPoint->set(*point);
+    StMuFmsPoint* muPoint = muFms->addPoint();
+    if (point && muPoint) {
+      muPoint->set(*point);
+    }  // if
   }  // for
 }
 
