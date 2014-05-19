@@ -172,10 +172,7 @@ void StMuFmsUtil::fillMuFmsPoints(StMuFmsCollection* muFms,
     const StFmsPoint* point = fmscol->points()[i];
     muFms->addPoint();
     StMuFmsPoint* muPoint = muFms->getPoint(i);
-    muPoint->setDetectorId(point->detectorId());
-    muPoint->setEnergy(point->energy());
-    muPoint->setX(point->x());
-    muPoint->setY(point->y());
+    muPoint->set(*point);
   }  // for
 }
 
