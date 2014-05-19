@@ -12,6 +12,7 @@
 #ifndef STROOT_STMUDSTMAKER_COMMON_STMUFMSPOINT_H_
 #define STROOT_STMUDSTMAKER_COMMON_STMUFMSPOINT_H_
 
+#include <TLorentzVector.h>
 #include <TObject.h>
 #include <TVector3.h>
 
@@ -50,6 +51,8 @@ class StMuFmsPoint : public TObject {
    Assumes an uncharged particle of some mass, which must be <= energy
    */
   TVector3 momentum(float m = 0.f) const;
+  /** (px, py, pz, E) of point. See also comments for momentum() */
+  TLorentzVector fourMomentum(float m = 0.f) const;
   /** Set ID of the sub-detector with which the point is associated */
   void setDetectorId(UShort_t detector) { mDetectorId = detector; }
   /** Set total point energy (sum over towers) */

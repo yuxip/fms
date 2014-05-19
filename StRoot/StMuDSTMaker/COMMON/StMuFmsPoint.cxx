@@ -14,8 +14,6 @@
 #include <algorithm>  // For std::min
 #include <cmath>
 
-#include <TLorentzVector.h>
-
 #include "StRoot/StEvent/StFmsPoint.h"
 
 StMuFmsPoint::StMuFmsPoint(int detectorId, float energy,
@@ -37,6 +35,10 @@ TVector3 StMuFmsPoint::momentum(float m) const {
     v.SetMag(mEnergy);
   }  // if
   return v;
+}
+
+TLorentzVector StMuFmsPoint::fourMomentum(float m) const {
+  return TLorentzVector(momentum(m), mEnergy);
 }
 
 void StMuFmsPoint::set(const StFmsPoint& point) {
