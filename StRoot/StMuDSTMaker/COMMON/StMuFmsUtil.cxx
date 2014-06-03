@@ -108,6 +108,10 @@ void StMuFmsUtil::fillFms(StFmsCollection* fmscol,StMuFmsCollection* muFms)
   fillFmsHits(fmscol, muFms);
   fillFmsPoints(fmscol, muFms);
   fillFmsClusters(fmscol, muFms);
+  // Now we need to go back and set parent cluster of each point, now that the
+  // cluster list in StFmsCollection is populated (as these are the clusters
+  // we reference).
+  setFmsPointParentClusters(fmscol, muFms);
 }
 
 void StMuFmsUtil::fillMuFmsHits(StMuFmsCollection* muFms,
@@ -260,4 +264,23 @@ void StMuFmsUtil::fillFmsPoints(StFmsCollection* fmscol,
     point->setX(muPoint->x());
     point->setY(muPoint->y());
   }  // while
+}
+
+void StMuFmsUtil::setFmsPointParentClusters(StFmsCollection* fmscol,
+                                            StMuFmsCollection* muFms) {
+  // Points and clusters in the StMuFmsCollection and StFmsCollection are in
+  // the same order, so we get the corresponding objects just by index
+  for (int i(0); i < muFms->numberOfClusters(); ++i) {
+    const StMuFmsPoint* muPoint = muFms->getPoint(i);
+    if (!muPoint) {
+      continue;
+    }  // if
+    const int index = muFms->getClusterArray()->IndexOf(muPoint->cluster());
+    if (index != -1) {
+      StFmsPoint* point = fmscol->points().at(i);
+      if (point) {
+        point->setCluster(fmscol->clusters().at(index));
+      }  // if
+    }  // if
+  }  // for
 }
