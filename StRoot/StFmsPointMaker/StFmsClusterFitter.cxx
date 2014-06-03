@@ -25,10 +25,6 @@ namespace FMSCluster {
 Float_t StFmsClusterFitter::mTowerWidthXY[2];
 std::list<StFmsTower*>* StFmsClusterFitter::mTowers(NULL);
 
-TF2* StFmsClusterFitter::showerShapeFunction() {
-  return &showerShapeFitFunction;
-}
-
 StFmsClusterFitter::StFmsClusterFitter(const StFmsGeometry* geometry,
                                        Int_t detectorId)
     : mMinuit(3 * kMaxNPhotons + 1) {
@@ -62,46 +58,8 @@ StFmsClusterFitter::StFmsClusterFitter(const StFmsGeometry* geometry,
 
 StFmsClusterFitter::~StFmsClusterFitter() { }
 
-// Calculate fractional photon energy deposition in a tower based on its (x, y)
-// position relative to the tower center
-Double_t StFmsClusterFitter::energyDepositionDistribution(
-    Double_t* xy,
-    Double_t* parameters) {
-  Double_t f = 0;
-  Double_t x = xy[0];
-  Double_t y = xy[1];
-  for (Int_t i = 1; i <= 3; i++) {
-    // The parameter array has 10 elements, but we only use 6
-    // Parameters 1 to 6 are a1, a2, a3, b1, b2, b3 as defined in
-    // https://drupal.star.bnl.gov/STAR/blog/leun/2010/aug/02/fms-meeting-20100802
-    Double_t a = parameters[i];
-    Double_t b = parameters[i + 3];
-    f += a * atan(x * y / (b * sqrt(b * b + x * x + y * y)));
-  }  // for
-  return f / TMath::TwoPi();
-}
-
-// xy array contains (x, y) position of the photon relative to the tower center
-Double_t StFmsClusterFitter::energyDepositionInTower(Double_t* xy,
-                                                     Double_t* para) {
-  Double_t gg(0);
-  // Calculate the energy deposited in a tower
-  // Evaluate energyDepositionDistribution at x+/-d/2 and y+/-d/2, for tower
-  // width d. The double-loop below is equivalent to
-  // F(x+d/2, y+d/2) + F(x-d/2, y-d/2) - F(x-d/2, y+d/2) - F(x+d/2, y-d/2)
-  for (Int_t ix = 0; ix < 2; ix++) {
-    for (Int_t iy = 0; iy < 2; iy++) {
-      Double_t signX = pow(-1.0, ix);  // 1 or -1
-      Double_t signY = pow(-1.0, iy);  // 1 or -1
-      // para[0] is the cell width
-      // para[7] and para[8] are offsets that are normally zero
-      Double_t s[2];
-      s[0] = xy[0] - para[7] + signX * para[0] / 2.0;  // x +/- d/2
-      s[1] = xy[1] - para[8] + signY * para[0] / 2.0;  // y +/- d/2
-      gg += signX * signY * energyDepositionDistribution(s, para);
-    }  // for
-  }  // for
-  return gg * para[9];
+TF2* StFmsClusterFitter::showerShapeFunction() {
+  return &showerShapeFitFunction;
 }
 
 Double_t StFmsClusterFitter::fit(const Double_t* para, const Double_t* step,
@@ -268,6 +226,48 @@ Int_t StFmsClusterFitter::fit2PhotonCluster(const Double_t* para,
     mMinuit.Eval(7, NULL, chiSq, param, iflag);  // ... so 2nd argument unneeded
   }  // if
   return chiSq;
+}
+
+// xy array contains (x, y) position of the photon relative to the tower center
+Double_t StFmsClusterFitter::energyDepositionInTower(Double_t* xy,
+                                                     Double_t* para) {
+  Double_t gg(0);
+  // Calculate the energy deposited in a tower
+  // Evaluate energyDepositionDistribution at x+/-d/2 and y+/-d/2, for tower
+  // width d. The double-loop below is equivalent to
+  // F(x+d/2, y+d/2) + F(x-d/2, y-d/2) - F(x-d/2, y+d/2) - F(x+d/2, y-d/2)
+  for (Int_t ix = 0; ix < 2; ix++) {
+    for (Int_t iy = 0; iy < 2; iy++) {
+      Double_t signX = pow(-1.0, ix);  // 1 or -1
+      Double_t signY = pow(-1.0, iy);  // 1 or -1
+      // para[0] is the cell width
+      // para[7] and para[8] are offsets that are normally zero
+      Double_t s[2];
+      s[0] = xy[0] - para[7] + signX * para[0] / 2.0;  // x +/- d/2
+      s[1] = xy[1] - para[8] + signY * para[0] / 2.0;  // y +/- d/2
+      gg += signX * signY * energyDepositionDistribution(s, para);
+    }  // for
+  }  // for
+  return gg * para[9];
+}
+
+// Calculate fractional photon energy deposition in a tower based on its (x, y)
+// position relative to the tower center
+Double_t StFmsClusterFitter::energyDepositionDistribution(
+    Double_t* xy,
+    Double_t* parameters) {
+  Double_t f = 0;
+  Double_t x = xy[0];
+  Double_t y = xy[1];
+  for (Int_t i = 1; i <= 3; i++) {
+    // The parameter array has 10 elements, but we only use 6
+    // Parameters 1 to 6 are a1, a2, a3, b1, b2, b3 as defined in
+    // https://drupal.star.bnl.gov/STAR/blog/leun/2010/aug/02/fms-meeting-20100802
+    Double_t a = parameters[i];
+    Double_t b = parameters[i + 3];
+    f += a * atan(x * y / (b * sqrt(b * b + x * x + y * y)));
+  }  // for
+  return f / TMath::TwoPi();
 }
 
 // Uses the signature needed for TMinuit interface:

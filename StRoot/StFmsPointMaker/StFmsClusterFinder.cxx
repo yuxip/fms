@@ -300,6 +300,99 @@ class TowerClusterAssociation : public TObject {
   std::list<StFmsTowerCluster*> mClusters;
 };
 
+StFmsClusterFinder::StFmsClusterFinder() : mNClusts(0) {
+  setMomentEnergyCutoff();
+}
+
+StFmsClusterFinder::~StFmsClusterFinder() {
+}
+
+// Calculate moments of a cluster (position, sigma...)
+void StFmsClusterFinder::calculateClusterMoments(
+    StFmsTowerCluster* cluster) const {
+  if (cluster) {
+    cluster->calculateClusterMoments(mEnergyCutoff);
+    cluster->cluster()->setNTowers(cluster->towers().size());
+  }  // if
+}
+
+// Categorise a cluster
+int StFmsClusterFinder::categorise(StFmsTowerCluster* cluster) {
+  // If the number of towers in a cluster is less than "minTowerCatag02"
+  // always consider the cluster a one-photon cluster
+  if (cluster->cluster()->nTowers() < minTowerCatag02) {
+    cluster->cluster()->setCategory(k1PhotonCluster);
+  } else {
+    // Categorise cluster based on its properties
+    Float_t sMaxEc = cluster->cluster()->sigmaMax() *
+                     cluster->cluster()->energy();
+    if (cluster->cluster()->energy() < cutEcSigma[0][0] *
+        (sMaxEc - cutEcSigma[0][1])) {
+      if (sMaxEc > minEcSigma2Ph) {
+        cluster->cluster()->setCategory(k2PhotonCluster);
+      } else {
+        cluster->cluster()->setCategory(kAmbiguousCluster);
+      }  // if
+    } else if (cluster->cluster()->energy() >
+               cutEcSigma[1][0] * (sMaxEc - cutEcSigma[1][1])) {
+      if (sMaxEc < maxEcSigma1Ph) {
+        cluster->cluster()->setCategory(k1PhotonCluster);
+      } else {
+        cluster->cluster()->setCategory(kAmbiguousCluster);
+      }  // if
+    } else {
+      cluster->cluster()->setCategory(kAmbiguousCluster);
+    }  // if (cluster->hit->energy()...)
+  } // if (cluster->numbTower...)
+  return cluster->cluster()->category();
+}
+
+int StFmsClusterFinder::findClusters(TowerList* towers, ClusterList* clusters) {
+  // Remove towers below energy threshold, but save them for later use
+  TowerList belowThreshold = filterTowersBelowEnergyThreshold(towers);
+  // List of non-peak towers in clusters
+  TowerList neighbors;
+  // Locate cluster seeds
+  locateClusterSeeds(towers, &neighbors, clusters);
+  // We have now found all seeds. Now decide the affiliation of neighbor towers
+  // i.e. which peak each neighbor is associated with in a cluster.
+  // First, we need to sort the neighbors towers, because we want to
+  // consider them from higher towers to lower towers
+  neighbors.sort(std::ptr_fun(&ascendingTowerEnergySorter));
+  // Associated neighbor towers grow outward from the seed tower.
+  // Keep trying to make tower-cluster associations until we make an entire loop
+  // through all neighbors without successfully associating anything. Then stop,
+  // otherwise we end up in an infinite loop when we can't associate all the
+  // neighbors with a cluster (which we usually can't).
+  TObjArray valleys(16);  // Stores towers equidistant between seeds
+  valleys.SetOwner(true);
+  unsigned nAssociations(0);
+  do {
+    nAssociations = associateTowersWithClusters(&neighbors, clusters, &valleys);
+  } while (nAssociations > 0);
+  // Calculate the moments of clusters. We need to do this before calling
+  // TowerClusterAssociation::nearestCluster, which uses the cluster moment
+  // to determine tower-cluster separations for the valley towers.
+  BOOST_FOREACH(StFmsTowerCluster& i, *clusters) {
+    calculateClusterMoments(&i);
+  }  // BOOST_FOREACH
+  // Ambiguous "valley" towers that were equally spaced between clusters can
+  // now be associated
+  associateValleyTowersWithClusters(&neighbors, clusters, &valleys);
+  // If there are still towers left in "neighbor", distribute them to clusters
+  do {
+    nAssociations = associateResidualTowersWithClusters(&neighbors, clusters);
+  } while (nAssociations > 0);
+  sortTowersEnergyDescending(clusters, mNClusts);
+  // Recalculate various moment of clusters
+  for (ClusterIter i = clusters->begin(); i != clusters->end(); ++i) {
+    calculateClusterMoments(&(*i));
+  }  // for
+  // Finally add "zero" energy towers to the clusters
+  associateSubThresholdTowersWithClusters(&belowThreshold, clusters);
+  return mNClusts;
+}
+
 unsigned StFmsClusterFinder::locateClusterSeeds(TowerList* towers,
                                                 TowerList* neighbors,
                                                 ClusterList* clusters) const {
@@ -400,6 +493,40 @@ unsigned StFmsClusterFinder::associateTowersWithClusters(
   return associated.size();
 }
 
+/*
+ Associate valley towers with clusters
+
+ These are towers that were equidistant between cluster seeds after the first
+ round of association. Now that the seeds have some other towers associated with
+ them, use a calculation of the cluster center (using all towers) to find the
+ tower-cluster distance (as opposed to the center of the seed tower, which was
+ all that was available for the first round).
+
+ Return the number of valley neighbors moved to clusters.
+ */
+unsigned StFmsClusterFinder::associateValleyTowersWithClusters(
+    TowerList* neighbors,
+    ClusterList* clusters,
+    TObjArray* valleys) const {
+  unsigned size = neighbors->size();
+  for (Int_t i(0); i < valleys->GetEntriesFast(); ++i) {
+    TowerClusterAssociation* association =
+      static_cast<TowerClusterAssociation*>(valleys->At(i));
+    StFmsTowerCluster* cluster = association->nearestCluster();
+    if (cluster) {
+      // Move the tower to the appropriate cluster
+      association->tower()->setCluster(cluster->index());
+      neighbors->remove(association->tower());
+      cluster->towers().push_back(association->tower());
+    } else {
+      LOG_INFO << "Something is wrong! The following \"Valley\" tower does "
+        << "not belong to any cluster! Error!" << endm;
+      association->tower()->Print();
+    }  // if (cluster)
+  }  // end of for loop over valley towers
+  return size - neighbors->size();
+}
+
 /**
  Associate tower with clusters
  
@@ -438,40 +565,6 @@ unsigned StFmsClusterFinder::associateResidualTowersWithClusters(
 }
 
 /*
- Associate valley towers with clusters
- 
- These are towers that were equidistant between cluster seeds after the first
- round of association. Now that the seeds have some other towers associated with
- them, use a calculation of the cluster center (using all towers) to find the
- tower-cluster distance (as opposed to the center of the seed tower, which was
- all that was available for the first round).
- 
- Return the number of valley neighbors moved to clusters.
- */
-unsigned StFmsClusterFinder::associateValleyTowersWithClusters(
-    TowerList* neighbors,
-    ClusterList* clusters,
-    TObjArray* valleys) const {
-  unsigned size = neighbors->size();
-  for (Int_t i(0); i < valleys->GetEntriesFast(); ++i) {
-    TowerClusterAssociation* association =
-      static_cast<TowerClusterAssociation*>(valleys->At(i));
-    StFmsTowerCluster* cluster = association->nearestCluster();
-    if (cluster) {
-      // Move the tower to the appropriate cluster
-      association->tower()->setCluster(cluster->index());
-      neighbors->remove(association->tower());
-      cluster->towers().push_back(association->tower());
-    } else {
-      LOG_INFO << "Something is wrong! The following \"Valley\" tower does "
-        << "not belong to any cluster! Error!" << endm;
-      association->tower()->Print();
-    }  // if (cluster)
-  }  // end of for loop over valley towers
-  return size - neighbors->size();
-}
-
-/*
  Add "zero" energy towers to the clusters
  These towers serve the purpose of preventing the creation of bogus peaks,
  where there is no energy deposited at the tower
@@ -493,98 +586,5 @@ unsigned StFmsClusterFinder::associateSubThresholdTowersWithClusters(
       cluster->towers().push_back(*tower);
     }  // if
   }  // for
-}
-
-StFmsClusterFinder::StFmsClusterFinder() : mNClusts(0) {
-  setMomentEnergyCutoff();
-}
-
-StFmsClusterFinder::~StFmsClusterFinder() {
-}
-
-int StFmsClusterFinder::findClusters(TowerList* towers, ClusterList* clusters) {
-  // Remove towers below energy threshold, but save them for later use
-  TowerList belowThreshold = filterTowersBelowEnergyThreshold(towers);
-  // List of non-peak towers in clusters
-  TowerList neighbors;
-  // Locate cluster seeds
-  locateClusterSeeds(towers, &neighbors, clusters);
-  // We have now found all seeds. Now decide the affiliation of neighbor towers
-  // i.e. which peak each neighbor is associated with in a cluster.
-  // First, we need to sort the neighbors towers, because we want to
-  // consider them from higher towers to lower towers
-  neighbors.sort(std::ptr_fun(&ascendingTowerEnergySorter));
-  // Associated neighbor towers grow outward from the seed tower.
-  // Keep trying to make tower-cluster associations until we make an entire loop
-  // through all neighbors without successfully associating anything. Then stop,
-  // otherwise we end up in an infinite loop when we can't associate all the
-  // neighbors with a cluster (which we usually can't).
-  TObjArray valleys(16);  // Stores towers equidistant between seeds
-  valleys.SetOwner(true);
-  unsigned nAssociations(0);
-  do {
-    nAssociations = associateTowersWithClusters(&neighbors, clusters, &valleys);
-  } while (nAssociations > 0);
-  // Calculate the moments of clusters. We need to do this before calling
-  // TowerClusterAssociation::nearestCluster, which uses the cluster moment
-  // to determine tower-cluster separations for the valley towers.
-  BOOST_FOREACH(StFmsTowerCluster& i, *clusters) {
-    calculateClusterMoments(&i);
-  }  // BOOST_FOREACH
-  // Ambiguous "valley" towers that were equally spaced between clusters can
-  // now be associated
-  associateValleyTowersWithClusters(&neighbors, clusters, &valleys);
-  // If there are still towers left in "neighbor", distribute them to clusters
-  do {
-    nAssociations = associateResidualTowersWithClusters(&neighbors, clusters);
-  } while (nAssociations > 0);
-  sortTowersEnergyDescending(clusters, mNClusts);
-  // Recalculate various moment of clusters
-  for (ClusterIter i = clusters->begin(); i != clusters->end(); ++i) {
-    calculateClusterMoments(&(*i));
-  }  // for
-  // Finally add "zero" energy towers to the clusters
-  associateSubThresholdTowersWithClusters(&belowThreshold, clusters);
-  return mNClusts;
-}
-
-// Calculate moments of a cluster (position, sigma...)
-void StFmsClusterFinder::calculateClusterMoments(
-    StFmsTowerCluster* cluster) const {
-  if (cluster) {
-    cluster->calculateClusterMoments(mEnergyCutoff);
-    cluster->cluster()->setNTowers(cluster->towers().size());
-  }  // if
-}
-
-// Categorise a cluster
-int StFmsClusterFinder::categorise(StFmsTowerCluster* cluster) {
-  // If the number of towers in a cluster is less than "minTowerCatag02"
-  // always consider the cluster a one-photon cluster
-  if (cluster->cluster()->nTowers() < minTowerCatag02) {
-    cluster->cluster()->setCategory(k1PhotonCluster);
-  } else {
-    // Categorise cluster based on its properties
-    Float_t sMaxEc = cluster->cluster()->sigmaMax() *
-                     cluster->cluster()->energy();
-    if (cluster->cluster()->energy() < cutEcSigma[0][0] *
-        (sMaxEc - cutEcSigma[0][1])) {
-      if (sMaxEc > minEcSigma2Ph) {
-        cluster->cluster()->setCategory(k2PhotonCluster);
-      } else {
-        cluster->cluster()->setCategory(kAmbiguousCluster);
-      }  // if
-    } else if (cluster->cluster()->energy() >
-               cutEcSigma[1][0] * (sMaxEc - cutEcSigma[1][1])) {
-      if (sMaxEc < maxEcSigma1Ph) {
-        cluster->cluster()->setCategory(k1PhotonCluster);
-      } else {
-        cluster->cluster()->setCategory(kAmbiguousCluster);
-      }  // if
-    } else {
-      cluster->cluster()->setCategory(kAmbiguousCluster);
-    }  // if (cluster->hit->energy()...)
-  } // if (cluster->numbTower...)
-  return cluster->cluster()->category();
 }
 }  // namespace FMSCluster

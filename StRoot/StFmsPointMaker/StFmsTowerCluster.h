@@ -38,14 +38,14 @@ class StFmsTowerCluster {
   // Use default copy constructor and assignment operator
   /** Destructor */
   ~StFmsTowerCluster();
+  /* Clear photon and tower lists and reset other values to defaults */
+  void Clear(const char* optionNotUsed = "");
   /**
    Calculate cluster moments (mean and sigma of tower positions)
    
    Ignore towers below the energy cutoff
    */
   void calculateClusterMoments(Float_t energyCutoff);
-  /* Clear photon and tower lists and reset other values to defaults */
-  void Clear(const char* optionNotUsed = "");
   /* Determine cluster axis. Also sets energy cutoff for cluster moments */
   void findClusterAxis(Float_t Ecoff) {
     mEnergyCutoff = Ecoff;

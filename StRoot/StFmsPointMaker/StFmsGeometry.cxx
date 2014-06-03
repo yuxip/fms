@@ -10,52 +10,6 @@ StFmsGeometry::StFmsGeometry() { }
 
 StFmsGeometry::~StFmsGeometry() { }
 
-const fmsDetectorPosition_st* StFmsGeometry::find(Int_t detectorId) const {
-  const fmsDetectorPosition_st* positions(NULL);
-  Table::const_iterator entry = mPositions.find(detectorId);
-  if (entry != mPositions.end()) {
-    positions = entry->second;
-  }  // if
-  return positions;
-}
-
-Float_t StFmsGeometry::z(Int_t detectorId) const {
-  const fmsDetectorPosition_st* geometry = find(detectorId);
-  if (geometry) {
-    return geometry->zoffset;
-  }  // if
-  return 0.;
-}
-
-Float_t StFmsGeometry::xOffset(Int_t detectorId) const {
-  const fmsDetectorPosition_st* geometry = find(detectorId);
-  if (geometry) {
-    return geometry->xoffset;
-  }  // if
-  return 0.;
-}
-
-Float_t StFmsGeometry::yOffset(Int_t detectorId) const {
-  const fmsDetectorPosition_st* geometry = find(detectorId);
-  if (geometry) {
-    return geometry->yoffset;
-  }  // if
-  return 0.;
-}
-
-std::vector<Float_t> StFmsGeometry::towerWidths(Int_t detectorId) const {
-  // I don't like this implementation, returning a pointer to access two floats
-  // It relies on the data being aligned OK and seems dangerous. We should add
-  // a more robust solution e.g. return a pair or 2-element vector.
-  const fmsDetectorPosition_st* geometry = find(detectorId);
-  std::vector<Float_t> widths(2, 0.);
-  if (geometry) {
-    widths.at(0) = geometry->xwidth;
-    widths.at(1) = geometry->ywidth;
-  }  // if
-  return widths;
-}
-
 Bool_t StFmsGeometry::initialize(StFmsDbMaker* fmsDbMaker) {
   // If no FMS database was provided, attempt to locate on in the current chain,
   // if one exists
@@ -84,6 +38,52 @@ Bool_t StFmsGeometry::initialize(StFmsDbMaker* fmsDbMaker) {
     return true;
   }  // if
   return false;
+}
+
+Float_t StFmsGeometry::xOffset(Int_t detectorId) const {
+  const fmsDetectorPosition_st* geometry = find(detectorId);
+  if (geometry) {
+    return geometry->xoffset;
+  }  // if
+  return 0.;
+}
+
+Float_t StFmsGeometry::yOffset(Int_t detectorId) const {
+  const fmsDetectorPosition_st* geometry = find(detectorId);
+  if (geometry) {
+    return geometry->yoffset;
+  }  // if
+  return 0.;
+}
+
+Float_t StFmsGeometry::z(Int_t detectorId) const {
+  const fmsDetectorPosition_st* geometry = find(detectorId);
+  if (geometry) {
+    return geometry->zoffset;
+  }  // if
+  return 0.;
+}
+
+std::vector<Float_t> StFmsGeometry::towerWidths(Int_t detectorId) const {
+  // I don't like this implementation, returning a pointer to access two floats
+  // It relies on the data being aligned OK and seems dangerous. We should add
+  // a more robust solution e.g. return a pair or 2-element vector.
+  const fmsDetectorPosition_st* geometry = find(detectorId);
+  std::vector<Float_t> widths(2, 0.);
+  if (geometry) {
+    widths.at(0) = geometry->xwidth;
+    widths.at(1) = geometry->ywidth;
+  }  // if
+  return widths;
+}
+
+const fmsDetectorPosition_st* StFmsGeometry::find(Int_t detectorId) const {
+  const fmsDetectorPosition_st* positions(NULL);
+  Table::const_iterator entry = mPositions.find(detectorId);
+  if (entry != mPositions.end()) {
+    positions = entry->second;
+  }  // if
+  return positions;
 }
 
 TVector3 StFmsGeometry::localToGlobalCoordinates(Double_t x, Double_t y,

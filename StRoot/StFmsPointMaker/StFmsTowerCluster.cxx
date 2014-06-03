@@ -32,6 +32,40 @@ void StFmsTowerCluster::Clear(const char* /* option */) {
   mTowers.clear();
 }
 
+void StFmsTowerCluster::calculateClusterMoments(Float_t Ecoff) {
+  mEnergyCutoff=Ecoff;
+  Float_t w0, w1, mtmp, mx, my, sigx, sigy, sigXY;
+  w0 = w1 = mtmp = mx = my = sigx = sigy = sigXY = 0;
+  BOOST_FOREACH(const StFmsTower* tower, mTowers) {
+    Float_t xxx, yyy;
+    xxx = tower->column() - 0.5;
+    yyy = tower->row() - 0.5;
+    mtmp = log(tower->hit()->energy() + 1. - Ecoff) > 0 ?
+           log(tower->hit()->energy() + 1. - Ecoff) : 0;
+    w1 += mtmp;
+    w0 += tower->hit()->energy();
+    mx += mtmp * xxx;
+    my += mtmp * yyy;
+    sigx += mtmp * xxx * xxx;
+    sigy += mtmp * yyy * yyy;
+    sigXY += mtmp * xxx * yyy;
+  }  // BOOST_FOREACH
+  mCluster->setEnergy(w0);
+  if (w1 > 0) {
+    mCluster->setX(mx / w1);
+    mCluster->setY(my / w1);
+    mSigmaX = sqrt(fabs(sigx / w1 - std::pow(mCluster->x(), 2.)));
+    mSigmaY = sqrt(fabs(sigy / w1 - std::pow(mCluster->y(), 2.)));
+    mSigmaXY = sigXY / w1 - mCluster->x() * mCluster->y();
+  } else {
+    mCluster->setX(0.);
+    mCluster->setY(0.);
+    mSigmaX = 0;
+    mSigmaY = 0;
+    mSigmaXY = 0;
+  }  // if
+}
+
 void StFmsTowerCluster::findClusterAxis() {
   Double_t dSigma2, aA, bB;
   dSigma2 = mSigmaX * mSigmaX - mSigmaY * mSigmaY;
@@ -80,39 +114,5 @@ Double_t StFmsTowerCluster::getSigma(Double_t theta) const {
 		sigma += wtmp * dis * dis;
 	}  // BOOST_FOREACH
 	return wnew > 0 ? sqrt(sigma / wnew) : 0;
-}
-
-void StFmsTowerCluster::calculateClusterMoments(Float_t Ecoff) {
-  mEnergyCutoff=Ecoff;
-  Float_t w0, w1, mtmp, mx, my, sigx, sigy, sigXY;
-  w0 = w1 = mtmp = mx = my = sigx = sigy = sigXY = 0;
-  BOOST_FOREACH(const StFmsTower* tower, mTowers) {
-    Float_t xxx, yyy;
-    xxx = tower->column() - 0.5;
-    yyy = tower->row() - 0.5;
-    mtmp = log(tower->hit()->energy() + 1. - Ecoff) > 0 ?
-           log(tower->hit()->energy() + 1. - Ecoff) : 0;
-    w1 += mtmp;
-    w0 += tower->hit()->energy();
-    mx += mtmp * xxx;
-    my += mtmp * yyy;
-    sigx += mtmp * xxx * xxx;
-    sigy += mtmp * yyy * yyy;
-    sigXY += mtmp * xxx * yyy;
-  }  // BOOST_FOREACH
-  mCluster->setEnergy(w0);
-  if (w1 > 0) {
-    mCluster->setX(mx / w1);
-    mCluster->setY(my / w1);
-    mSigmaX = sqrt(fabs(sigx / w1 - std::pow(mCluster->x(), 2.)));
-    mSigmaY = sqrt(fabs(sigy / w1 - std::pow(mCluster->y(), 2.)));
-    mSigmaXY = sigXY / w1 - mCluster->x() * mCluster->y();
-  } else {
-    mCluster->setX(0.);
-    mCluster->setY(0.);
-    mSigmaX = 0;
-    mSigmaY = 0;
-    mSigmaXY = 0;
-  }  // if
 }
 }  // namespace FMSCluster

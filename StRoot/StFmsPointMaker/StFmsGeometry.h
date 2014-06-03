@@ -59,14 +59,6 @@ class StFmsGeometry : public TObject {
    */
   Bool_t initialize(StFmsDbMaker* fmsDbMaker);
   /**
-   Return the z position of a detector in cm
-  
-   Gives the database value fmsDetectorPosition_st::zoffset
-   Returns 0 if the argument is an invalid detector ID or the geometry is
-   uninitialized
-   */
-  Float_t z(Int_t detectorId) const;
-  /**
    Return the x coordinate offset of a detector in cm
   
    Gives the database value fmsDetectorPosition_st::xoffset
@@ -82,6 +74,14 @@ class StFmsGeometry : public TObject {
    uninitialized
   */
   Float_t yOffset(Int_t detectorId) const;
+  /**
+   Return the z position of a detector in cm
+  
+   Gives the database value fmsDetectorPosition_st::zoffset
+   Returns 0 if the argument is an invalid detector ID or the geometry is
+   uninitialized
+   */
+  Float_t z(Int_t detectorId) const;
   /**
    Return [x, y] tower widths in cm
    
