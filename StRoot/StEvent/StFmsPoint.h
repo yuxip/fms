@@ -16,6 +16,8 @@
 
 #include "StRoot/St_base/StObject.h"
 
+class StFmsCluster;
+
 /** Represents a point (photon etc) fitted to a cluster of FMS towers */
 class StFmsPoint : public StObject {
  public:
@@ -34,6 +36,10 @@ class StFmsPoint : public StObject {
   Float_t y() const { return mY; }
   /** ID of the point in the current event */
   Int_t id() const { return mId; }
+  /** Parent cluster of the photon */
+  StFmsCluster* cluster() { return mCluster; }
+  /** Parent cluster of the photon */
+  const StFmsCluster* cluster() const { return mCluster; }
   /** ID of the parent cluster containing this point */
   Int_t parentClusterId() const { return mParentClusterId; }
   /** Number of points in the parent cluster */
@@ -50,6 +56,8 @@ class StFmsPoint : public StObject {
   void setY(Float_t ypos) { mY = ypos; }
   /** Set the ID of the point in the current event */
   void setId(Int_t phid) { mId = phid; }
+  /** Set the parent cluster of the photon */
+  void setCluster(StFmsCluster* cluster) { mCluster = cluster; }
   /** Set the ID of the parent cluster containing this point */
   void setParentClusterId(Int_t cluid) { mParentClusterId = cluid; }
   /** Set the number of points in the parent cluster */
@@ -65,6 +73,7 @@ class StFmsPoint : public StObject {
   Int_t mId;  ///< photon id within event, also include det12 info
   Int_t mParentClusterId;  ///< id of the parent cluster
   Int_t mNParentClusterPhotons;  ///< # of photons in by the parent cluster
+  StFmsCluster* mCluster;  //!< Parent cluster of this photon
   TLorentzVector mFourMomentum;  ///< Photon 4-momentum
   ClassDef(StFmsPoint, 1)
 };
