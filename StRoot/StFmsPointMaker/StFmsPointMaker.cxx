@@ -169,6 +169,7 @@ bool StFmsPointMaker::processTowerCluster(
     point->setId(305 + 20 * detectorId + fmsCollection->numberOfPoints());
     point->setParentClusterId(cluster->id());
     point->setNParentClusterPhotons(cluster->nPhotons());
+    point->setCluster(cluster);
     // Add it to both the StFmsCollection and StFmsCluster
     // StFmsCollection owns the pointer, the cluster merely references it
     fmsCollection->points().push_back(point);
