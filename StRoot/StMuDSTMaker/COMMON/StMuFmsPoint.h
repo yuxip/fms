@@ -14,9 +14,11 @@
 
 #include <TLorentzVector.h>
 #include <TObject.h>
+#include <TRef.h>
 #include <TVector3.h>
 
 class StFmsPoint;  // The equivalent point structure in StEvent
+class StMuFmsCluster;
 
 /**
  Micro-DST FMS "point" class
@@ -53,6 +55,10 @@ class StMuFmsPoint : public TObject {
   TVector3 momentum(float m = 0.f) const;
   /** (px, py, pz, E) of point. See also comments for momentum() */
   TLorentzVector fourMomentum(float m = 0.f) const;
+  /** Parent cluster of this photon (NULL if not known) */
+  StMuFmsCluster* cluster();
+  /** Parent cluster of this photon (NULL if not known) */
+  const StMuFmsCluster* cluster() const;
   /** Set ID of the sub-detector with which the point is associated */
   void setDetectorId(UShort_t detector) { mDetectorId = detector; }
   /** Set total point energy (sum over towers) */
@@ -65,6 +71,8 @@ class StMuFmsPoint : public TObject {
   void setZ(float z) { mZ = z; }
   /** Set properties from an StFmsPoint */
   void set(const StFmsPoint&);
+  /** Set parent cluster of this photon */
+  void setCluster(StMuFmsCluster* cluster);
 
  protected:
   UShort_t mDetectorId;  ///< Detector ID as defined in database
@@ -72,6 +80,7 @@ class StMuFmsPoint : public TObject {
   Float_t mX;  ///< Mean x ("center of gravity")
   Float_t mY;  ///< Mean y ("center of gravity")
   Float_t mZ;  ///< z at front face of sub-detector
+  TRef mCluster;  ///< Parent cluster of this photon
 
  private:
   /**

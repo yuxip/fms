@@ -15,6 +15,7 @@
 #include <cmath>
 
 #include "StRoot/StEvent/StFmsPoint.h"
+#include "StRoot/StMuDSTMaker/COMMON/StMuFmsCluster.h"
 
 StMuFmsPoint::StMuFmsPoint(int detectorId, float energy,
                            float x, float y, float z)
@@ -41,6 +42,14 @@ TLorentzVector StMuFmsPoint::fourMomentum(float m) const {
   return TLorentzVector(momentum(m), mEnergy);
 }
 
+StMuFmsCluster* StMuFmsPoint::cluster() {
+  return static_cast<StMuFmsCluster*>(mCluster.GetObject());
+}
+
+const StMuFmsCluster* StMuFmsPoint::cluster() const {
+  return static_cast<const StMuFmsCluster*>(mCluster.GetObject());
+}
+
 void StMuFmsPoint::set(const StFmsPoint& point) {
   mDetectorId = point.detectorId();
   mEnergy = point.energy();
@@ -50,4 +59,8 @@ void StMuFmsPoint::set(const StFmsPoint& point) {
   // z directly. z / x = pz / px, so...
   const TLorentzVector vec4 = point.fourMomentum();
   mZ = point.x() * vec4.Pz() / vec4.Px();
+}
+
+void StMuFmsPoint::setCluster(StMuFmsCluster* cluster) {
+  mCluster = cluster;
 }
