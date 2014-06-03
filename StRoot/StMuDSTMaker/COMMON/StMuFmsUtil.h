@@ -40,6 +40,8 @@ class StMuFmsUtil : public TObject
   void fillMuFmsClusters(StMuFmsCollection*, StFmsCollection*);
   /** Create StMuFmsPoints from StFmsPoints and fill StMuFmsCollection */
   void fillMuFmsPoints(StMuFmsCollection*, StFmsCollection*);
+  /** Set the parent clusters of StMuFmsPoints */
+  void setMuFmsPointParentClusters(StMuFmsCollection*, StFmsCollection*);
   /** Create StFmsHits from StMuFmsHits and fill StFmsCollection */
   void fillFmsHits(StFmsCollection*, StMuFmsCollection*);
   /** Create StFmsClusters from StMuFmsClusters and fill StFmsCollection */
