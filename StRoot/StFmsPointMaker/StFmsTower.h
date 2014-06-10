@@ -66,8 +66,8 @@ class StFmsTower : public TObject {
 
  protected:
   const StFmsHit* mHit;  //!< Hit information, not owned by StFmsTower
-	Int_t mColumn;  ///< Column number, starts at 0, horizontal (STAR x-coord)
-	Int_t mRow;  ///< Row number, starts at 0, vertical (STAR y-coord)
+	Int_t mColumn;  ///< Column number, starts at 1, horizontal (STAR x-coord)
+	Int_t mRow;  ///< Row number, starts at 1, vertical (STAR y-coord)
 	Int_t mCluster;  ///< Index of cluster the tower is associated with
 	ClassDef(StFmsTower, 7)
 };
