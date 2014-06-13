@@ -22,7 +22,6 @@
 #include <fstream>
 #include <stdlib.h>
 using namespace std;
-using namespace PSUGlobals;
 
 ClassImp(StFmsHitMaker);
 

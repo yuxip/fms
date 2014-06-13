@@ -20,17 +20,9 @@ class StFmsDbMaker;
 class StFmsCollection;
 class StMuFmsCollection;
 
-/*class FilesSet;
-class Qt;
-class RunDepMgr;
-class RunDepCor;
-class CellTDep;
-*/
-
 #include "TMatrix.h"
 #include "StMaker.h"
 using namespace std;
-namespace PSUGlobals { } using namespace PSUGlobals;
 
 class StFmsHitMaker : public StMaker {
 public:
