@@ -1,3 +1,15 @@
+// $Id$
+//
+// $Log$
+/**
+ \file      StFmsClusterFitter.cxx
+ \brief     Implementation of StFmsClusterFitter, shower-shape fitting routine
+ \author    Steven Heppelmann <steveheppelmann@gmail.com>
+ \author    Yuxi Pan <yuxipan@physics.ucla.edu>
+ \author    Thomas Burton <tpb@bnl.gov>
+ \date      2014
+ \copyright Brookhaven National Lab
+ */
 #include "StFmsClusterFitter.h"
 
 #include <vector>
