@@ -85,6 +85,7 @@ private:
 	TH2F* hmufms1stphoEvseta;  // 1st photon in cluster
 	TH2F* hfmsphoEvsphi;
 	TH2F* hmufmsphoEvsphi;  // Like hfmsphoEvsphi but for StMuDst photons
+	TH1F* hmufmsPairMass;  // Invariant mass of 2-photon pairs
   std::map<int, TH2F*> hfmsy0x0;
 	
 	//EmcQA

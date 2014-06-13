@@ -187,6 +187,7 @@ Int_t StFmsQAHistoMaker::Init() {
 		hfmsphoEvsphi = new TH2F("hfmsphoEvsphi","FMS photon energy vs phi",100,-TMath::Pi(),TMath::Pi(),250,0,250);	
 		hmufmsphoEvsphi = static_cast<TH2F*>(hfmsphoEvsphi->Clone("hmufmsphoEvsphi"));
 		hmufmsphoEvsphi->SetTitle("StMuDst FMS photon energy vs phi");
+		hmufmsPairMass = new TH1F("hmufmsPairMass", "#gamma-pair invariant mass (GeV)", 100, 0., 1.);
     for (int nstb(1); nstb < 5; ++nstb) {
       std::ostringstream oss;
       oss << "hfmsy0x0_" << nstb;
@@ -630,6 +631,12 @@ void StFmsQAHistoMaker::fmsMuDstQa() {
                             mGeometry.z(point->detectorId()));
     hmufmsphoEvseta->Fill(xyz.Eta(), point->energy());
     hmufmsphoEvsphi->Fill(xyz.Phi(), point->energy());
+    // Loop over other photons and make pairs
+    for (int j(i + 1); j < mufmsCollection->numberOfPoints(); ++j) {
+      TLorentzVector p = mufmsCollection->getPoint(i)->fourMomentum() +
+                         mufmsCollection->getPoint(j)->fourMomentum();
+      hmufmsPairMass->Fill(p.M());
+    }  // for
   }  // for
 }
 
