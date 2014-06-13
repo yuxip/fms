@@ -1,3 +1,16 @@
+// $Id$
+//
+// $Log$
+/**
+ \file      StFmsClusterFinder.cxx
+ \brief     Implementation of StFmsClusterFinder,
+            an FMS tower clustering algorithm
+ \author    Steven Heppelmann <steveheppelmann@gmail.com>
+ \author    Yuxi Pan <yuxipan@physics.ucla.edu>
+ \author    Thomas Burton <tpb@bnl.gov>
+ \date      2014
+ \copyright Brookhaven National Lab
+ */
 #include "StFmsClusterFinder.h"
 
 #include <algorithm>
@@ -445,20 +458,6 @@ unsigned StFmsClusterFinder::locateClusterSeeds(TowerList* towers,
   return clusters->size();
 }
 
-/**
- Associate tower with clusters
- 
- Go through a list of unassociated neighbor towers and try to associate each one
- with a cluster. If a neighbor is associated with a single cluster, add it to
- that cluster and remove it from the neighbor list.
- 
- If a neighbor could associate with more than one cluster based on currently
- available information, remove it from the neighbor list and add it to the
- valley list. We will work out the association of the valley towers later.
- 
- Return the number of neighbors either associated with clusters or placed in the
- valley i.e. the number removed from the neighbor list.
- */
 unsigned StFmsClusterFinder::associateTowersWithClusters(
     TowerList* neighbors,
     ClusterList* clusters,
@@ -493,17 +492,6 @@ unsigned StFmsClusterFinder::associateTowersWithClusters(
   return associated.size();
 }
 
-/*
- Associate valley towers with clusters
-
- These are towers that were equidistant between cluster seeds after the first
- round of association. Now that the seeds have some other towers associated with
- them, use a calculation of the cluster center (using all towers) to find the
- tower-cluster distance (as opposed to the center of the seed tower, which was
- all that was available for the first round).
-
- Return the number of valley neighbors moved to clusters.
- */
 unsigned StFmsClusterFinder::associateValleyTowersWithClusters(
     TowerList* neighbors,
     ClusterList* clusters,
@@ -527,16 +515,6 @@ unsigned StFmsClusterFinder::associateValleyTowersWithClusters(
   return size - neighbors->size();
 }
 
-/**
- Associate tower with clusters
- 
- These are towers that were left over after the first round of association.
- The clusters have now had towers associated with them, so the cluster moment
- can be calculated to give a better measure of the cluster centre. This is then
- used to calculate the tower-cluster separation.
- 
- Return the number of neighbors associated with clusters.
- */
 unsigned StFmsClusterFinder::associateResidualTowersWithClusters(
     TowerList* neighbors,
     ClusterList* clusters) const {
@@ -564,11 +542,6 @@ unsigned StFmsClusterFinder::associateResidualTowersWithClusters(
   return associated.size();
 }
 
-/*
- Add "zero" energy towers to the clusters
- These towers serve the purpose of preventing the creation of bogus peaks,
- where there is no energy deposited at the tower
- */
 unsigned StFmsClusterFinder::associateSubThresholdTowersWithClusters(
     TowerList* towers,
     ClusterList* clusters) const{
