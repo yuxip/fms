@@ -1,3 +1,15 @@
+// $Id$
+//
+// $Log$
+/**
+ \file      StFmsGeometry.cxx
+ \brief     Implementation of StFmsGeometry, an FMS database geometry interface
+ \author    Steven Heppelmann <steveheppelmann@gmail.com>
+ \author    Yuxi Pan <yuxipan@physics.ucla.edu>
+ \author    Thomas Burton <tpb@bnl.gov>
+ \date      2014
+ \copyright Brookhaven National Lab
+ */
 #include "StFmsGeometry.h"
 
 #include "St_base/StMessMgr.h"
