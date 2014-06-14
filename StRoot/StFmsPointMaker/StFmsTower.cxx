@@ -1,3 +1,15 @@
+// $Id$
+//
+// $Log$
+/**
+ \file      StFmsTower.cxx
+ \brief     Implementation of StFmsTower, a simple FMS tower wrapper
+ \author    Steven Heppelmann <steveheppelmann@gmail.com>
+ \author    Yuxi Pan <yuxipan@physics.ucla.edu>
+ \author    Thomas Burton <tpb@bnl.gov>
+ \date      2014
+ \copyright Brookhaven National Lab
+ */
 #include "StFmsPointMaker/StFmsTower.h"
 
 #include "StEvent/StFmsHit.h"
