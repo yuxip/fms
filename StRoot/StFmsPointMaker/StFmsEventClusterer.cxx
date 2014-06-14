@@ -1,3 +1,15 @@
+// $Id$
+//
+// $Log$
+/**
+ \file      StFmsEventClusterer.cxx
+ \brief     Implementation of StFmsEventClusterer, manager class for clustering
+ \author    Steven Heppelmann <steveheppelmann@gmail.com>
+ \author    Yuxi Pan <yuxipan@physics.ucla.edu>
+ \author    Thomas Burton <tpb@bnl.gov>
+ \date      2014
+ \copyright Brookhaven National Lab
+ */
 #include "StFmsEventClusterer.h"
 
 #include <algorithm>
@@ -229,10 +241,6 @@ Int_t StFmsEventClusterer::fitEvent() {
   return !badEvent;
 }
 
-/*
- Calculate the energy deposit in a cluster by a photon from shower-shape
- function. In this case, we only need to consider non-zero towers.
- */
 Double_t StFmsEventClusterer::photonEnergyInCluster(
     Double_t widthLG,
     const StFmsTowerCluster *p_clust,
@@ -245,10 +253,6 @@ Double_t StFmsEventClusterer::photonEnergyInCluster(
   return eSS;
 }
 
-/*
- Calculate the energy deposit in a tower by a photon from shower-shape
- function.
- */
 Double_t StFmsEventClusterer::photonEnergyInTower(
     Double_t widthLG,
     const StFmsTower *p_tower,
@@ -297,17 +301,6 @@ Float_t StFmsEventClusterer::fitOnePhoton(StFmsTowerCluster* p_clust) {
   return p_clust->chiSquare();
 }
 
-/*
- Perform a global fit of all photons in an event.
- 
- Update the (x, y) positions end energies of the photons in each cluster based
- on a global fit including all photons.
- Only makes sense when there is more than one photon in the event.
- Arguments:
-  nPh - number of photons in the event
-  nCl - number of clusters containing those photons
-  p_clust - cluster array
- */
 Float_t StFmsEventClusterer::globalFit(const Int_t nPh, const Int_t nCl,
                                        ClusterIter first) {
   // By design, we can only fit up to "maxNFittedPhotons()" photons
@@ -393,11 +386,6 @@ Float_t StFmsEventClusterer::globalFit(const Int_t nPh, const Int_t nCl,
   return chiSq;
 }
 
-/*
- Special 2-photon cluster fitting
- 
- Cluster moments must have been calculated first
- */
 Float_t StFmsEventClusterer::fit2PhotonClust(ClusterIter p_clust) {
   const Double_t step2[7] = {0, 0.02, 0.02, 0.01, 0.01, 0.01, 0.1};
   Double_t ratioSigma = p_clust->cluster()->sigmaMin() /
@@ -483,13 +471,6 @@ Float_t StFmsEventClusterer::fit2PhotonClust(ClusterIter p_clust) {
 };
 
 /*
- Run tests on the lower-energy photon in a 2-photon cluster
- 
- Return true if the photon passes tests, in which case it is a real photon
- 
- Return false if it fails, in which case it is a bogus photon due to some
- problem in reconstruction - the cluster is actually a 1-photon cluster
-
  Further information:
  If one photon peak lies on top of a low (compared to photon energy) or even
  zero tower, this photon is definitely bogus. This could happen if a nearby
@@ -499,11 +480,7 @@ Float_t StFmsEventClusterer::fit2PhotonClust(ClusterIter p_clust) {
  cluster. First of all, this ensures that we don't have an "outside of cluster"
  bogus photon, i.e. a bogus photon that could be the result of minimizing the
  chi-square over towers that do not include the supposed peak tower. 
- 
- Arguments:
-  - clusterIndex: index of cluster to test
-  - nRealClusters: total number of clusters in the event
- */
+*/
 bool StFmsEventClusterer::validate2ndPhoton(ClusterConstIter cluster) const {
   // Select the lower-energy of the two photons
   const StFmsFittedPhoton* photon = findLowestEnergyPhoton(&(*cluster));
