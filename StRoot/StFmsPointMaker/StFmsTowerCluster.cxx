@@ -1,3 +1,15 @@
+// $Id$
+//
+// $Log$
+/**
+ \file      StFmsTowerCluster.cxx
+ \brief     Implementation of StFmsTowerCluster, a cluster of FMS towers
+ \author    Steven Heppelmann <steveheppelmann@gmail.com>
+ \author    Yuxi Pan <yuxipan@physics.ucla.edu>
+ \author    Thomas Burton <tpb@bnl.gov>
+ \date      2014
+ \copyright Brookhaven National Lab
+ */
 #include "StFmsPointMaker/StFmsTowerCluster.h"
 
 #include <cmath>
@@ -89,8 +101,6 @@ void StFmsTowerCluster::findClusterAxis() {
 	mCluster->setSigmaMax(getSigma(mThetaAxis - TMath::Pi() / 2.0));
 }
 
-// Calculate sigma w.r.t the axis going through the "center" and of an angle
-// "theta" in x-y plane
 Double_t StFmsTowerCluster::getSigma(Double_t theta) const {
 	Double_t sigma = 0;
 	// 2-d vector vaxis define the axis
