@@ -450,7 +450,7 @@ Float_t StFmsEventClusterer::fit2PhotonClust(ClusterIter p_clust) {
   }  // if
   p_clust->setChiSquare(chiSq / ndf);
   return p_clust->chiSquare();
-};
+}
 
 /*
  Further information:
