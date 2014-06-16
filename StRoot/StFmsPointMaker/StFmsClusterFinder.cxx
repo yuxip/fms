@@ -147,48 +147,51 @@ void sortTowersEnergyDescending(FMSCluster::ClusterList* clusters,
 }  // unnamed namespace
 
 namespace FMSCluster {
-/*
+/**
  Association information between a tower and clusters.
- 
- Store a tower, and a list of clusters with which it could potentially be
- associated. This information is used in determining the true cluster with
+
+ This class is used in determining correct tower-cluster association.
+ Stores an StFmsTower, and a list of StFmsTowerCluster with which it could
+ potentially be associated.
+ This information is used in determining the true cluster with
  which the tower is actually associated.
- 
+
  Inherits from TObject to allow it to be placed in a ROOT container.
  */ 
 class TowerClusterAssociation : public TObject {
  public:
-  /*
+  /**
    Constructor.
    
-   Initialise with the tower of interest.
+   Initialise with the StFmsTower of interest.
    */
   TowerClusterAssociation(StFmsTower* tower) : mTower(tower) { }
-  /* Returns this tower */
+  /** Returns this tower. */
   StFmsTower* tower() { return mTower; }
-  /* Returns this tower */
+  /** \overload */
   const StFmsTower* tower() const { return mTower; }
-  /* Returns the list of potential associate clusters */
+  /** Returns the list of potential associate clusters */
   std::list<StFmsTowerCluster*>* clusters() { return &mClusters; }
-  /*
+  /**
    Calculate the separation between this tower and another.
-   
-   The separation is in local row-column coordinates i.e. the distance is in
-   number of towers, not in cm.
+
+   The separation is in row-column coordinates i.e. the distance is in the
+   number of towers, not in cm. e.g. a tower at (column=1, row=1) would be
+   a distance of 1 from a tower at (1, 2), and sqrt(2) from a tower at (2, 2).
    */
   double separation(const StFmsTower* tower) {
     return sqrt(pow(tower->column() - mTower->column(), 2.) +
                 pow(tower->row() - mTower->row(), 2.));
   }
-  /*
+  /**
    Calculate the separation between this tower and a cluster.
 
-   Distances are calculated as follows:
-    - distance=kPeakTower: distance from tower to cluster peak tower
-    - distance=kClusterCenter: distance from tower to cluster center, based on
-                               cluster moment calculation
-   The separation is in local row-column coordinates i.e. the distance is in
-   number of towers, not in cm.
+   Distances can be calculated in different ways:
+    - distance=kPeakTower: distance from this tower to the peak (highest-energy)
+                           tower in the cluster.
+    - distance=kClusterCenter: distance from this tower to the cluster center,
+                               based on cluster moment calculation.
+   See separation(const StFmsTower*) for the distance definition.
    */
   double separation(const StFmsTowerCluster* cluster,
                     const ETowerClusterDistance distance) {
@@ -196,25 +199,25 @@ class TowerClusterAssociation : public TObject {
       const StFmsTower* peak = cluster->towers().front();
       return separation(peak);
     } else {
-      // Use calculated cluster center (x0, y0)
-      return sqrt(pow(cluster->cluster()->x() - (mTower->column() - 0.5),
-                      2.) +
-                  pow(cluster->cluster()->y() - (mTower->row() - 0.5),
-                      2.));
+      // Use calculated cluster center (x0, y0).
+      // Subtract 0.5 from tower (column, row) to give tower center.
+      return sqrt(pow(cluster->cluster()->x() - (mTower->column() - 0.5), 2.) +
+                  pow(cluster->cluster()->y() - (mTower->row() - 0.5), 2.));
     }  // if
   }
-  /*
-   Returns true if this tower can be associated with a cluster
-   
-   Association of this tower with a cluster is defined as:
-    - this tower energy less than the cluster peak tower energy
-    - physically adjacent to at least one tower in the cluster, so long as...
-    - this energy less than minRatioPeakTower * adjacent tower energy
-      i.e. this tower cannot fulfil the criterion for being a peak wrt to
-      the adjacent tower
-   This is really a "potential" association; we use the information in this
-   class to determine the (single) cluster that this tower is actually part of,
-   in the case that there is more than one potential associate.
+  /**
+   Returns true if this tower can be associated with a cluster.
+
+   A tower is defined as associable with a cluster if it:
+    - has energy less than that of the cluster's highest-energy tower.
+    - is physically adjacent to at least one tower in the cluster, so long as...
+    - its energy is less than minRatioPeakTower * adjacent tower energy
+      i.e. this tower cannot fulfil the criterion for being a peak w.r.t. to
+      the adjacent tower.
+
+   Note this is a "potential" association; a tower may pass the association
+   test with more than one cluster, but it will eventually be assigned
+   unambiguously to a single cluster.
    */
   bool canAssociate(const StFmsTowerCluster* cluster) {
     // The peak tower in a cluster is always the first
@@ -239,22 +242,24 @@ class TowerClusterAssociation : public TObject {
     }  // BOOST_FOREACH loop over all towers in a cluster
     return false;
   }
-  /*
+  /**
    Attempt to add a potential associate cluster with this tower.
-   
+
    Add the cluster to the list of potential associates if this tower can
-   associate with it (see canAssociate()). However, if there is already one or
-   more clusters in the list:
-   - if the new cluster is closer to the tower, replace the existing cluster(s)
-   - if the new cluster if further away, do not add it
+   associate with it (see canAssociate()).
+   If there is already one or more clusters in the list:
+   - if the new cluster is closer to the tower, replace the existing cluster(s).
+   - if the new cluster if further away, do not add it.
    - if the new cluster is *exactly* the same separation as the existing
-     cluster(s), add it to the list but keep the existing ones
+     cluster(s), add it to the list but keep the existing ones.
+
    i.e. at any time there can only be clusters of the same (minimal) separation
    from the tower, but there can be multiple clusters of identical separation.
 
-   See separation(StFmsTowerCluster*) for the meaning of the distance argument.
-   
-   Return true if the new cluster is added, false if not.
+   See separation(const StFmsTowerCluster*, const ETowerClusterDistance)
+   for the meaning of the distance argument.
+
+   Returns true if the new cluster is added, false if not.
    */
   bool add(StFmsTowerCluster* cluster, const ETowerClusterDistance distance) {
     bool inserted(false);
@@ -269,12 +274,12 @@ class TowerClusterAssociation : public TObject {
         // not further away. If it is closer, remove the existing cluster.
         double distNew = separation(cluster, distance);
         double distOld = separation(mClusters.front(), distance);
-        /** \todo I don't like using simple float comparison here, look into a
-                  more robust method */
         // If the new cluster is closer, remove the old ones
         if (distNew < distOld) {
           mClusters.clear();
         } // if
+        /** \todo I don't like using simple float comparison here, look into a
+                  more robust method */
         // Add the new cluster if it is not further away than existing ones
         if (distNew <= distOld) {
           mClusters.push_back(cluster);
@@ -285,13 +290,13 @@ class TowerClusterAssociation : public TObject {
     }  // if
     return inserted;
   }
-  /*
+  /**
    Calculate the nearest cluster out of the list of potential associates.
-   
+
    The distance is that between this tower and the cluster centre, (x0, y0),
-   therefore StFmsTowerCluster::calculateClusterMoments() must have been called before
-   doing this in order to calculate x0 and y0 of the cluster.
-   
+   therefore StFmsTowerCluster::calculateClusterMoments() must have been called
+   before doing this, in order to calculate x0 and y0 of the cluster.
+
    Returns NULL if there are no clusters in the list.
    */
   StFmsTowerCluster* nearestCluster() {
@@ -309,8 +314,8 @@ class TowerClusterAssociation : public TObject {
     return nearest;
   }
  private:
-  StFmsTower* mTower;
-  std::list<StFmsTowerCluster*> mClusters;
+  StFmsTower* mTower;  ///< Reference FMS tower
+  std::list<StFmsTowerCluster*> mClusters;   ///< Associable clusters
 };
 
 StFmsClusterFinder::StFmsClusterFinder() : mNClusts(0) {
