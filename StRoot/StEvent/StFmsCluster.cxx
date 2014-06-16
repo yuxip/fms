@@ -17,8 +17,8 @@
 
 StFmsCluster::StFmsCluster()
     : StObject(), mCategory(0), mNTowers(0), mNPhotons(0), mEnergy(0.), mX(0.),
-      mY(0.), mSigmaMax(0.), mSigmaMin(0.), mChi2Ndf1Photon(-1.),
-      mChi2Ndf2Photon(-1.), mId(0) {}
+      mY(0.), mSigmaMin(0.), mSigmaMax(0.), mChi2Ndf1Photon(-1.),
+      mChi2Ndf2Photon(-1.), mId(0) { }
 
 StFmsCluster::~StFmsCluster() {
 }
