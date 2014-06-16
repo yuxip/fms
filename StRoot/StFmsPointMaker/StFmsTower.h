@@ -92,7 +92,7 @@ class StFmsTower : public TObject {
 	Int_t mColumn;  ///< Column number, starts at 1, horizontal (STAR x-coord)
 	Int_t mRow;  ///< Row number, starts at 1, vertical (STAR y-coord)
 	Int_t mCluster;  ///< Index of cluster the tower is associated with
-	ClassDef(StFmsTower, 7)
+	ClassDef(StFmsTower, 0)
 };
 }  // namespace FMSCluster
 #endif  // STROOT_STFMSPOINTMAKER_STFMSTOWER_H_

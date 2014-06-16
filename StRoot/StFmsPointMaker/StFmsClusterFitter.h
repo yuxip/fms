@@ -166,7 +166,7 @@ class StFmsClusterFitter : public TObject {
   TMinuit mMinuit;  ///< Minuit fitting interface
   static std::list<StFmsTower*>* mTowers;  ///< List of towers to fit
   static Float_t mTowerWidthXY[2];  ///< glass width X, Y in cm
-  ClassDef(StFmsClusterFitter, 4)
+  ClassDef(StFmsClusterFitter, 0)
 };  // class StFmsClusterFitter
 }  // namespace FMSCluster
 #endif  // STROOT_STFMSPOINTMAKER_STFMSCLUSTERFITTER_H_

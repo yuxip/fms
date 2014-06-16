@@ -157,7 +157,7 @@ class StFmsEventClusterer: public TObject {
   std::vector<FMSCluster::StFmsTower>* mTowers;   ///< Towers to cluster
   StFmsClusterFitter* mFitter;   ///< Routine for fitting photons to clusters
   std::vector<Float_t> mTowerWidthXY;   ///< Geometry for this sub-detector (cm)
-  ClassDef(StFmsEventClusterer, 7)
+  ClassDef(StFmsEventClusterer, 0)
 };
 }  // namespace FMSCluster
 #endif  // STROOT_STFMSPOINTMAKER_STFMSEVENTCLUSTERER_H_

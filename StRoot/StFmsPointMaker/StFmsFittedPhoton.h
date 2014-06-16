@@ -37,7 +37,7 @@ struct StFmsFittedPhoton {
   Float_t errXPos;  ///< x-position fit error
   Float_t yPos;  ///< Fitted (relative) y-position
   Float_t errYPos;  ///< y-position fit error
-  ClassDef(StFmsFittedPhoton, 4)
+  ClassDef(StFmsFittedPhoton, 0)
 };  // class StFmsFittedPhoton
 }  // namespace FMSCluster
 

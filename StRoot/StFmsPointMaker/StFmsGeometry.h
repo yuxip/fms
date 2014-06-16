@@ -161,7 +161,7 @@ class StFmsGeometry : public TObject {
    */
   StFmsGeometry& operator=(const StFmsGeometry&);
   Table mPositions;  ///< Detector ID: position information pairs
-  ClassDef(StFmsGeometry, 3)
+  ClassDef(StFmsGeometry, 0)
 };  // class StFmsGeometry
 }  // namespace FMSCluster
 #endif  // STROOT_STFMSPOINTMAKER_STFMSGEOMETRY_H_

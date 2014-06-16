@@ -150,7 +150,7 @@ class StFmsClusterFinder {
 #endif  // __CINT__
   Float_t mEnergyCutoff;  ///< Tower energy cutoff for cluster moments
   Int_t mNClusts;  ///< Counter for number of found clusters
-  ClassDef(StFmsClusterFinder, 3)
+  ClassDef(StFmsClusterFinder, 0)
 };  // class StFmsClusterFinder
 }  // namespace FMSCluster
 #endif  // STROOT_STFMSPOINTMAKER_STFMSCLUSTERFINDER_H_

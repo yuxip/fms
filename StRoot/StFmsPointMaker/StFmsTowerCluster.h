@@ -120,7 +120,7 @@ class StFmsTowerCluster {
   StFmsFittedPhoton mPhotons[kMaxPhotonsPerCluster];  ///< Photons in cluster
 
  private:
-  ClassDef(StFmsTowerCluster, 7)
+  ClassDef(StFmsTowerCluster, 0)
 };  // class StFmsTowerCluster
 }  // namespace FMSCluster
 #endif  // STROOT_STFMSPOINTMAKER_STFMSTOWERCLUSTER_H_
