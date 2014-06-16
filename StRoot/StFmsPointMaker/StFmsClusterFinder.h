@@ -14,11 +14,7 @@
 #define STROOT_STFMSPOINTMAKER_STFMSCLUSTERFINDER_H_
 
 #include <list>
-
-#ifndef __CINT__  // Hide Boost headers from CINT as they will confuse it
-// http://www.boost.org/doc/libs/1_55_0/libs/ptr_container/doc/ptr_container.html
-#include <boost/ptr_container/ptr_list.hpp>
-#endif  // __CINT__
+#include <memory>  // For std::unique_ptr
 
 #include <Rtypes.h>  // Provides ROOT ClassDef macro
 
@@ -27,10 +23,10 @@ class TObjArray;
 namespace FMSCluster {  // $NMSPC
 class StFmsTowerCluster;
 class StFmsTower;
-// Typedef a pointer list of tower clusters for convenience
-// Hide it from CINT as it won't know how to handle the Boost header
+// Typedef a list of cluster unique_ptrs for convenience.
+// Hide it from CINT as it can't handle parsing the header :(
 #ifndef __CINT__
-typedef boost::ptr_list<StFmsTowerCluster> ClusterList;
+typedef std::list<std::unique_ptr<StFmsTowerCluster>> ClusterList;
 #endif  // __CINT__
 /**
  Form clusters from a collection of FMS towers.

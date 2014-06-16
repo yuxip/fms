@@ -33,19 +33,19 @@ using namespace FMSCluster;
 
 namespace {
 /* Helper function to add numbers of photons using std::accumulate */
-int accumulatePhotons(int nPhotons, const StFmsTowerCluster& cluster) {
-  return nPhotons + cluster.cluster()->nPhotons();
+int accumulatePhotons(int nPhotons, const ClusterList::value_type& cluster) {
+  return nPhotons + cluster->cluster()->nPhotons();
 }
 
 /* Unary predicate for selecting bad clusters. */
 struct IsBadCluster
-    : public std::unary_function<const StFmsTowerCluster&, bool> {
+    : public std::unary_function<const ClusterList::value_type&, bool> {
   // Set minimum allowed cluster energy and maximum number of towers
   IsBadCluster(double minEnergy, unsigned maxTowers)
       : energy(minEnergy), towers(maxTowers) { }
-  bool operator()(const StFmsTowerCluster& cluster) const {
-    return cluster.cluster()->energy() <= energy ||
-           cluster.towers().size() > towers;
+  bool operator()(const ClusterList::value_type& cluster) const {
+    return cluster->cluster()->energy() <= energy ||
+           cluster->towers().size() > towers;
   }
   double energy;
   unsigned towers;
@@ -129,13 +129,13 @@ Int_t StFmsEventClusterer::fitEvent() {
   mClusterFinder.findClusters(&towerList, &mClusters);
   // Cluster energy should be at least 2 GeV (parameter "minRealClusterEne")
   if (mDetectorId == 8 || mDetectorId == 9) {
-    mClusters.erase_if(IsBadCluster(0.75, 25));
+    mClusters.remove_if(IsBadCluster(0.75, 25));
   } else {
-    mClusters.erase_if(IsBadCluster(2.0, 49));  // Different cuts for small cell
+    mClusters.remove_if(IsBadCluster(2.0, 49));  // Different cuts for small cell
   }  // if
   // Must do moment analysis before catagorization
   for (ClusterIter i = mClusters.begin(); i != mClusters.end(); ++i) {
-    i->findClusterAxis(mClusterFinder.momentEnergyCutoff());
+    (*i)->findClusterAxis(mClusterFinder.momentEnergyCutoff());
   }  // for
   // Loop over clusters, catagorize, guess the photon locations for cat 0 or 2
   // clusters then fit, compare, and choose the best fit
@@ -143,25 +143,25 @@ Int_t StFmsEventClusterer::fitEvent() {
   const double max2PhotonFitChi2 = 10.;
   for (ClusterIter cluster = mClusters.begin(); cluster != mClusters.end();
        ++cluster) {
-    Int_t clustCatag = mClusterFinder.categorise(&(*cluster));
+    Int_t clustCatag = mClusterFinder.categorise(cluster->get());
     // point to the real TObjArray that contains the towers to be fitted
     // it is the same tower array for the cluster or all alternative clusters
-    mFitter->setTowers(&cluster->towers());
+    mFitter->setTowers(&(*cluster)->towers());
     // Number of Degree of Freedom for the fit
     if (clustCatag == k1PhotonCluster) {
       // Do 1-photon fit
-      fitOnePhoton(&(*cluster));
+      fitOnePhoton(cluster->get());
     } else if (clustCatag == k2PhotonCluster) {
       // Do 2-photon fit
       fit2PhotonClust(cluster);
-      badEvent = cluster->chiSquare() > max2PhotonFitChi2;
+      badEvent = (*cluster)->chiSquare() > max2PhotonFitChi2;
     } else if (clustCatag == kAmbiguousCluster) {
       // for catagory-0 cluster, first try 1-photon fit!
       // If the fit is good enough, it is 1-photon. Else also
       // try 2-photon fit, and find the best fit (including 1-photon fit).
       Bool_t is2Photon = true;
-      double chiSq1 = fitOnePhoton(&(*cluster));
-      const StFmsFittedPhoton photon = cluster->photons()[0];  // Cache photon
+      double chiSq1 = fitOnePhoton(cluster->get());
+      const StFmsFittedPhoton photon = (*cluster)->photons()[0];  // Cache photon
       double chiSq2(NAN);  // Only set if do 2-photon fit
       // Decide if this 1-photon fit is good enough
       if (chiSq1 < 5.) {
@@ -183,15 +183,15 @@ Int_t StFmsEventClusterer::fitEvent() {
       // Now fill in the fit result, either 1- or 2-photon
       if (is2Photon) {
         // 2-photon fit is better
-        cluster->cluster()->setNPhotons(2);
-        cluster->setChiSquare(chiSq2);
+        (*cluster)->cluster()->setNPhotons(2);
+        (*cluster)->setChiSquare(chiSq2);
         // Flag the event as bad if the fit chi2/ndf is too bad
-        badEvent = cluster->chiSquare() > max2PhotonFitChi2;
+        badEvent = (*cluster)->chiSquare() > max2PhotonFitChi2;
       } else {
         // 1-photon fit is better
-        cluster->cluster()->setNPhotons(1);
-        cluster->setChiSquare(chiSq1);
-        cluster->photons()[0] = photon;
+        (*cluster)->cluster()->setNPhotons(1);
+        (*cluster)->setChiSquare(chiSq1);
+        (*cluster)->photons()[0] = photon;
       }  // if (is2Photon)
     } else {  // Invalid cluster category
       // should not happen!
@@ -212,8 +212,8 @@ Int_t StFmsEventClusterer::fitEvent() {
   std::list<StFmsTower*> allTow;
   for (ClusterIter cluster = mClusters.begin(); cluster != mClusters.end();
        ++cluster) {
-    allTow.insert(allTow.end(), cluster->towers().begin(),
-                  cluster->towers().end());
+    allTow.insert(allTow.end(), (*cluster)->towers().begin(),
+                  (*cluster)->towers().end());
   }  // for
   mFitter->setTowers(&allTow);
   // Only do global fit for 2 or more clusters (2-photon fit for one cluster
@@ -321,7 +321,7 @@ Float_t StFmsEventClusterer::globalFit(const Int_t nPh, const Int_t nCl,
   std::advance(end, nCl);
   for (ClusterIter cluster = first; cluster != end; ++cluster) {
     // Loop over all photons in cluster
-    for (Int_t jp = 0; jp < cluster->cluster()->nPhotons(); jp++) {
+    for (Int_t jp = 0; jp < (*cluster)->cluster()->nPhotons(); jp++) {
       if (totPh > StFmsClusterFitter::maxNFittedPhotons()) {
         LOG_ERROR << "Total # of photons in " << nCl << " clusters is at least "
           << totPh << "! I can NOT do fit!" << endm;
@@ -329,15 +329,15 @@ Float_t StFmsEventClusterer::globalFit(const Int_t nPh, const Int_t nCl,
       }  // if
       // Note positions are in centimetres, not tower units
       // Set x position start, lower and upper values
-      start.push_back(cluster->photons()[jp].xPos);
+      start.push_back((*cluster)->photons()[jp].xPos);
       lowLim.push_back(start.back() - 1.25);
       upLim.push_back(start.back() + 1.25);
       // Set y position start, lower and upper values
-      start.push_back(cluster->photons()[jp].yPos);
+      start.push_back((*cluster)->photons()[jp].yPos);
       lowLim.push_back(start.back() - 1.25);
       upLim.push_back(start.back() + 1.25);
       // Set energy start, lower and upper values
-      start.push_back(cluster->photons()[jp].energy);
+      start.push_back((*cluster)->photons()[jp].energy);
       lowLim.push_back(start.back() * (1 - 0.3));  // Limit to +/- 30% energy
       upLim.push_back(start.back() * (1 + 0.3));
       totPh++;
@@ -362,9 +362,9 @@ Float_t StFmsEventClusterer::globalFit(const Int_t nPh, const Int_t nCl,
   PhotonList::const_iterator photonIter = photons.begin();
   for (ClusterIter cluster = first; cluster != end; ++cluster) {
     // Loop over all photons in cluster
-    for (Int_t jp = 0; jp < cluster->cluster()->nPhotons();
+    for (Int_t jp = 0; jp < (*cluster)->cluster()->nPhotons();
          jp++, ++photonIter) {
-      cluster->photons()[jp] = *photonIter;
+      (*cluster)->photons()[jp] = *photonIter;
     }  // for loop over photons
   }  // for loop over clusters
   // Evaluate the Chi-square function and return it
@@ -373,15 +373,15 @@ Float_t StFmsEventClusterer::globalFit(const Int_t nPh, const Int_t nCl,
 
 Float_t StFmsEventClusterer::fit2PhotonClust(ClusterIter p_clust) {
   const Double_t step2[7] = {0, 0.02, 0.02, 0.01, 0.01, 0.01, 0.1};
-  Double_t ratioSigma = p_clust->cluster()->sigmaMin() /
-                        p_clust->cluster()->sigmaMax();
+  Double_t ratioSigma = (*p_clust)->cluster()->sigmaMin() /
+                        (*p_clust)->cluster()->sigmaMax();
   Double_t maxTheta = ratioSigma / 2.8;
   if (maxTheta > (TMath::Pi() / 2.0)) {
     maxTheta = TMath::Pi() / 2.0;
   }  // if
   // Use for restricting d_gg
-  Double_t EcSigmaMax = p_clust->cluster()->energy() *
-                        p_clust->cluster()->sigmaMax();
+  Double_t EcSigmaMax = (*p_clust)->cluster()->energy() *
+                        (*p_clust)->cluster()->sigmaMax();
   // Starting position, lower and upper limit of parameters
   Double_t start[7], lowLim[7], upLim[7];
   // First parameter is the number of photons, which is constant = 2 photons
@@ -398,12 +398,12 @@ Float_t StFmsEventClusterer::fit2PhotonClust(ClusterIter p_clust) {
   //  - z_gg:        should just let it vary from -1 to 1.
   //  - d_gg:        a lower bound is given by r=sqrt(sigmaX^2+sigmaY^2). 
   //                 d_gg > Max( 2.5*(r-0.6), 0.5 )
-  start[1]  = mTowerWidthXY[0] * p_clust->cluster()->x();
-  start[2]  = mTowerWidthXY[1] * p_clust->cluster()->y();
-  start[6]  = p_clust->cluster()->energy();
-  start[4]  = p_clust->thetaAxis();
+  start[1]  = mTowerWidthXY[0] * (*p_clust)->cluster()->x();
+  start[2]  = mTowerWidthXY[1] * (*p_clust)->cluster()->y();
+  start[6]  = (*p_clust)->cluster()->energy();
+  start[4]  = (*p_clust)->thetaAxis();
   const float dggPara[6] = {18.0, 2.2, 0.5, 60.0, 0.085, 3.5};
-  start[3] = dggPara[1] * mTowerWidthXY[0] * p_clust->cluster()->sigmaMax();
+  start[3] = dggPara[1] * mTowerWidthXY[0] * (*p_clust)->cluster()->sigmaMax();
   // Randomize the starting point of Z_gg (from -0.1 to 0.1)
   start[5]  = 0.1 * (2 * gRandom->Rndm() - 1);
   lowLim[1] = start[1] - 0.2 * mTowerWidthXY[0];
@@ -441,16 +441,16 @@ Float_t StFmsEventClusterer::fit2PhotonClust(ClusterIter p_clust) {
   }  // if
   // Do a global fit, using result of 1st fit as starting point
   // Need to set "nPhoton" before calling "globalFit(..)"
-  p_clust->photons()[0] = photons.front();
-  p_clust->photons()[1] = photons.back();
-  p_clust->cluster()->setNPhotons(photons.size());
+  (*p_clust)->photons()[0] = photons.front();
+  (*p_clust)->photons()[1] = photons.back();
+  (*p_clust)->cluster()->setNPhotons(photons.size());
   chiSq = globalFit(2, 1, p_clust);
-  int ndf = p_clust->towers().size() - 6;
+  int ndf = (*p_clust)->towers().size() - 6;
   if (ndf <= 0) {
     ndf = 1;
   }  // if
-  p_clust->setChiSquare(chiSq / ndf);
-  return p_clust->chiSquare();
+  (*p_clust)->setChiSquare(chiSq / ndf);
+  return (*p_clust)->chiSquare();
 }
 
 /*
@@ -466,13 +466,13 @@ Float_t StFmsEventClusterer::fit2PhotonClust(ClusterIter p_clust) {
 */
 bool StFmsEventClusterer::validate2ndPhoton(ClusterConstIter cluster) const {
   // Select the lower-energy of the two photons
-  const StFmsFittedPhoton* photon = findLowestEnergyPhoton(&(*cluster));
+  const StFmsFittedPhoton* photon = findLowestEnergyPhoton(cluster->get());
   // Tower row and column where the fitted photon of lower energy should hit
   int column = 1 + (Int_t)(photon->xPos / mTowerWidthXY[0]);
   int row = 1 + (Int_t)(photon->yPos / mTowerWidthXY[1]);
   // Now check whether this tower is one of the non-zero towers of the cluster
   // The temporary StFmsTower only needs row and column set for the test
-  const StFmsTower* tower = searchClusterTowers(row, column, *cluster);
+  const StFmsTower* tower = searchClusterTowers(row, column, **cluster);
   // If tower is non-NULL, the photon does hit in a tower in this cluster.
   if (!tower) {
     return false;
@@ -493,11 +493,11 @@ bool StFmsEventClusterer::validate2ndPhoton(ClusterConstIter cluster) const {
   // this photon vs. energy deposited in its own cluster
   // If the ratio is too high, this fitted photon is probably a bogus one
   Double_t energyInOwnCluster =
-    photonEnergyInCluster(mTowerWidthXY[0], &(*cluster), photon);
+    photonEnergyInCluster(mTowerWidthXY[0], cluster->get(), photon);
   // Loop over all clusters except its own
   for (ClusterConstIter i = mClusters.begin(); i != mClusters.end(); ++i) {
     if (i != cluster) {  // Skip the photon's own cluster
-      if (photonEnergyInCluster(mTowerWidthXY[0], &(*i), photon) > 
+      if (photonEnergyInCluster(mTowerWidthXY[0], i->get(), photon) > 
           (0.2 * energyInOwnCluster)) {
         return false;  // Stop as soon as we fail for one cluster
       }  // if

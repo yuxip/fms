@@ -119,9 +119,9 @@ int StFmsPointMaker::clusterDetector(TowerList* towers, const int detectorId,
     return kStWarn;
   }  // if
   // Saved cluser info into StFmsCluster
-  BOOST_FOREACH(FMSCluster::StFmsTowerCluster& towerCluster,
+  BOOST_FOREACH(FMSCluster::ClusterList::value_type& towerCluster,
                 clustering.clusters()) {
-    processTowerCluster(&towerCluster, detectorId, fmsCollection);
+    processTowerCluster(towerCluster.get(), detectorId, fmsCollection);
   }  // BOOST_FOREACH(clusters)
   return kStOk;
 }

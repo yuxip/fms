@@ -51,6 +51,7 @@ typedef FMSCluster::StFmsClusterFinder::TowerList TowerList;
 typedef TowerList::iterator TowerIter;
 typedef TowerList::const_reverse_iterator TowerConstRIter;
 typedef FMSCluster::ClusterList::iterator ClusterIter;
+typedef FMSCluster::ClusterList::value_type ClusterPtr;
 
 using FMSCluster::StFmsTower;
 
@@ -141,7 +142,7 @@ enum ETowerClusterDistance {
 void sortTowersEnergyDescending(FMSCluster::ClusterList* clusters,
                                int nClusters) {
   for (ClusterIter i = clusters->begin(); i != clusters->end(); ++i) {
-    i->towers().sort(std::ptr_fun(&descendingTowerEnergySorter));
+    (*i)->towers().sort(std::ptr_fun(&descendingTowerEnergySorter));
   }  // for
 }
 }  // unnamed namespace
@@ -391,8 +392,8 @@ int StFmsClusterFinder::findClusters(TowerList* towers, ClusterList* clusters) {
   // Calculate the moments of clusters. We need to do this before calling
   // TowerClusterAssociation::nearestCluster, which uses the cluster moment
   // to determine tower-cluster separations for the valley towers.
-  BOOST_FOREACH(StFmsTowerCluster& i, *clusters) {
-    calculateClusterMoments(&i);
+  BOOST_FOREACH(ClusterPtr& i, *clusters) {
+    calculateClusterMoments(i.get());
   }  // BOOST_FOREACH
   // Ambiguous "valley" towers that were equally spaced between clusters can
   // now be associated
@@ -404,7 +405,7 @@ int StFmsClusterFinder::findClusters(TowerList* towers, ClusterList* clusters) {
   sortTowersEnergyDescending(clusters, mNClusts);
   // Recalculate various moment of clusters
   for (ClusterIter i = clusters->begin(); i != clusters->end(); ++i) {
-    calculateClusterMoments(&(*i));
+    calculateClusterMoments(i->get());
   }  // for
   // Finally add "zero" energy towers to the clusters
   associateSubThresholdTowersWithClusters(&belowThreshold, clusters);
@@ -427,9 +428,9 @@ unsigned StFmsClusterFinder::locateClusterSeeds(TowerList* towers,
     if (couldBePeakTower(high, neighbors)) {
       // Add "high" to cluster and move towers neighboring "high" to "neighbor"
       high->setCluster(clusters->size());
-      clusters->push_back(new StFmsTowerCluster(new StFmsCluster));
-      clusters->back().setIndex(high->cluster());
-      clusters->back().towers().push_back(high);
+      clusters->push_back(ClusterPtr(new StFmsTowerCluster(new StFmsCluster)));
+      clusters->back()->setIndex(high->cluster());
+      clusters->back()->towers().push_back(high);
       // Add neighbors of the new peak tower to the neighbor list.
       // Partition the remaining towers so that neighbours of the high tower are
       // placed at the beginning, and non-neighbours placed at the end. Use
@@ -476,7 +477,7 @@ unsigned StFmsClusterFinder::associateTowersWithClusters(
     std::auto_ptr<TowerClusterAssociation> association(
       new TowerClusterAssociation(*tower));
     for (ClusterIter i = clusters->begin(); i != clusters->end(); ++i) {
-      association->add(&(*i), kPeakTower);
+      association->add(i->get(), kPeakTower);
     }  // for
     // Attempt to move the tower to the appropriate cluster
     if (association->clusters()->size() == 1) {
@@ -531,8 +532,8 @@ unsigned StFmsClusterFinder::associateResidualTowersWithClusters(
     for (ClusterIter i = clusters->begin(); i != clusters->end(); ++i) {
       // There are already some towers in the cluster so we can use a computed
       // cluster center to give a better estimate of tower-cluster separation
-      calculateClusterMoments(&(*i));
-      association.add(&(*i), kClusterCenter);
+      calculateClusterMoments(i->get());
+      association.add(i->get(), kClusterCenter);
     }  // loop over all clusters
     if (!association.clusters()->empty()) {
       StFmsTowerCluster* cluster = association.clusters()->front();
@@ -555,7 +556,7 @@ void StFmsClusterFinder::associateSubThresholdTowersWithClusters(
     TowerClusterAssociation association(*tower);
     // loop over all clusters
     for (ClusterIter i = clusters->begin(); i != clusters->end(); ++i) {
-      association.add(&(*i), kPeakTower);
+      association.add(i->get(), kPeakTower);
     }  // for
     StFmsTowerCluster* cluster = association.nearestCluster();
     if (cluster &&

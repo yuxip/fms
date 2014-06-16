@@ -15,11 +15,6 @@
 
 #include <vector>
 
-#ifndef __CINT__
-// http://www.boost.org/doc/libs/1_55_0/libs/ptr_container/doc/ptr_container.html
-#include <boost/ptr_container/ptr_list.hpp>
-#endif  // __CINT__
-
 #include "TF2.h"
 #include "TLorentzVector.h"
 #include "TMath.h"
@@ -61,7 +56,7 @@ class StFmsEventClusterer: public TObject {
    value.
    */
   Bool_t cluster(std::vector<FMSCluster::StFmsTower>* towers);
-#ifndef __CINT__  // Hide ClusterList from CINT as it uses Boost
+#ifndef __CINT__  // Hide ClusterList from CINT as it uses C++11
   /** Returns the list of clusters in this detector for the event. */
   ClusterList& clusters() { return mClusters; }
   /** \overload */
@@ -69,9 +64,10 @@ class StFmsEventClusterer: public TObject {
 #endif  // __CINT__
 
  private:
-#ifndef __CINT__  // Hide ClusterList from CINT as it uses Boost
-  // ClusterList is defined in StFmsClusterFinder.h
+#ifndef __CINT__  // Hide ClusterList from CINT as it uses C++11
+  /** ClusterList is defined in StFmsClusterFinder.h */
   typedef ClusterList::iterator ClusterIter;
+  /** ClusterList is defined in StFmsClusterFinder.h */
   typedef ClusterList::const_iterator ClusterConstIter;
 #endif  // __CINT__
   /**
@@ -114,7 +110,7 @@ class StFmsEventClusterer: public TObject {
    Returns the &chi;<sup>2</sup> of the fit.
    */
   Float_t fitOnePhoton(StFmsTowerCluster* cluster);
-#ifndef __CINT__  // Hide ClusterList from CINT as it uses Boost
+#ifndef __CINT__  // Hide Cluster(Const)Iter from CINT as it uses C++11
   /*
    Perform a global fit of all photons in an event.
 
