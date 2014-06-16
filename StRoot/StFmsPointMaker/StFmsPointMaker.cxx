@@ -11,8 +11,6 @@
  */
 #include "StRoot/StFmsPointMaker/StFmsPointMaker.h"
 
-#include <boost/foreach.hpp>
-
 #include <TLorentzVector.h>
 #include <TProcessID.h>
 
@@ -101,12 +99,12 @@ int StFmsPointMaker::clusterEvent() {
   if (!fmsCollection) {
     return kStErr;
   }  // if
-  BOOST_FOREACH(TowerMap::value_type& subdetector, mTowers) {
-    if (!validateTowerEnergySum(subdetector.second)) {
+  for (auto i = mTowers.begin(); i != mTowers.end(); ++i) {
+    if (!validateTowerEnergySum(i->second)) {
       continue;  // To remove LED trails
     }  // if
-    clusterDetector(&subdetector.second, subdetector.first, fmsCollection);
-  }  // BOOST_FOREACH(subdetectors)
+    clusterDetector(&i->second, i->first, fmsCollection);
+  }  // for
   return kStOk;
 }
 
@@ -118,11 +116,11 @@ int StFmsPointMaker::clusterDetector(TowerList* towers, const int detectorId,
   if (!clustering.cluster(towers)) {  // Cluster tower list
     return kStWarn;
   }  // if
-  // Saved cluser info into StFmsCluster
-  BOOST_FOREACH(FMSCluster::ClusterList::value_type& towerCluster,
-                clustering.clusters()) {
-    processTowerCluster(towerCluster.get(), detectorId, fmsCollection);
-  }  // BOOST_FOREACH(clusters)
+  // Saved cluster info into StFmsCluster
+  FMSCluster::ClusterList& clusters = clustering.clusters();
+  for (auto cluster = clusters.begin(); cluster != clusters.end(); ++cluster) {
+    processTowerCluster(cluster->get(), detectorId, fmsCollection);
+  }  // for
   return kStOk;
 }
 
@@ -138,9 +136,10 @@ bool StFmsPointMaker::validateTowerEnergySum(const TowerList& towers) const {
   }  // if
   // Sum tower energies and test validity of the sum
   float Esum = 0.f;
-  BOOST_FOREACH(const FMSCluster::StFmsTower& tower, towers) {
-    Esum += tower.hit()->energy();
-  }  // BOOST_FOREACH
+  typedef TowerList::const_iterator TowerIter;
+  for (TowerIter i = towers.begin(); i != towers.end(); ++i) {
+    Esum += i->hit()->energy();
+  }  // for
   return Esum >= 0.f && Esum <= centerOfMassEnergy;
 }
 
@@ -176,11 +175,13 @@ bool StFmsPointMaker::processTowerCluster(
     cluster->points().push_back(point);
   }  // for
   // Save the tower hit info.
-  BOOST_FOREACH(const FMSCluster::StFmsTower* tow, towerCluster->towers()) {
-    if (tow->hit()->adc() >= 1) {  // Min ADC = 1
-      cluster->hits().push_back(tow->hit());
+  typedef std::list<FMSCluster::StFmsTower*>::const_iterator TowerIter;
+  std::list<FMSCluster::StFmsTower*>& towers = towerCluster->towers();
+  for (TowerIter i = towers.begin(); i != towers.end(); ++i) {
+    if ((*i)->hit()->adc() >= 1) {  // Min ADC = 1
+      cluster->hits().push_back((*i)->hit());
     }  // if
-  }  // BOOST_FOREACH(towers)
+  }  // for
   // Release StFmsCluster held by towerCluster to pass ownership to
   // StFmsCollection (and hence StEvent).
   fmsCollection->addCluster(towerCluster->release());

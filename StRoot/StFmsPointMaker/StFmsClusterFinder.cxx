@@ -19,8 +19,6 @@
 #include <list>
 #include <memory>
 
-#include <boost/foreach.hpp>
-
 #include <TCollection.h>
 #include <TObjArray.h>
 
@@ -221,8 +219,9 @@ class TowerClusterAssociation : public TObject {
    unambiguously to a single cluster.
    */
   bool canAssociate(const StFmsTowerCluster* cluster) {
+    const std::list<StFmsTower*>& towers = cluster->towers();
     // The peak tower in a cluster is always the first
-    const StFmsTower* peak = cluster->towers().front();
+    const StFmsTower* peak = towers.front();
     // Make sure that this tower has lower energy than the peak, but be careful;
     // because of digitization, it is possible that the "neighbor" tower
     // has the exact same energy as the peak tower, not just less
@@ -231,16 +230,17 @@ class TowerClusterAssociation : public TObject {
     }  // if
     // Loop over all towers in this cluster to see if this tower is
     // physically adjacent to any of them.
-    BOOST_FOREACH(const StFmsTower* clusterTower, cluster->towers()) {
+    typedef std::list<StFmsTower*>::const_iterator TowerIter;
+    for (TowerIter tower = towers.begin(); tower != towers.end(); ++tower) {
       // Place an energy selection when determining adjacent towers, as a
       // neighbor cannot exceed an adjacent tower by a factor more than
       // minRatioPeakTower, otherwise it will be considered a peak itself.
-      if (mTower->isNeighbor(*clusterTower) &&
+      if (mTower->isNeighbor(**tower) &&
           mTower->hit()->energy() < minRatioPeakTower *
-          clusterTower->hit()->energy()) {
+          (*tower)->hit()->energy()) {
         return true;  // Stop looping once we find any match
       }  // if
-    }  // BOOST_FOREACH loop over all towers in a cluster
+    }  // for loop over all towers in a cluster
     return false;
   }
   /**
@@ -392,9 +392,9 @@ int StFmsClusterFinder::findClusters(TowerList* towers, ClusterList* clusters) {
   // Calculate the moments of clusters. We need to do this before calling
   // TowerClusterAssociation::nearestCluster, which uses the cluster moment
   // to determine tower-cluster separations for the valley towers.
-  BOOST_FOREACH(ClusterPtr& i, *clusters) {
-    calculateClusterMoments(i.get());
-  }  // BOOST_FOREACH
+  for (auto i = clusters->begin(); i != clusters->end(); ++i) {
+    calculateClusterMoments(i->get());
+  }  // for
   // Ambiguous "valley" towers that were equally spaced between clusters can
   // now be associated
   associateValleyTowersWithClusters(&neighbors, clusters, &valleys);

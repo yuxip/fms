@@ -14,8 +14,6 @@
 
 #include <vector>
 
-#include <boost/foreach.hpp>
-
 #include <TF2.h>
 #include <TMath.h>
 
@@ -293,12 +291,14 @@ void StFmsClusterFitter::minimizationFunctionNPhoton(Int_t& npara,
   Int_t numbPh = (Int_t)para[0];
   // Sum energy of all towers being studied
   Double_t sumCl = 0;
-  BOOST_FOREACH(const StFmsTower* tower, *StFmsClusterFitter::mTowers) {
-    sumCl += tower->hit()->energy();
-  }  // BOOST_FOREACH
+  typedef std::list<StFmsTower*>::const_iterator TowerIter;
+  for (TowerIter i = mTowers->begin(); i != mTowers->end(); ++i) {
+    sumCl += (*i)->hit()->energy();
+  }  // for
   // Loop over all towers that are involved in the fit
   fval = 0;  // Stores sum of chi2 over each tower
-  BOOST_FOREACH(const StFmsTower* tower, *StFmsClusterFitter::mTowers) {
+  for (TowerIter i = mTowers->begin(); i != mTowers->end(); ++i) {
+    const StFmsTower* tower = *i;
     // The shower shape function expects the centers of towers in units of cm
     // Tower centers are stored in row/column i.e. local coordinates
     // Therefore convert to cm, remembering to subtract 0.5 from row/column to
@@ -327,7 +327,7 @@ void StFmsClusterFitter::minimizationFunctionNPhoton(Int_t& npara,
                          + errQ;
     const Double_t dchi2 = dev * dev / err;  // Calculate chi^2 of this tower
     fval += dchi2;  // Add chi2 for this tower to the sum
-  }  // while
+  }  // for
   // require that the fraction be positive!
   if (fval < 0) {
     fval = 0;

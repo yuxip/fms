@@ -18,8 +18,6 @@
 #include <list>
 #include <numeric>
 
-#include <boost/foreach.hpp>
-
 #include <TRandom.h>  // For ROOT global random generator, gRandom
 
 #include "StRoot/St_base/StMessMgr.h"
@@ -84,12 +82,15 @@ const StFmsFittedPhoton* findLowestEnergyPhoton(
 const StFmsTower* searchClusterTowers(int row, int column,
                                       const StFmsTowerCluster& cluster) {
   const StFmsTower* match(NULL);
-  BOOST_FOREACH(const StFmsTower* tower, cluster.towers()) {
+  const std::list<StFmsTower*>& towers = cluster.towers();
+  typedef std::list<StFmsTower*>::const_iterator TowerIter;
+  for (TowerIter i = towers.begin(); i != towers.end(); ++i) {
+    const StFmsTower* tower = *i;
     if (tower->row() == row && tower->column() == column) {
       match = tower;
       break;
     }  // if
-  }  // BOOST_FOREACH
+  }  // for
   return match;
 }
 }  // unnamed namespace
@@ -237,9 +238,11 @@ Double_t StFmsEventClusterer::photonEnergyInCluster(
     const StFmsFittedPhoton *p_photon) const {
   Double_t eSS = 0;
   // Sum depositions by the photon in all towers of this cluster
-  BOOST_FOREACH(const StFmsTower* tower, p_clust->towers()) {
-    eSS += photonEnergyInTower(widthLG, tower, p_photon);
-  }  // BOOST_FOREACH
+  for (std::list<StFmsTower*>::const_iterator tower = p_clust->towers().begin();
+       tower != p_clust->towers().end();
+       ++tower) {
+    eSS += photonEnergyInTower(widthLG, *tower, p_photon);
+  }  // for
   return eSS;
 }
 
