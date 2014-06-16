@@ -41,14 +41,14 @@ int accumulatePhotons(int nPhotons, const StFmsTowerCluster& cluster) {
 struct IsBadCluster
     : public std::unary_function<const StFmsTowerCluster&, bool> {
   // Set minimum allowed cluster energy and maximum number of towers
-  IsBadCluster(double minEnergy, int maxTowers)
+  IsBadCluster(double minEnergy, unsigned maxTowers)
       : energy(minEnergy), towers(maxTowers) { }
   bool operator()(const StFmsTowerCluster& cluster) const {
     return cluster.cluster()->energy() <= energy ||
            cluster.towers().size() > towers;
   }
   double energy;
-  int towers;
+  unsigned towers;
 };
 
 /*
