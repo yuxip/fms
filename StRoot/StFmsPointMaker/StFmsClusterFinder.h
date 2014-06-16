@@ -145,8 +145,8 @@ class StFmsClusterFinder {
    They serve the purpose of preventing the creation of bogus peaks,
    where there is no energy deposited at the tower
    */
-  unsigned associateSubThresholdTowersWithClusters(TowerList* towers,
-                                                   ClusterList* clusters) const;
+  void associateSubThresholdTowersWithClusters(TowerList* towers,
+                                               ClusterList* clusters) const;
 #endif  // __CINT__
   Float_t mEnergyCutoff;  ///< Tower energy cutoff for cluster moments
   Int_t mNClusts;  ///< Counter for number of found clusters

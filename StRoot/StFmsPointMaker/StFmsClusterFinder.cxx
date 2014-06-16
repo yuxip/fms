@@ -547,7 +547,7 @@ unsigned StFmsClusterFinder::associateResidualTowersWithClusters(
   return associated.size();
 }
 
-unsigned StFmsClusterFinder::associateSubThresholdTowersWithClusters(
+void StFmsClusterFinder::associateSubThresholdTowersWithClusters(
     TowerList* towers,
     ClusterList* clusters) const{
   TowerIter tower;
