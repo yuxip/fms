@@ -106,7 +106,6 @@ Double_t StFmsTowerCluster::getSigma(Double_t theta) const {
 	// 2-d vector vaxis define the axis
 	TVector2 vaxis(cos(theta), sin(theta));
 	// loop over all towers pointer in cluster
-	StFmsTower* oneTower;
 	float wnew =0;
 	BOOST_FOREACH(const StFmsTower* tower, mTowers) {
 		// the 2-d vector from the "center" of cluster to tower
@@ -117,7 +116,6 @@ Double_t StFmsTowerCluster::getSigma(Double_t theta) const {
 		// "v1" that is norm to "vaxis"
 		Double_t dis = (v1.Norm(vaxis)).Mod();
 		// contribution to sigma
-		//sigma += oneTower->energy * dis * dis;
 		float wtmp = log(tower->hit()->energy() + 1. - mEnergyCutoff) > 0 ?
 		             log(tower->hit()->energy() + 1. - mEnergyCutoff) : 0;
 		wnew += wtmp;
