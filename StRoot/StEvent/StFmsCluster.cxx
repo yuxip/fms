@@ -1,3 +1,14 @@
+// $Id$
+//
+// $Log$
+/**
+ \file      StFmsCluster.cxx
+ \brief     Implementation of StFmsCluster, a group of adjacent FMS towers
+ \author    Yuxi Pan <yuxipan@physics.ucla.edu>
+ \author    Thomas Burton <tpb@bnl.gov>
+ \date      2014
+ \copyright Brookhaven National Lab
+ */
 #include "StFmsCluster.h"
 
 #include "StMessMgr.h"
