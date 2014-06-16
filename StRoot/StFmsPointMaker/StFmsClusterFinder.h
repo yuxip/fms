@@ -86,7 +86,7 @@ class StFmsClusterFinder {
 #endif  // __CINT__
 
  private:
-  static const Int_t kMaxNClusters = 6;  ///< We stop looking after this many
+  static const unsigned kMaxNClusters = 6;  ///< We stop looking after this many
 #ifndef __CINT__  // Hide ClusterList from CINT
   /**
    Look for cluster seed towers.
