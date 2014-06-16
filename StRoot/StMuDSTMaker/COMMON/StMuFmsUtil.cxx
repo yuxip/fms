@@ -142,7 +142,7 @@ void StMuFmsUtil::fillMuFmsHits(StMuFmsCollection* muFms,
 void StMuFmsUtil::fillMuFmsClusters(StMuFmsCollection* muFms,
                                     StFmsCollection* fmscol) {
   // Fill clusters
-  for (int i(0); i < fmscol->numberOfClusters(); ++i) {
+  for (unsigned i(0); i < fmscol->numberOfClusters(); ++i) {
     const StFmsCluster* cluster = fmscol->clusters()[i];
     muFms->addCluster();  // Expand StMuFmsCollection cluster array by 1
     StMuFmsCluster* muCluster = muFms->getCluster(i);
@@ -176,7 +176,7 @@ void StMuFmsUtil::fillMuFmsClusters(StMuFmsCollection* muFms,
 
 void StMuFmsUtil::fillMuFmsPoints(StMuFmsCollection* muFms,
                                   StFmsCollection* fmscol) {
-  for (int i(0); i < fmscol->numberOfPoints(); ++i) {
+  for (unsigned i(0); i < fmscol->numberOfPoints(); ++i) {
     const StFmsPoint* point = fmscol->points()[i];
     StMuFmsPoint* muPoint = muFms->addPoint();
     if (point && muPoint) {
@@ -187,7 +187,7 @@ void StMuFmsUtil::fillMuFmsPoints(StMuFmsCollection* muFms,
 
 void StMuFmsUtil::setMuFmsPointParentClusters(StMuFmsCollection* muFms,
                                               StFmsCollection* fmscol) {
-  for (int i(0); i < muFms->numberOfPoints(); ++i) {
+  for (unsigned i(0); i < muFms->numberOfPoints(); ++i) {
     // Points and clusters in the StMuFmsCollection and StFmsCollection are in
     // the same order, so we get the corresponding objects just by index
     const StFmsPoint* point = fmscol->points().at(i);
@@ -270,7 +270,7 @@ void StMuFmsUtil::setFmsPointParentClusters(StFmsCollection* fmscol,
                                             StMuFmsCollection* muFms) {
   // Points and clusters in the StMuFmsCollection and StFmsCollection are in
   // the same order, so we get the corresponding objects just by index
-  for (int i(0); i < muFms->numberOfClusters(); ++i) {
+  for (unsigned i(0); i < muFms->numberOfClusters(); ++i) {
     const StMuFmsPoint* muPoint = muFms->getPoint(i);
     if (!muPoint) {
       continue;
