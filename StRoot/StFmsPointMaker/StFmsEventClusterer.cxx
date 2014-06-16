@@ -393,8 +393,6 @@ Float_t StFmsEventClusterer::fit2PhotonClust(ClusterIter p_clust) {
                         p_clust->cluster()->sigmaMax();
   // Starting position, lower and upper limit of parameters
   Double_t start[7], lowLim[7], upLim[7];
-  // Fit status, and flag
-  Int_t status, iflag=1;
   // First parameter is the number of photons, which is constant = 2 photons
   start[0] = 2;
   lowLim[0] = 1.5;
