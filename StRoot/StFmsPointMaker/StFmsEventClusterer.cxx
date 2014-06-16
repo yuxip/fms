@@ -315,10 +315,6 @@ Float_t StFmsEventClusterer::globalFit(const Int_t nPh, const Int_t nCl,
   }  // if
   // Fit has 3 parameters per photon (x, y, E), plus 1 for the number of photons
   const Int_t nParam = 3 * StFmsClusterFitter::maxNFittedPhotons() + 1;
-  // Fit parameters, errors, and gradients of function
-  Double_t param[nParam];
-  Double_t error[nParam];
-  Double_t gradient[nParam];
   // Starting position, lower and upper limit of parameters
   Double_t start[nParam], lowLim[nParam], upLim[nParam];
   // The positions (e.b. cluster->photons()[jp].xPos) are already in unit of cm
@@ -365,8 +361,6 @@ Float_t StFmsEventClusterer::globalFit(const Int_t nPh, const Int_t nCl,
   start[0] = totPh;
   lowLim[0] = 0.5;
   upLim[0] = StFmsClusterFitter::maxNFittedPhotons() + 0.5 ;
-  // Fit status, and flag needed by mFitter
-  Int_t status, iflag=1;
   PhotonList photons;
   Double_t chiSq = mFitter->fit(start, NULL, lowLim, upLim, &photons);
   if (photons.empty()) {
