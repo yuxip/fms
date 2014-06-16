@@ -304,9 +304,10 @@ Float_t StFmsEventClusterer::globalFit(const Int_t nPh, const Int_t nCl,
     return -9999;
   }  // if
   // Fit has 3 parameters per photon (x, y, E), plus 1 for the number of photons
-  const Int_t nParam = 3 * StFmsClusterFitter::maxNFittedPhotons() + 1;
   // Starting position, lower and upper limit of parameters
-  Double_t start[nParam], lowLim[nParam], upLim[nParam];
+  // Initialise with a single value, which we will later set to the number-of-
+  // photon parameters.
+  std::vector<double> start(1, 0.), lowLim(1, 0.), upLim(1, 0.);
   // The positions (e.b. cluster->photons()[jp].xPos) are already in unit of cm
   // Clusters have already had all their fields properly filled
   // (for example cluster[].photons()[0] should NOT be NULL!)
@@ -326,33 +327,33 @@ Float_t StFmsEventClusterer::globalFit(const Int_t nPh, const Int_t nCl,
           << totPh << "! I can NOT do fit!" << endm;
         return -9999;
       }  // if
-      // Note positions are in centimetres, not tower unites
-      Int_t kpar = 3 * totPh + 1;
-      start[kpar] = cluster->photons()[jp].xPos;
-      lowLim[kpar] = start[kpar] - 1.25;
-      upLim[kpar] = start[kpar] + 1.25;
-      kpar++;
-      start[kpar] = cluster->photons()[jp].yPos;
-      lowLim[kpar] = start[kpar] - 1.25;
-      upLim[kpar] = start[kpar] + 1.25;
-      kpar++;
-      start[kpar] = cluster->photons()[jp].energy;
-      lowLim[kpar] = start[kpar] * (1 - 0.3);  // Limit to +/- 30% energy
-      upLim[kpar] = start[kpar] * (1 + 0.3);
-      totPh++ ;
+      // Note positions are in centimetres, not tower units
+      // Set x position start, lower and upper values
+      start.push_back(cluster->photons()[jp].xPos);
+      lowLim.push_back(start.back() - 1.25);
+      upLim.push_back(start.back() + 1.25);
+      // Set y position start, lower and upper values
+      start.push_back(cluster->photons()[jp].yPos);
+      lowLim.push_back(start.back() - 1.25);
+      upLim.push_back(start.back() + 1.25);
+      // Set energy start, lower and upper values
+      start.push_back(cluster->photons()[jp].energy);
+      lowLim.push_back(start.back() * (1 - 0.3));  // Limit to +/- 30% energy
+      upLim.push_back(start.back() * (1 + 0.3));
+      totPh++;
     }  // for
   }  // for
+  // Set the number-of-photons fit parameter
+  start.front() = totPh;
+  lowLim.front() = 0.5;
+  upLim.front() = StFmsClusterFitter::maxNFittedPhotons() + 0.5;
   if (totPh != nPh) {
     LOG_WARN << "WARNING! Total # of photons in " << nCl <<
       " clusters is at least " << totPh << "! Not the same as the nPh = "
       << nPh << "! I will try " << totPh << " instead!" << endm;
   }  // if
-  // Set the number-of-photons fit parameter
-  start[0] = totPh;
-  lowLim[0] = 0.5;
-  upLim[0] = StFmsClusterFitter::maxNFittedPhotons() + 0.5 ;
   PhotonList photons;
-  Double_t chiSq = mFitter->fit(start, NULL, lowLim, upLim, &photons);
+  Double_t chiSq = mFitter->fit(&start.at(0), NULL, &lowLim.at(0), &upLim.at(0), &photons);
   if (photons.empty()) {
     LOG_WARN << "Global Minuit fit returns error!" << endm;
   }  // if
