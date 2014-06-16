@@ -291,7 +291,6 @@ void StFmsClusterFitter::minimizationFunctionNPhoton(Int_t& npara,
                                                      Int_t iflag) {
   // Number of expected photons should ALWAYS be the first parameter "para[0]"
   Int_t numbPh = (Int_t)para[0];
-  StFmsTower* oneTow;
   // Sum energy of all towers being studied
   Double_t sumCl = 0;
   BOOST_FOREACH(const StFmsTower* tower, *StFmsClusterFitter::mTowers) {
