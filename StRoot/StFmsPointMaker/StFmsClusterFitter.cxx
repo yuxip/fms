@@ -26,7 +26,7 @@
 #include "StFmsPointMaker/StFmsTower.h"
 
 namespace {
-Int_t numbPara = 10;
+const Int_t numbPara = 10;
 TF2 showerShapeFitFunction("showerShapeFitFunction",
                        &FMSCluster::StFmsClusterFitter::energyDepositionInTower,
                       -25.0, 25.0, -25.0, 25.0, numbPara);
