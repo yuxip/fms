@@ -8,7 +8,6 @@
  \date      2014
  \copyright Brookhaven National Lab
  */
-
 #include "StMuFmsPoint.h"
 
 #include <algorithm>  // For std::min

@@ -8,7 +8,6 @@
  \date      2014
  \copyright Brookhaven National Lab
  */
-
 #ifndef STROOT_STMUDSTMAKER_COMMON_STMUFMSPOINT_H_
 #define STROOT_STMUDSTMAKER_COMMON_STMUFMSPOINT_H_
 
@@ -21,57 +20,61 @@ class StFmsPoint;  // The equivalent point structure in StEvent
 class StMuFmsCluster;
 
 /**
- Micro-DST FMS "point" class
+ Micro-DST FMS "point" class.
 
- Describes a "point" - an energy deposition from a single particle.
+ Describes a "point" - the energy deposited by a single particle in a cluster.
  One or more points may be form a cluster of adjacent towers in the FMS.
+
+ Maintains a persistent reference to the cluster formed by the point.
+ The cluster is owned by the relevant TClonesArray in the micro-DST, not
+ StMuFmsPoint, and should not be deleted.
  */
 class StMuFmsPoint : public TObject {
  public:
-  /** Constructor */
+  /** Constructor. */
   StMuFmsPoint(int detectorId = 0, float energy = 0.f,
                float x = 0.f, float y = 0.f, float z = 0.f);
-  /** Construct from the equivalent StEvent point structure */
+  /** Construct from the equivalent StEvent point structure. */
   StMuFmsPoint(const StFmsPoint&);
-  /** Destructor */
+  /** Destructor. */
   virtual ~StMuFmsPoint();
-  /** ID of the sub-detector with which the point is associated */
+  /** ID of the sub-detector with which the point is associated. */
   UShort_t detectorId() const { return mDetectorId; }
-  /** Total point energy */
+  /** Total point energy. */
   float energy() const { return mEnergy; }
-  /** x "center of gravity" of the point (cm) */
+  /** x "center of gravity" of the point (cm). */
   float x() const { return mX; }
-  /** y "center of gravity" of the point (cm) */
+  /** y "center of gravity" of the point (cm). */
   float y() const { return mY; }
-  /** z position of front face of sub-detector (cm) */
+  /** z position of front face of sub-detector (cm). */
   float z() const { return mZ; }
-  /** (x, y, z) position of point at sub-detector face */
+  /** (x, y, z) position of point at sub-detector face. */
   TVector3 xyz() const { return TVector3(mX, mY, mZ); }
   /**
-   (px, py, pz) of point
+   (px, py, pz) of point.
 
-   Assumes an uncharged particle of some mass, which must be <= energy
+   Assumes some mass, which must be <= energy.
    */
   TVector3 momentum(float m = 0.f) const;
-  /** (px, py, pz, E) of point. See also comments for momentum() */
+  /** (px, py, pz, E) of point. See also comments for momentum(). */
   TLorentzVector fourMomentum(float m = 0.f) const;
-  /** Parent cluster of this photon (NULL if not known) */
+  /** Parent cluster of this photon (NULL if not known). */
   StMuFmsCluster* cluster();
-  /** Parent cluster of this photon (NULL if not known) */
+  /** Parent cluster of this photon (NULL if not known). */
   const StMuFmsCluster* cluster() const;
-  /** Set ID of the sub-detector with which the point is associated */
+  /** Set ID of the sub-detector with which the point is associated. */
   void setDetectorId(UShort_t detector) { mDetectorId = detector; }
-  /** Set total point energy (sum over towers) */
+  /** Set total point energy (sum over towers). */
   void setEnergy(float energy) { mEnergy = energy; }
-  /** Set x "center of gravity" of the point */
+  /** Set x "center of gravity" of the point. */
   void setX(float x) { mX = x; }
-  /** Set y "center of gravity" of the point */
+  /** Set y "center of gravity" of the point. */
   void setY(float y) { mY = y; }
-  /** Set z position of front face of sub-detector (cm) */
+  /** Set z position of front face of sub-detector (cm). */
   void setZ(float z) { mZ = z; }
-  /** Set properties from an StFmsPoint */
+  /** Set properties from an StFmsPoint. */
   void set(const StFmsPoint&);
-  /** Set parent cluster of this photon */
+  /** Set parent cluster of this photon. */
   void setCluster(StMuFmsCluster* cluster);
 
  protected:
@@ -86,16 +89,15 @@ class StMuFmsPoint : public TObject {
   /**
    Disallow copy construction.
 
-   Duplication should only be done via Clone()
+   Duplication should only be done via Clone().
    */
   StMuFmsPoint(const StMuFmsPoint&);
   /**
    Disallow assignment.
 
-   Duplication should only be done via Clone()
+   Duplication should only be done via Clone().
    */
   StMuFmsPoint& operator=(const StMuFmsPoint&);
   ClassDef(StMuFmsPoint, 1)
 };
-
 #endif  // STROOT_STMUDSTMAKER_COMMON_STMUFMSPOINT_H_
