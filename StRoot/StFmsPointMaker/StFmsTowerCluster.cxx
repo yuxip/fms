@@ -28,7 +28,7 @@
 
 namespace FMSCluster {
 StFmsTowerCluster::StFmsTowerCluster(StFmsCluster* cluster)
-    : mCluster(cluster), mEnergyCutoff(0.5) {
+    : mEnergyCutoff(0.5), mCluster(cluster) {
   Clear();
 }
 
