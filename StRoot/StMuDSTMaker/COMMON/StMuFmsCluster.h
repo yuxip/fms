@@ -8,7 +8,6 @@
  \date      2014
  \copyright Brookhaven National Lab
  */
-
 #ifndef STROOT_STMUDSTMAKER_COMMON_STMUFMSCLUSTER_H_
 #define STROOT_STMUDSTMAKER_COMMON_STMUFMSCLUSTER_H_
 
@@ -18,48 +17,52 @@
 class StFmsCluster;  // Equivalent class in StEvent
 
 /**
- Micro-DST FMS cluster class
+ Micro-DST FMS cluster class.
 
  Describes a cluster (collection of adjacent towers) in the FMS.
  May be created by one or more photons.
+ It maintains references to the hits that form the cluster, and to photons that
+ are fitted to it. However it does not own any of those objects - they are
+ owned by the relevant TClonesArrays in the micro-DST.
  */
 class StMuFmsCluster : public TObject {
  public:
-  /** Constructor */
+  /** Constructor. */
   StMuFmsCluster(int detectorId = 0, int category = -1, float energy = 0.f,
                  float x = 0.f, float y = 0.f);
-  /** Initialise from an equivalent StEvent cluster */
+  /** Initialise from an equivalent StEvent cluster. */
   StMuFmsCluster(const StFmsCluster&);
-  /** Destructor */
+  /** Destructor. */
   virtual ~StMuFmsCluster();
+  /** Clear hit and photon arrays. */
   virtual void Clear(Option_t* option = "");
-  /** ID of the sub-detector with which the cluster is associated */
+  /** ID of the sub-detector with which the cluster is associated. */
   UShort_t detectorId() const { return mDetectorId; }
-  /** Category of the cluster (see EFmsClusterCategory) */
+  /** Category of the cluster (see EFmsClusterCategory). */
   unsigned short category() const { return mCategory; }
-  /** Total cluster energy (sum over towers) */
+  /** Total cluster energy (sum over towers). */
   float energy() const { return mEnergy; }
-  /** x "center of gravity" of the cluster */
+  /** x "center of gravity" of the cluster. */
   float x() const { return mX; }
-  /** y "center of gravity" of the cluster */
+  /** y "center of gravity" of the cluster. */
   float y() const { return mY; }
-  /** The collection of hits in the cluster */
+  /** The collection of hits in the cluster. */
   TRefArray* hits() { return &mHits; }
   /** \overload */
   const TRefArray* hits() const { return &mHits; }
-  /** Photons in this cluster */
+  /** Photons in this cluster. */
   TRefArray* photons() { return &mPhotons; }
   /** \overload */
   const TRefArray* photons() const { return &mPhotons; }
-  /** Set ID of the sub-detector with which the cluster is associated */
+  /** Set ID of the sub-detector with which the cluster is associated. */
   void setDetectorId(UShort_t detector) { mDetectorId = detector; }
-  /** Set category of the cluster (see EFmsClusterCategory) */
+  /** Set category of the cluster (see EFmsClusterCategory). */
   void setCategory(unsigned short category) { mCategory = category; }
-  /** Set total cluster energy (sum over towers) */
+  /** Set total cluster energy (sum over towers). */
   void setEnergy(float energy) { mEnergy = energy; }
-  /** Set x "center of gravity" of the cluster */
+  /** Set x "center of gravity" of the cluster. */
   void setX(float x) { mX = x; }
-  /** Set y "center of gravity" of the cluster */
+  /** Set y "center of gravity" of the cluster. */
   void setY(float y) { mY = y; }
 
  protected:
@@ -75,16 +78,15 @@ class StMuFmsCluster : public TObject {
   /**
    Disallow copy construction.
 
-   Duplication should only be done via Clone()
+   Duplication should only be done via Clone().
    */
   StMuFmsCluster(const StMuFmsCluster&);
   /**
    Disallow assignment.
 
-   Duplication should only be done via Clone()
+   Duplication should only be done via Clone().
    */
   StMuFmsCluster& operator=(const StMuFmsCluster&);
   ClassDef(StMuFmsCluster, 1)
 };
-
 #endif  // STROOT_STMUDSTMAKER_COMMON_STMUFMSCLUSTER_H_
