@@ -210,22 +210,16 @@ Int_t StFmsEventClusterer::fitEvent() {
   }  // if
   // For global fit, add all towers from all clusters
   std::list<StFmsTower*> allTow;
-  Int_t ndfg = 0 ;
   for (ClusterIter cluster = mClusters.begin(); cluster != mClusters.end();
        ++cluster) {
     allTow.insert(allTow.end(), cluster->towers().begin(),
                   cluster->towers().end());
-    ndfg += (cluster->towers().size() -
-             3 * cluster->cluster()->nPhotons());
   }  // for
-  if(ndfg <= 0) {
-    ndfg = 1;
-  }  // if
   mFitter->setTowers(&allTow);
   // Only do global fit for 2 or more clusters (2-photon fit for one cluster
   // already has global fit)
   if (mClusters.size() > 1) {
-    double chiSqG = globalFit(nPh, mClusters.size(), mClusters.begin()) / ndfg;
+    globalFit(nPh, mClusters.size(), mClusters.begin());
     // Check for errors in the global fit - the number of photons returned by
     // the global fit should equal the sum of photons in the fitted clusters
     Int_t iph = std::accumulate(mClusters.begin(), mClusters.end(), 0,
@@ -233,10 +227,6 @@ Int_t StFmsEventClusterer::fitEvent() {
     if(iph != nPh) {
       LOG_ERROR << "total nPh=" << nPh << " iPh=" << iph << endm;
     }  // if
-  } else if (mClusters.size() == 1) {
-      double chiSqG = mClusters.front().chiSquare();
-  } else {
-    double chiSqG = -1 ;
   }  // if (mClusters.size() > 1)
   return !badEvent;
 }
