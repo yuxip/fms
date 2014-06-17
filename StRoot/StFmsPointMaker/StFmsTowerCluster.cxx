@@ -33,7 +33,7 @@ StFmsTowerCluster::StFmsTowerCluster(StFmsCluster* cluster)
 StFmsTowerCluster::~StFmsTowerCluster() {
 }
 
-void StFmsTowerCluster::Clear(const char* /* option */) { 
+void StFmsTowerCluster::Clear(const char* /* option */) {
   mSigmaX = mSigmaY = mSigmaXY = mChiSquare = -1.;
   mThetaAxis = -10;
   for (Int_t i(0); i < kMaxPhotonsPerCluster; ++i) {
@@ -43,7 +43,7 @@ void StFmsTowerCluster::Clear(const char* /* option */) {
 }
 
 void StFmsTowerCluster::calculateClusterMoments(Float_t Ecoff) {
-  mEnergyCutoff=Ecoff;
+  mEnergyCutoff = Ecoff;
   Float_t w0, w1, mtmp, mx, my, sigx, sigy, sigXY;
   w0 = w1 = mtmp = mx = my = sigx = sigy = sigXY = 0;
   for (Towers::const_iterator i = mTowers.begin(); i != mTowers.end(); ++i) {
@@ -82,45 +82,45 @@ void StFmsTowerCluster::findClusterAxis() {
   dSigma2 = mSigmaX * mSigmaX - mSigmaY * mSigmaY;
   aA = sqrt(dSigma2 * dSigma2 + 4.0 * mSigmaXY * mSigmaXY) + dSigma2;
   bB = 2 * mSigmaXY;
-	if (mSigmaXY < 1e-10) {
-		if (aA < 1e-10) {
-			bB = sqrt(dSigma2 * dSigma2 + 4.0 * mSigmaXY * mSigmaXY) - dSigma2;
-			aA = 2 * mSigmaXY;
-		}  // if
-	}  // if
-	mThetaAxis = atan2(bB, aA);
-	Double_t myPi = TMath::Pi(); 
-	while (mThetaAxis > (myPi / 2.0)) {
-		mThetaAxis -= myPi;
-	}  // while
-	while (mThetaAxis < -(myPi / 2.0)) {
-		mThetaAxis += myPi;
-	}  // while
-	mCluster->setSigmaMin(getSigma(mThetaAxis));
-	mCluster->setSigmaMax(getSigma(mThetaAxis - TMath::Pi() / 2.0));
+  if (mSigmaXY < 1e-10) {
+    if (aA < 1e-10) {
+      bB = sqrt(dSigma2 * dSigma2 + 4.0 * mSigmaXY * mSigmaXY) - dSigma2;
+      aA = 2 * mSigmaXY;
+    }  // if
+  }  // if
+  mThetaAxis = atan2(bB, aA);
+  Double_t myPi = TMath::Pi();
+  while (mThetaAxis > (myPi / 2.0)) {
+    mThetaAxis -= myPi;
+  }  // while
+  while (mThetaAxis < -(myPi / 2.0)) {
+    mThetaAxis += myPi;
+  }  // while
+  mCluster->setSigmaMin(getSigma(mThetaAxis));
+  mCluster->setSigmaMax(getSigma(mThetaAxis - TMath::Pi() / 2.0));
 }
 
 Double_t StFmsTowerCluster::getSigma(Double_t theta) const {
-	Double_t sigma = 0;
-	// 2-d vector vaxis define the axis
-	TVector2 vaxis(cos(theta), sin(theta));
-	// loop over all towers pointer in cluster
-	float wnew =0;
+  Double_t sigma = 0;
+  // 2-d vector vaxis define the axis
+  TVector2 vaxis(cos(theta), sin(theta));
+  // loop over all towers pointer in cluster
+  float wnew =0;
   for (Towers::const_iterator i = mTowers.begin(); i != mTowers.end(); ++i) {
     const StFmsTower* tower = *i;
-		// the 2-d vector from the "center" of cluster to tower
-		// "center" are at 0.5, 1.5, etc! Need shift of 0.5
-		TVector2 v1(tower->column() - 0.5 - mCluster->x(),
-		            tower->row() - 0.5 - mCluster->y());
-		// perpendicular distance to the axis = length of the component of vector
-		// "v1" that is norm to "vaxis"
-		Double_t dis = (v1.Norm(vaxis)).Mod();
-		// contribution to sigma
-		float wtmp = log(tower->hit()->energy() + 1. - mEnergyCutoff) > 0 ?
-		             log(tower->hit()->energy() + 1. - mEnergyCutoff) : 0;
-		wnew += wtmp;
-		sigma += wtmp * dis * dis;
-	}  // for
-	return wnew > 0 ? sqrt(sigma / wnew) : 0;
+    // the 2-d vector from the "center" of cluster to tower
+    // "center" are at 0.5, 1.5, etc! Need shift of 0.5
+    TVector2 v1(tower->column() - 0.5 - mCluster->x(),
+                tower->row() - 0.5 - mCluster->y());
+    // perpendicular distance to the axis = length of the component of vector
+    // "v1" that is norm to "vaxis"
+    Double_t dis = (v1.Norm(vaxis)).Mod();
+    // contribution to sigma
+    float wtmp = log(tower->hit()->energy() + 1. - mEnergyCutoff) > 0 ?
+                 log(tower->hit()->energy() + 1. - mEnergyCutoff) : 0;
+    wnew += wtmp;
+    sigma += wtmp * dis * dis;
+  }  // for
+  return wnew > 0 ? sqrt(sigma / wnew) : 0;
 }
 }  // namespace FMSCluster

@@ -97,12 +97,12 @@ class StFmsTowerCluster {
   /** Return the StEvent cluster structure. */
   StFmsCluster* cluster() { return mCluster.get(); }
   /** \overload */
-  const StFmsCluster* cluster() const{ return mCluster.get(); }
+  const StFmsCluster* cluster() const { return mCluster.get(); }
   /** Return and give up ownership of the StEvent cluster structure. */
   StFmsCluster* release() { return mCluster.release(); }
 
  protected:
-  static const int kMaxPhotonsPerCluster = 2;   ///< Support 2-photon clusters
+  static const int kMaxPhotonsPerCluster = 2;  ///< Support 2-photon clusters
   /** Determine cluster axis. */
   void findClusterAxis();
   /** Calculate sigma w.r.t the axis going through the "center" and of an angle

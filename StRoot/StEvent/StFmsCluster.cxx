@@ -24,7 +24,7 @@ StFmsCluster::~StFmsCluster() {
 }
 
 void StFmsCluster::Print(Option_t* /* not used */) const {
-	LOG_INFO << "========StFmsCluster:\n\tcatag:\t" << category()
+  LOG_INFO << "========StFmsCluster:\n\tcatag:\t" << category()
            << "\n\tnumberTower:\t" << nTowers()
            << "\n\tnPhoton:\t" << nPhotons()
            << "\n\tcluster energy:\t" << energy()
@@ -39,10 +39,10 @@ void StFmsCluster::Print(Option_t* /* not used */) const {
 }
 
 Bool_t StFmsCluster::setNPhotons(Int_t nPhoton) {
-	if (nPhoton <= 0 || nPhoton > MAX_PHOTON_PER_CLUSTER) {
-		LOG_ERROR << "StFmsCluster::setNPhotons() illegal nPhoton" << endm;
-		return false;
-	}  // if
-	mNPhotons = nPhoton;
-	return true;
+  if (nPhoton <= 0 || nPhoton > MAX_PHOTON_PER_CLUSTER) {
+    LOG_ERROR << "StFmsCluster::setNPhotons() illegal nPhoton" << endm;
+    return false;
+  }  // if
+  mNPhotons = nPhoton;
+  return true;
 }

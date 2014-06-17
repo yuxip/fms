@@ -43,7 +43,7 @@ const Float_t maxEcSigma1Ph = 10.;
 const Float_t minTowerEnergy = 0.01;
 const Float_t minRatioPeakTower = 1.6;
 // Extreme distance between towers (no distance can be this large!)
-const Float_t ExtremelyFaraway = 99999 ;
+const Float_t ExtremelyFaraway = 99999;
 
 typedef FMSCluster::StFmsClusterFinder::TowerList TowerList;
 typedef TowerList::iterator TowerIter;
@@ -72,7 +72,7 @@ Bool_t couldBePeakTower(const StFmsTower* tower, TowerList* nonPeakTowers) {
         break;
       }  // if
     }  // if
-  } // end of for loop over non-peak towers
+  }  // end of for loop over non-peak towers
   return couldBePeak;
 }
 
@@ -100,7 +100,7 @@ bool towerEnergyIsAboveThreshold(const StFmsTower* tower) {
  even if it is physically a neighbour of the reference tower.
  */
 bool towerIsNeighbor(const StFmsTower* test, const StFmsTower* reference) {
-  if(towerEnergyIsAboveThreshold(test)) {
+  if (towerEnergyIsAboveThreshold(test)) {
     return test->isNeighbor(*reference);
   }  // if
   return false;
@@ -278,7 +278,7 @@ class TowerClusterAssociation : public TObject {
         // If the new cluster is closer, remove the old ones
         if (distNew < distOld) {
           mClusters.clear();
-        } // if
+        }  // if
         /** \todo I don't like using simple float comparison here, look into a
                   more robust method */
         // Add the new cluster if it is not further away than existing ones
@@ -314,6 +314,7 @@ class TowerClusterAssociation : public TObject {
     }  // for
     return nearest;
   }
+
  private:
   StFmsTower* mTower;  ///< Reference FMS tower
   std::list<StFmsTowerCluster*> mClusters;   ///< Associable clusters
@@ -362,7 +363,7 @@ int StFmsClusterFinder::categorise(StFmsTowerCluster* cluster) {
     } else {
       cluster->cluster()->setCategory(kAmbiguousCluster);
     }  // if (cluster->hit->energy()...)
-  } // if (cluster->numbTower...)
+  }  // if (cluster->numbTower...)
   return cluster->cluster()->category();
 }
 
@@ -490,7 +491,7 @@ unsigned StFmsClusterFinder::associateTowersWithClusters(
       valleys->Add(association.release());
       associated.push_back(*tower);
     }  // if
-  } // loop over TObjArray "neighbor"
+  }  // loop over TObjArray "neighbor"
   // Remove associated neighbors from the neighbor list
   for (TowerIter i = associated.begin(); i != associated.end(); ++i) {
     neighbors->remove(*i);
@@ -541,7 +542,7 @@ unsigned StFmsClusterFinder::associateResidualTowersWithClusters(
       cluster->towers().push_back(*tower);
       associated.push_back(*tower);
     }  // if
-  } // loop over TObjArray "neighbor"
+  }  // loop over TObjArray "neighbor"
   for (TowerIter i = associated.begin(); i != associated.end(); ++i) {
     neighbors->remove(*i);
   }  // for
@@ -550,7 +551,7 @@ unsigned StFmsClusterFinder::associateResidualTowersWithClusters(
 
 void StFmsClusterFinder::associateSubThresholdTowersWithClusters(
     TowerList* towers,
-    ClusterList* clusters) const{
+    ClusterList* clusters) const {
   TowerIter tower;
   for (tower = towers->begin(); tower != towers->end(); ++tower) {
     TowerClusterAssociation association(*tower);

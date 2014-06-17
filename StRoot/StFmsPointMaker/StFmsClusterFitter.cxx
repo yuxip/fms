@@ -43,7 +43,7 @@ StFmsClusterFitter::StFmsClusterFitter(const StFmsGeometry* geometry,
     0.0, 0.1, 0.1, 0.2, 0.1, 0.1, 0.2, 0.1, 0.1, 0.2, 0.1,
     0.1, 0.2, 0.1, 0.1, 0.2, 0.1, 0.1, 0.2, 0.1, 0.1, 0.2
   };
-  for(int j = 0; j < 3 * kMaxNPhotons + 1; j++) {
+  for (int j = 0; j < 3 * kMaxNPhotons + 1; j++) {
     mSteps[j] = step[j];
   }  // for
   std::vector<Float_t> towerWidth = geometry->towerWidths(detectorId);
@@ -61,7 +61,7 @@ StFmsClusterFitter::StFmsClusterFitter(const StFmsGeometry* geometry,
   para[7] = 0.0;
   para[8] = 0.0;
   para[9] = 1.0;
-  showerShapeFitFunction.SetParameters(para); 
+  showerShapeFitFunction.SetParameters(para);
   // create a Minuit instance
   mMinuit.SetPrintLevel(-1);  // Quiet, including suppression of warnings
 }
@@ -80,7 +80,7 @@ Double_t StFmsClusterFitter::fit(const Double_t* para, const Double_t* step,
   }  // if
   Double_t chiSq(-1.);  // Return value
   // Check that there is a pointer to TObjArray of towers
-  if(!StFmsClusterFitter::mTowers) {
+  if (!StFmsClusterFitter::mTowers) {
     LOG_ERROR << "no tower data available! return -1!" << endm;
     return chiSq;
   }  // if
@@ -91,7 +91,7 @@ Double_t StFmsClusterFitter::fit(const Double_t* para, const Double_t* step,
       << kMaxNPhotons << "! Set it to be 1!" << endm;
     nPh = 1;
   }  // if
-  mMinuit.mncler();  // Clear old parameters, so we can define the new parameters
+  mMinuit.mncler();  // Clear old parameters so we can define the new parameters
   // The first parameter tells Minuit how many photons to fit!
   // It should be a fixed parameter, and between 1 and the max number of photons
   Int_t ierflg = 0;
@@ -100,17 +100,20 @@ Double_t StFmsClusterFitter::fit(const Double_t* para, const Double_t* step,
   // Set the rest of parameters: 3 parameters per photon
   for (Int_t i = 0; i < nPh; i++) {
     Int_t j = 3 * i + 1;  // Need to set 3 parameters per photon
-    mMinuit.mnparm(j, Form("x%d", i+1), para[j], step[j], low[j], up[j], ierflg);
+    mMinuit.mnparm(j, Form("x%d", i + 1),
+                   para[j], step[j], low[j], up[j], ierflg);
     j++;
-    mMinuit.mnparm(j, Form("y%d", i+1), para[j], step[j], low[j], up[j], ierflg);
+    mMinuit.mnparm(j, Form("y%d", i + 1),
+                   para[j], step[j], low[j], up[j], ierflg);
     j++;
-    mMinuit.mnparm(j, Form("E%d", i+1), para[j], step[j], low[j], up[j], ierflg);
+    mMinuit.mnparm(j, Form("E%d", i + 1),
+                   para[j], step[j], low[j], up[j], ierflg);
   }  // if
   Double_t arglist[10];
   arglist[0] = 1000;
   arglist[1] = 1.;
   ierflg = 0;
-  mMinuit.mnexcm("MIGRAD", arglist ,2,ierflg);
+  mMinuit.mnexcm("MIGRAD", arglist, 2, ierflg);
   // Populate the list of photons
   if (0 == mMinuit.GetStatus() && photons) {
     // Get the fit results for starting positions and errors
@@ -135,32 +138,37 @@ Double_t StFmsClusterFitter::fit(const Double_t* para, const Double_t* step,
   return chiSq;
 }
 
-// a different set of parameters for 2-photon clusters only:
-//    param[0]:  still a constant parameter, should be set to 2 for 2-photon fitting
-//    param[1]:  xPi      (x-position of pi^0)
-//    param[2]:  yPi      (y-position of pi^0)
-//    param[3]:  d_gg     (distance between 2 photons)
-//    param[4]:  theta    (theta angle of displacement vector from photon 2 to photon 1)
-//    param[5]:  z_gg     (this z_gg can go from -1 to +1, so we do not set E1>E2)
-//    param[6]:  E_gg     (total energy of two photons)
-// Thus, in more conventional parameterization: x1, y1, E1, x2, y2, E2:
-//     E1 = E_gg * (1 + z_gg)/2
-//     E2 = E_gg * (1 - z_gg)/2
-//     x1 = xPi + cos(theta) * d_gg * (1 - z_gg)/2
-//     y1 = yPi + sin(theta) * d_gg * (1 - z_gg)/2
-//     x2 = xPi - cos(theta) * d_gg * (1 + z_gg)/2
-//     y2 = yPi - sin(theta) * d_gg * (1 + z_gg)/2
-// The advantage of the new parameterization is that for 2-photon cluster fitting, we can
-//    ensure that the two photons never get to close. The old parameterization certainly
-//    suffers from this shortcoming if we let the parameters vary freely.
-// What we already know about the limits of the new parameters:
-//    xPi and yPi:   rarely do they go beyond 0.3 unit of lgd
-//    theta:         have a narrow theta range (for r=sigmaMax/sigmaMax, |theta|<0.5*r/0.65
-//                      when r<0.65, and linear increase from 0.5 to Pi/2 for 0.65<r<1)
-//    E_gg:          given by Ec (+/- 20% or less)
-//    z_gg:          should just let it vary from -1 to 1.
-//    d_gg:          a lower bound is given by r=sqrt(sigmaX^2+sigmaY^2). 
-//                      d_gg > Max( 2.5*(r-0.6), 0.5 )
+/*
+ A different set of parameters for 2-photon clusters only:
+  0: still a constant parameter, should be set to 2 for 2-photon fitting
+  1: xPi, x-position of pi^0
+  2: yPi, y-position of pi^0
+  3: d_gg, distance between 2 photons
+  4: theta, angle of displacement vector from photon 2 to photon 1
+  5: z_gg, can go from -1 to +1, so we do not set E1 > E2
+  6: E_gg, total energy of two photons
+ Thus, in the more conventional fit() parameterization: x1, y1, E1, x2, y2, E2:
+  E1 = E_gg * (1 + z_gg) / 2
+  E2 = E_gg * (1 - z_gg) / 2
+  x1 = xPi + cos(theta) * d_gg * (1 - z_gg) / 2
+  y1 = yPi + sin(theta) * d_gg * (1 - z_gg) / 2
+  x2 = xPi - cos(theta) * d_gg * (1 + z_gg) / 2
+  y2 = yPi - sin(theta) * d_gg * (1 + z_gg) / 2
+
+ The advantage of this parameterization is that for 2-photon cluster fitting
+ we can ensure that the two photons never get to close. The old parameterization
+ suffers from this shortcoming if we let the parameters vary freely.
+
+ What we already know about the limits of the new parameters:
+  xPi and yPi: rarely do they go beyond 0.3 unit of lgd
+  theta:       have a narrow theta range (for r = sigmaMax / sigmaMax,
+               |theta| < 0.5 * r / 0.65 when r < 0.65, and linear increase
+               from 0.5 to pi/2 for 0.65 < r < 1)
+  E_gg:        given by Ec (+/- 20% or less)
+  z_gg:        should just let it vary from -1 to 1
+  d_gg:        a lower bound is given by r = sqrt(sigmaX^2 + sigmaY^2). 
+               d_gg > Max(2.5 * (r - 0.6), 0.5)
+ */
 Int_t StFmsClusterFitter::fit2PhotonCluster(const Double_t* para,
                                             const Double_t* step,
                                             const Double_t* low,
@@ -183,7 +191,7 @@ Int_t StFmsClusterFitter::fit2PhotonCluster(const Double_t* para,
       << " Set it to be 2!" << endm;
     nPh = 2;
   }  // if
-  mMinuit.mncler();  // Clear old parameters, so we can define the new parameters
+  mMinuit.mncler();  // Clear old parameters so we can define the new parameters
   // The first parameter tells Minuit how many photons to fit!
   // It should be a fixed parameter, in this case 2
   Int_t ierflg = 0;
@@ -202,7 +210,7 @@ Int_t StFmsClusterFitter::fit2PhotonCluster(const Double_t* para,
   arglist[0] = 1000;
   arglist[1] = 1.;
   ierflg = 0;
-  mMinuit.mnexcm("MIGRAD", arglist ,2,ierflg);
+  mMinuit.mnexcm("MIGRAD", arglist, 2, ierflg);
   mMinuit.mnfree(0);  // Free fixed parameters before next use of mMinuit
   if (0 == mMinuit.GetStatus() && photons) {
     // Get the fit results
@@ -217,19 +225,27 @@ Int_t StFmsClusterFitter::fit2PhotonCluster(const Double_t* para,
     // parameters for 2-photon fit into x, y, E, which looks a bit complicated!
     // First photons
     double x = param[1] + cos(param[4]) * param[3] * (1 - param[5]) / 2.0;
-    double xErr = error[1] + (cos(param[4])*error[3]-error[4]*sin(param[4])*param[3])*(1-param[5])/2 - cos(param[4])*param[3]*error[5]/2.0;
+    double xErr = error[1] +
+      (cos(param[4]) * error[3] - error[4] * sin(param[4]) * param[3]) *
+      (1 - param[5]) / 2 - cos(param[4]) * param[3] * error[5] / 2.0;
     double y = param[2] + sin(param[4]) * param[3] * (1 - param[5]) / 2.0;
-    double yErr = error[2] + (sin(param[4])*error[3]+error[4]*cos(param[4])*param[3])*(1-param[5])/2 - sin(param[4])*param[3]*error[5]/2.0;
+    double yErr = error[2] +
+      (sin(param[4]) * error[3] + error[4] * cos(param[4]) * param[3]) *
+      (1 - param[5]) / 2 - sin(param[4]) * param[3] * error[5] / 2.0;
     double E = param[6] * (1 + param[5]) / 2.0;
-    double EErr = error[6]*(1+param[5])/2.0 + param[6]*error[5]/2.0;
+    double EErr = error[6] * (1 + param[5]) / 2.0 + param[6] * error[5] / 2.0;
     photons->push_back(StFmsFittedPhoton(x, y, E, xErr, yErr, EErr));
     // Second photon
     x = param[1] - cos(param[4]) * param[3] * (1 + param[5]) / 2.0;
-    xErr = error[1] + (-cos(param[4])*error[3]+error[4]*sin(param[4])*param[3])*(1+param[5])/2 - cos(param[4])*param[3]*error[5]/2.0;
+    xErr = error[1] +
+           (-cos(param[4]) * error[3] + error[4] * sin(param[4]) * param[3]) *
+           (1 + param[5]) / 2 - cos(param[4]) * param[3] * error[5] / 2.0;
     y = param[2] - sin(param[4]) * param[3] * (1 + param[5]) / 2.0;
-    yErr = error[2] + (sin(param[4])*error[3]-error[4]*cos(param[4])*param[3])*(1+param[5])/2 - sin(param[4])*param[3]*error[5]/2.0;
+    yErr = error[2] +
+           (sin(param[4]) * error[3] - error[4] * cos(param[4]) * param[3]) *
+           (1 + param[5]) / 2 - sin(param[4]) * param[3] * error[5] / 2.0;
     E = param[6] * (1 - param[5]) / 2.0;
-    EErr = error[6]*(1-param[5])/2.0 - param[6]*error[5]/2.0;
+    EErr = error[6] * (1 - param[5]) / 2.0 - param[6] * error[5] / 2.0;
     photons->push_back(StFmsFittedPhoton(x, y, E, xErr, yErr, EErr));
     // Evaluate the Chi-square function
     Int_t iflag = 1;  // Don't calculate 1st derivatives...

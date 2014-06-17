@@ -169,7 +169,7 @@ void StMuFmsUtil::fillMuFmsClusters(StMuFmsCollection* muFms,
       const int index = findElementIndex(fmscol->points(), *p);
       if (index != -1) {
         muCluster->photons()->Add(muFms->getPoint(index));
-      } // if
+      }  // if
     }  // for
   }  // for
 }

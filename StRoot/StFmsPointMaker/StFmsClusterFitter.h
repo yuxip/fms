@@ -85,7 +85,7 @@ class StFmsClusterFitter : public TObject {
 
    Returns the &chi;<sup>2</sup> of the fit.
    */
-  Double_t fit(const Double_t* par, const Double_t* step, 
+  Double_t fit(const Double_t* par, const Double_t* step,
                const Double_t* low, const Double_t* up, PhotonList* photons);
   /**
    Specialized fit function for exactly 2-photon fit.
@@ -104,7 +104,7 @@ class StFmsClusterFitter : public TObject {
 
    Returns the &chi;<sup>2</sup> of the fit.
    */
-  Int_t fit2PhotonCluster(const Double_t* para, const Double_t* step, 
+  Int_t fit2PhotonCluster(const Double_t* para, const Double_t* step,
                           const Double_t* low, const Double_t* up,
                           PhotonList* photons);
   /**
@@ -125,7 +125,7 @@ class StFmsClusterFitter : public TObject {
   /** Maximum number of photons that can be fit at once. */
   static int maxNFittedPhotons() { return kMaxNPhotons; }
 
- private:  
+ private:
   static const Int_t kMaxNPhotons = 7;  ///< Maximum number that can be fitted
   /** Disallow copy construction. */
   StFmsClusterFitter(const StFmsClusterFitter&);
@@ -151,7 +151,7 @@ class StFmsClusterFitter : public TObject {
    For its use in ROOT via TMinuit see
    http://root.cern.ch/root/htmldoc/TMinuit.html#TMinuit:SetFCN
    */
-  static void minimizationFunctionNPhoton(Int_t& npar, Double_t* grad,  
+  static void minimizationFunctionNPhoton(Int_t& npar, Double_t* grad,
                                           Double_t& fval, Double_t* par,
                                           Int_t iflag);
   /**
@@ -159,7 +159,7 @@ class StFmsClusterFitter : public TObject {
    
    Also see comments for minimizationFunction().
    */
-  static void minimizationFunction2Photon(Int_t& nparam, Double_t* grad, 
+  static void minimizationFunction2Photon(Int_t& nparam, Double_t* grad,
                                           Double_t& fval, Double_t* param,
                                           Int_t iflag);
   Double_t mSteps[3 * kMaxNPhotons + 1];  ///< Step size in each fit variable
