@@ -16,6 +16,7 @@
 #include <algorithm>
 #include <cmath>
 #include <functional>
+#include <memory>  // For unique_ptr
 
 #include "TObjArray.h"
 
@@ -472,7 +473,7 @@ unsigned StFmsClusterFinder::associateTowersWithClusters(
   TowerConstRIter tower;
   for (tower = neighbors->rbegin(); tower != neighbors->rend(); ++tower) {
     // Populate association information of this tower with each cluster
-    std::auto_ptr<TowerClusterAssociation> association(
+    std::unique_ptr<TowerClusterAssociation> association(
       new TowerClusterAssociation(*tower));
     for (ClusterIter i = clusters->begin(); i != clusters->end(); ++i) {
       association->add(i->get(), kPeakTower);
