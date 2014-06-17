@@ -38,6 +38,7 @@ class StFmsTower;
  */
 class StFmsTowerCluster {
  public:
+  typedef std::list<StFmsTower*> Towers;  ///< Shorthand for tower collection
   /**
    Constructor.
    
@@ -86,9 +87,9 @@ class StFmsTowerCluster {
   /** Cutoff on towers to use in moment calculations. */
   float energyCutoff() const { return mEnergyCutoff; }
   /** Return the list of towers in this cluster. */
-  std::list<StFmsTower*>& towers() { return mTowers; }
+  Towers& towers() { return mTowers; }
   /** \overload */
-  const std::list<StFmsTower*>& towers() const { return mTowers; }
+  const Towers& towers() const { return mTowers; }
   /** Return the array of photons creating this cluster. */
   StFmsFittedPhoton* photons() { return mPhotons; }
   /** \overload */
@@ -115,7 +116,7 @@ class StFmsTowerCluster {
                        ///< of least-2nd-sigma axis
   Float_t mChiSquare;  ///< Chi-square of the fitting
   Float_t mEnergyCutoff;  //!< Cutoff on towers to use in moment calculations
-  std::list<StFmsTower*> mTowers;  //!< Towers that make the cluster
+  Towers mTowers;  //!< Towers that make the cluster
   std::auto_ptr<StFmsCluster> mCluster;  //!< Pointer to StEvent cluster
   StFmsFittedPhoton mPhotons[kMaxPhotonsPerCluster];  ///< Photons in cluster
 

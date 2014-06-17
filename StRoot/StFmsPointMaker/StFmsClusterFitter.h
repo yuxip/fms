@@ -19,6 +19,7 @@
 #include <TObject.h>
 
 #include "StFmsPointMaker/StFmsFittedPhoton.h"
+#include "StFmsPointMaker/StFmsTowerCluster.h"
 
 class TF2;
 
@@ -66,7 +67,7 @@ class StFmsClusterFitter : public TObject {
    */
   TF2* showerShapeFunction();
   /** Set the tower list to fit when calling fit() or fit2PhotonCluster() */
-  void setTowers(std::list<StFmsTower*>* towers) { mTowers = towers; }
+  void setTowers(StFmsTowerCluster::Towers* towers) { mTowers = towers; }
   /**
    Fit photons to the list of towers.
 
@@ -164,7 +165,7 @@ class StFmsClusterFitter : public TObject {
   Double_t mSteps[3 * kMaxNPhotons + 1];  ///< Step size in each fit variable
   Double_t mTowerWidth;  ///< width of one lead glass module
   TMinuit mMinuit;  ///< Minuit fitting interface
-  static std::list<StFmsTower*>* mTowers;  ///< List of towers to fit
+  static StFmsTowerCluster::Towers* mTowers;  ///< List of towers to fit
   static Float_t mTowerWidthXY[2];  ///< glass width X, Y in cm
   ClassDef(StFmsClusterFitter, 0)
 };  // class StFmsClusterFitter

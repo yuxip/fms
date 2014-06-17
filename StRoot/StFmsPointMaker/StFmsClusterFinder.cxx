@@ -219,7 +219,7 @@ class TowerClusterAssociation : public TObject {
    unambiguously to a single cluster.
    */
   bool canAssociate(const StFmsTowerCluster* cluster) {
-    const std::list<StFmsTower*>& towers = cluster->towers();
+    const StFmsTowerCluster::Towers& towers = cluster->towers();
     // The peak tower in a cluster is always the first
     const StFmsTower* peak = towers.front();
     // Make sure that this tower has lower energy than the peak, but be careful;
@@ -230,7 +230,7 @@ class TowerClusterAssociation : public TObject {
     }  // if
     // Loop over all towers in this cluster to see if this tower is
     // physically adjacent to any of them.
-    typedef std::list<StFmsTower*>::const_iterator TowerIter;
+    typedef StFmsTowerCluster::Towers::const_iterator TowerIter;
     for (TowerIter tower = towers.begin(); tower != towers.end(); ++tower) {
       // Place an energy selection when determining adjacent towers, as a
       // neighbor cannot exceed an adjacent tower by a factor more than

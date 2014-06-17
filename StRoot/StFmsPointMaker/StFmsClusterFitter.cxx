@@ -33,7 +33,7 @@ TF2 showerShapeFitFunction("showerShapeFitFunction",
 namespace FMSCluster {
 // Instantiate static members
 Float_t StFmsClusterFitter::mTowerWidthXY[2];
-std::list<StFmsTower*>* StFmsClusterFitter::mTowers(NULL);
+StFmsTowerCluster::Towers* StFmsClusterFitter::mTowers(NULL);
 
 StFmsClusterFitter::StFmsClusterFitter(const StFmsGeometry* geometry,
                                        Int_t detectorId)
@@ -291,7 +291,7 @@ void StFmsClusterFitter::minimizationFunctionNPhoton(Int_t& npara,
   Int_t numbPh = (Int_t)para[0];
   // Sum energy of all towers being studied
   Double_t sumCl = 0;
-  typedef std::list<StFmsTower*>::const_iterator TowerIter;
+  typedef StFmsTowerCluster::Towers::const_iterator TowerIter;
   for (TowerIter i = mTowers->begin(); i != mTowers->end(); ++i) {
     sumCl += (*i)->hit()->energy();
   }  // for

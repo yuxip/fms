@@ -46,9 +46,7 @@ void StFmsTowerCluster::calculateClusterMoments(Float_t Ecoff) {
   mEnergyCutoff=Ecoff;
   Float_t w0, w1, mtmp, mx, my, sigx, sigy, sigXY;
   w0 = w1 = mtmp = mx = my = sigx = sigy = sigXY = 0;
-  for (std::list<StFmsTower*>::const_iterator i = mTowers.begin();
-       i != mTowers.end();
-       ++i) {
+  for (Towers::const_iterator i = mTowers.begin(); i != mTowers.end(); ++i) {
     const StFmsTower* tower = *i;
     Float_t xxx, yyy;
     xxx = tower->column() - 0.5;
@@ -108,9 +106,7 @@ Double_t StFmsTowerCluster::getSigma(Double_t theta) const {
 	TVector2 vaxis(cos(theta), sin(theta));
 	// loop over all towers pointer in cluster
 	float wnew =0;
-  for (std::list<StFmsTower*>::const_iterator i = mTowers.begin();
-       i != mTowers.end();
-       ++i) {
+  for (Towers::const_iterator i = mTowers.begin(); i != mTowers.end(); ++i) {
     const StFmsTower* tower = *i;
 		// the 2-d vector from the "center" of cluster to tower
 		// "center" are at 0.5, 1.5, etc! Need shift of 0.5

@@ -30,6 +30,11 @@ using namespace std;
 using namespace FMSCluster;
 
 namespace {
+// We use the tower list defined in StFmsTowerCluster throughout this file.
+// Define some typedefs for convenience.
+typedef StFmsTowerCluster::Towers Towers;
+typedef Towers::const_iterator TowerIter;
+
 /* Helper function to add numbers of photons using std::accumulate */
 int accumulatePhotons(int nPhotons, const ClusterList::value_type& cluster) {
   return nPhotons + cluster->cluster()->nPhotons();
@@ -82,8 +87,7 @@ const StFmsFittedPhoton* findLowestEnergyPhoton(
 const StFmsTower* searchClusterTowers(int row, int column,
                                       const StFmsTowerCluster& cluster) {
   const StFmsTower* match(NULL);
-  const std::list<StFmsTower*>& towers = cluster.towers();
-  typedef std::list<StFmsTower*>::const_iterator TowerIter;
+  const Towers& towers = cluster.towers();
   for (TowerIter i = towers.begin(); i != towers.end(); ++i) {
     const StFmsTower* tower = *i;
     if (tower->row() == row && tower->column() == column) {
@@ -210,7 +214,7 @@ Int_t StFmsEventClusterer::fitEvent() {
     return nPh;
   }  // if
   // For global fit, add all towers from all clusters
-  std::list<StFmsTower*> allTow;
+  Towers allTow;
   for (ClusterIter cluster = mClusters.begin(); cluster != mClusters.end();
        ++cluster) {
     allTow.insert(allTow.end(), (*cluster)->towers().begin(),
@@ -238,9 +242,8 @@ Double_t StFmsEventClusterer::photonEnergyInCluster(
     const StFmsFittedPhoton *p_photon) const {
   Double_t eSS = 0;
   // Sum depositions by the photon in all towers of this cluster
-  for (std::list<StFmsTower*>::const_iterator tower = p_clust->towers().begin();
-       tower != p_clust->towers().end();
-       ++tower) {
+  const Towers& towers = p_clust->towers();
+  for (TowerIter tower = towers.begin(); tower != towers.end(); ++tower) {
     eSS += photonEnergyInTower(widthLG, *tower, p_photon);
   }  // for
   return eSS;
