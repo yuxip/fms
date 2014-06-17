@@ -31,7 +31,7 @@ class StMuFmsCluster : public TObject {
   StMuFmsCluster(int detectorId = 0, int category = -1, float energy = 0.f,
                  float x = 0.f, float y = 0.f);
   /** Initialise from an equivalent StEvent cluster. */
-  StMuFmsCluster(const StFmsCluster&);
+  explicit StMuFmsCluster(const StFmsCluster&);
   /** Destructor. */
   virtual ~StMuFmsCluster();
   /** Clear hit and photon arrays. */
