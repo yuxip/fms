@@ -14,15 +14,15 @@
  * Added FMS and Roman pot arrays
  *
  **************************************************************************/
-#include "StFmsCluster.h"
-#include "StMuFmsCluster.h"
-#include "StMuFmsHit.h"
-#include "StMuFmsPoint.h"
-#include "StMuFmsUtil.h"
-#include "StMuFmsCollection.h"
-#include "StEvent.h"
-#include "StMessMgr.h"
-#include "StEventTypes.h"
+#include "StEvent/StFmsCluster.h"
+#include "StMuDSTMaker/COMMON/StMuFmsCluster.h"
+#include "StMuDSTMaker/COMMON/StMuFmsHit.h"
+#include "StMuDSTMaker/COMMON/StMuFmsPoint.h"
+#include "StMuDSTMaker/COMMON/StMuFmsUtil.h"
+#include "StMuDSTMaker/COMMON/StMuFmsCollection.h"
+#include "StEvent/StEvent.h"
+#include "St_base/StMessMgr.h"
+#include "StEvent/StEventTypes.h"
 
 #include <algorithm>  // For std::find
 #include <iterator>  // For std::distance

@@ -17,7 +17,7 @@
 #ifndef StMuFmsCollection_hh
 #define StMuFmsCollection_hh
 
-#include "StObject.h"
+#include "St_base/StObject.h"
 #include "TClonesArray.h"
 
 class StMuFmsHit;

@@ -8,7 +8,7 @@
  \date      2014
  \copyright Brookhaven National Lab
  */
-#include "StMuFmsPoint.h"
+#include "StMuDSTMaker/COMMON/StMuFmsPoint.h"
 
 #include <algorithm>  // For std::min
 #include <cmath>

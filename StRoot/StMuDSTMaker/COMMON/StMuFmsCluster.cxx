@@ -9,9 +9,9 @@
  \copyright Brookhaven National Lab
  */
 
-#include "StMuFmsCluster.h"
+#include "StMuDSTMaker/COMMON/StMuFmsCluster.h"
 
-#include "StRoot/StEvent/StFmsCluster.h"
+#include "StEvent/StFmsCluster.h"
 
 StMuFmsCluster::StMuFmsCluster(int detectorId, int category, float energy,
                                float x, float y)
