@@ -55,7 +55,7 @@ class StFmsTower : public TObject {
    Returns true upon successful initialization, false if something goes wrong.
    <b>Important</b>: an uninitialized tower should NOT be used!
    */
-  Bool_t initialize(StFmsDbMaker*);
+  Bool_t initialize(StFmsDbMaker* database);
   /** Returns true, as StFmsTower can be sorted in a ROOT container. */
   Bool_t IsSortable() const { return kTRUE; }
   /**
