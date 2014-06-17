@@ -27,9 +27,9 @@
 #include <algorithm>  // For std::find
 #include <iterator>  // For std::distance
 
-#include <TCollection.h>  // For TIter
-#include <TRefArray.h>
-#include <TVector3.h>
+#include "TCollection.h"  // For TIter
+#include "TRefArray.h"
+#include "TVector3.h"
 
 ClassImp(StMuFmsUtil)
 
