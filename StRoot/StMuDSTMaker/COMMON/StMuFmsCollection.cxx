@@ -71,13 +71,13 @@ unsigned int StMuFmsCollection::numberOfHits() const{
   return mHits->GetEntriesFast();
 }
 
-unsigned int StMuFmsCollection::numberOfClusters() const{
-  if(!mClusters) return 0;
+unsigned int StMuFmsCollection::numberOfClusters() const {
+  if (!mClusters) return 0;
   return mClusters->GetEntriesFast();
 }
 
-unsigned int StMuFmsCollection::numberOfPoints() const{
-  if(!mPoints) return 0;
+unsigned int StMuFmsCollection::numberOfPoints() const {
+  if (!mPoints) return 0;
   return mPoints->GetEntriesFast();
 }
 
