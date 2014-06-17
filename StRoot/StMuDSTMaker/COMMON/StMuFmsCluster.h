@@ -39,7 +39,7 @@ class StMuFmsCluster : public TObject {
   /** ID of the sub-detector with which the cluster is associated. */
   UShort_t detectorId() const { return mDetectorId; }
   /** Category of the cluster (see EFmsClusterCategory). */
-  unsigned short category() const { return mCategory; }
+  UShort_t category() const { return mCategory; }
   /** Total cluster energy (sum over towers). */
   float energy() const { return mEnergy; }
   /** x "center of gravity" of the cluster. */
@@ -57,7 +57,7 @@ class StMuFmsCluster : public TObject {
   /** Set ID of the sub-detector with which the cluster is associated. */
   void setDetectorId(UShort_t detector) { mDetectorId = detector; }
   /** Set category of the cluster (see EFmsClusterCategory). */
-  void setCategory(unsigned short category) { mCategory = category; }
+  void setCategory(UShort_t category) { mCategory = category; }
   /** Set total cluster energy (sum over towers). */
   void setEnergy(float energy) { mEnergy = energy; }
   /** Set x "center of gravity" of the cluster. */
