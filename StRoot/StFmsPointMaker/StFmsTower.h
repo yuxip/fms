@@ -45,7 +45,7 @@ class StFmsTower : public TObject {
 	 Initialize with an StFmsHit, which the StFmsTower does *now* own. It should
 	 therefore have longer lifetime that the StFmsTower.
 	 */
-	StFmsTower(StFmsHit* fmsHit);
+  explicit StFmsTower(StFmsHit* fmsHit);
   // Use default copy constructor and assignment operator
 	/** Destructor. */
 	~StFmsTower();
