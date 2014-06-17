@@ -24,6 +24,7 @@
 #include "StFmsPointMaker/StFmsTower.h"
 
 namespace {
+const Int_t kMaxNPhotons = 7;  // Maximum number of photons that can be fitted
 const Int_t kNFitParameters = 10;
 TF2 showerShapeFitFunction("showerShapeFitFunction",
                        &FMSCluster::StFmsClusterFitter::energyDepositionInTower,
@@ -274,6 +275,10 @@ Double_t StFmsClusterFitter::energyDepositionInTower(Double_t* xy,
     }  // for
   }  // for
   return gg * para[9];
+}
+
+int StFmsClusterFitter::maxNFittedPhotons() {
+  return kMaxNPhotons;
 }
 
 // Calculate fractional photon energy deposition in a tower based on its (x, y)

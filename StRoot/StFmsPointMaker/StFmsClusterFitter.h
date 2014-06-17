@@ -123,10 +123,9 @@ class StFmsClusterFitter : public TObject {
    */
   static Double_t energyDepositionInTower(Double_t* x, Double_t* par);
   /** Maximum number of photons that can be fit at once. */
-  static int maxNFittedPhotons() { return kMaxNPhotons; }
+  static int maxNFittedPhotons();
 
  private:
-  static const Int_t kMaxNPhotons = 7;  ///< Maximum number that can be fitted
   /** Disallow copy construction. */
   StFmsClusterFitter(const StFmsClusterFitter&);
   /** Disallow assignment. */
