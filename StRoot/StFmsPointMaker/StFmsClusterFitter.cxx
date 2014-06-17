@@ -350,6 +350,8 @@ void StFmsClusterFitter::minimizationFunctionNPhoton(Int_t& npara,
   }  // if
 }
 
+// Uses the signature needed for TMinuit interface:
+// http://root.cern.ch/root/htmldoc/TMinuit.html#TMinuit:SetFCN
 void StFmsClusterFitter::minimizationFunction2Photon(Int_t& nparam,
                                                      Double_t* grad,
                                                      Double_t& fval,
