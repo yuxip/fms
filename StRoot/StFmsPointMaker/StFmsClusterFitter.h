@@ -163,7 +163,6 @@ class StFmsClusterFitter : public TObject {
                                           Int_t iflag);
   TMinuit mMinuit;  ///< Minuit fitting interface
   static StFmsTowerCluster::Towers* mTowers;  ///< List of towers to fit
-  static Float_t mTowerWidthXY[2];  ///< glass width X, Y in cm
   ClassDef(StFmsClusterFitter, 0)
 };  // class StFmsClusterFitter
 }  // namespace FMSCluster

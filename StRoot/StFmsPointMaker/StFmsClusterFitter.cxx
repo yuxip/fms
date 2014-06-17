@@ -45,20 +45,19 @@ std::vector<double> defaultMinuitStepSizes() {
   return steps;
 }
 const std::vector<double> kDefaultMinuitStepSizes = defaultMinuitStepSizes();
+std::vector<float> towerWidths;  // Tower (x, y) width in cm
 }  // unnamed namespace
 
 namespace FMSCluster {
 // Instantiate static members
-Float_t StFmsClusterFitter::mTowerWidthXY[2];
 StFmsTowerCluster::Towers* StFmsClusterFitter::mTowers(NULL);
 
 StFmsClusterFitter::StFmsClusterFitter(const StFmsGeometry* geometry,
                                        Int_t detectorId)
     : mMinuit(3 * kMaxNPhotons + 1) {
-  std::vector<Float_t> towerWidth = geometry->towerWidths(detectorId);
-  StFmsClusterFitter::mTowerWidthXY[0] = towerWidth[0];
-  StFmsClusterFitter::mTowerWidthXY[1] = towerWidth[1];
-  double parameters[kNFitParameters] = {towerWidth.at(0), 1.070804, 0.167773,
+  // Set tower (x, y) widths for this detector
+  towerWidths = geometry->towerWidths(detectorId);
+  double parameters[kNFitParameters] = {towerWidths.at(0), 1.070804, 0.167773,
                                         -0.238578, 0.535845, 0.850233, 2.382637,
                                         0.0, 0.0, 1.0};
   showerShapeFitFunction.SetParameters(parameters);
@@ -322,10 +321,8 @@ void StFmsClusterFitter::minimizationFunctionNPhoton(Int_t& npara,
     // Tower centers are stored in row/column i.e. local coordinates
     // Therefore convert to cm, remembering to subtract 0.5 from row/column to
     // get centres not edges
-    const Double_t x = (tower->column() - 0.5) *
-                       StFmsClusterFitter::mTowerWidthXY[0];
-    const Double_t y = (tower->row() - 0.5) *
-                       StFmsClusterFitter::mTowerWidthXY[1];
+    const Double_t x = (tower->column() - 0.5) * towerWidths.at(0);
+    const Double_t y = (tower->row() - 0.5) * towerWidths.at(1);
     // Measured energy
     const Double_t eMeas = tower->hit()->energy();
     // Expected energy from Shower-Shape
