@@ -24,10 +24,10 @@
 #include "StFmsPointMaker/StFmsTower.h"
 
 namespace {
-const Int_t numbPara = 10;
+const Int_t kNFitParameters = 10;
 TF2 showerShapeFitFunction("showerShapeFitFunction",
                        &FMSCluster::StFmsClusterFitter::energyDepositionInTower,
-                      -25.0, 25.0, -25.0, 25.0, numbPara);
+                      -25.0, 25.0, -25.0, 25.0, kNFitParameters);
 }  // unnamed namespace
 
 namespace FMSCluster {
@@ -50,7 +50,7 @@ StFmsClusterFitter::StFmsClusterFitter(const StFmsGeometry* geometry,
   mTowerWidth = towerWidth[0];
   StFmsClusterFitter::mTowerWidthXY[0] = towerWidth[0];
   StFmsClusterFitter::mTowerWidthXY[1] = towerWidth[1];
-  Double_t para[numbPara];
+  Double_t para[kNFitParameters];
   para[0] = mTowerWidth;
   para[1] = 1.070804;
   para[2] = 0.167773;
