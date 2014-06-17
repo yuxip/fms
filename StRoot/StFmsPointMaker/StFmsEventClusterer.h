@@ -22,11 +22,11 @@
 #include "TRandom.h"
 #include "TVector3.h"
 
-#include "StFmsGeometry.h"
-#include "StFmsClusterFitter.h"
-#include "StFmsTowerCluster.h"
-#include "StFmsFittedPhoton.h"
-#include "StFmsClusterFinder.h"
+#include "StFmsPointMaker/StFmsGeometry.h"
+#include "StFmsPointMaker/StFmsClusterFitter.h"
+#include "StFmsPointMaker/StFmsTowerCluster.h"
+#include "StFmsPointMaker/StFmsFittedPhoton.h"
+#include "StFmsPointMaker/StFmsClusterFinder.h"
 
 namespace FMSCluster {  // $NMSPC
 class StFmsEventClusterer: public TObject {

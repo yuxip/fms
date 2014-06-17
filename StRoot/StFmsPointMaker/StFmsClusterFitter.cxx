@@ -10,7 +10,7 @@
  \date      2014
  \copyright Brookhaven National Lab
  */
-#include "StFmsClusterFitter.h"
+#include "StFmsPointMaker/StFmsClusterFitter.h"
 
 #include <vector>
 

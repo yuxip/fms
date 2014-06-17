@@ -11,7 +11,7 @@
  \date      2014
  \copyright Brookhaven National Lab
  */
-#include "StFmsClusterFinder.h"
+#include "StFmsPointMaker/StFmsClusterFinder.h"
 
 #include <algorithm>
 #include <cmath>

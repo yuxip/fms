@@ -10,7 +10,7 @@
  \date      2014
  \copyright Brookhaven National Lab
  */
-#include "StFmsEventClusterer.h"
+#include "StFmsPointMaker/StFmsEventClusterer.h"
 
 #include <algorithm>
 #include <functional>

@@ -10,7 +10,7 @@
  \date      2014
  \copyright Brookhaven National Lab
  */
-#include "StFmsGeometry.h"
+#include "StFmsPointMaker/StFmsGeometry.h"
 
 #include "St_base/StMessMgr.h"
 #include "StChain/StMaker.h"
