@@ -16,7 +16,7 @@
 #include "Rtypes.h"  // For ClassDef macro
 
 #include <list>
-#include <memory>
+#include <memory>  // For unique_ptr
 
 #include "StFmsPointMaker/StFmsFittedPhoton.h"
 
@@ -116,10 +116,29 @@ class StFmsTowerCluster {
   Float_t mChiSquare;  ///< Chi-square of the fitting
   Float_t mEnergyCutoff;  //!< Cutoff on towers to use in moment calculations
   Towers mTowers;  //!< Towers that make the cluster
-  std::auto_ptr<StFmsCluster> mCluster;  //!< Pointer to StEvent cluster
+#ifndef __CINT__  // CINT won't parse unique_ptr so hide it
+  std::unique_ptr<StFmsCluster> mCluster;  //!< Pointer to StEvent cluster
+#endif  // __CINT__
   StFmsFittedPhoton mPhotons[kMaxPhotonsPerCluster];  ///< Photons in cluster
 
  private:
+  /**
+   Disallow copy construction.
+
+   Use of unique_ptr makes this class non-copyable.
+   This causes an error with CINT dictionary creation when a default copy
+   constructor is generated, even if surrounding the unique_ptr code with
+   #ifndef __CINT__.
+   As copying isn't required for this class we therefore simply avoid the
+   automatic constructor and forbid copying with a private constructor.
+   */
+  StFmsTowerCluster(const StFmsTowerCluster&);
+  /**
+   Disallow assignment.
+
+   See comments for StFmsTowerCluster(const StFmsTowerCluster&).
+   */
+  StFmsTowerCluster& operator=(const StFmsTowerCluster&);
   ClassDef(StFmsTowerCluster, 0)
 };  // class StFmsTowerCluster
 }  // namespace FMSCluster
