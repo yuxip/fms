@@ -28,6 +28,13 @@ const Int_t kNFitParameters = 10;
 TF2 showerShapeFitFunction("showerShapeFitFunction",
                        &FMSCluster::StFmsClusterFitter::energyDepositionInTower,
                       -25.0, 25.0, -25.0, 25.0, kNFitParameters);
+// Minuit step size in each fit variable.
+// The first value is for the number of photons.
+// Each subsequent triplet is for the (x, y, E) of a photon, up to kMaxNPhotons.
+const std::vector<double> kDefaultMinuitStepSizes = {
+  0.0, 0.1, 0.1, 0.2, 0.1, 0.1, 0.2, 0.1, 0.1, 0.2, 0.1,
+  0.1, 0.2, 0.1, 0.1, 0.2, 0.1, 0.1, 0.2, 0.1, 0.1, 0.2
+};
 }  // unnamed namespace
 
 namespace FMSCluster {
@@ -38,14 +45,6 @@ StFmsTowerCluster::Towers* StFmsClusterFitter::mTowers(NULL);
 StFmsClusterFitter::StFmsClusterFitter(const StFmsGeometry* geometry,
                                        Int_t detectorId)
     : mMinuit(3 * kMaxNPhotons + 1) {
-  // Set steps for Minuit fitting
-  const Double_t step[3 * kMaxNPhotons + 1]= {
-    0.0, 0.1, 0.1, 0.2, 0.1, 0.1, 0.2, 0.1, 0.1, 0.2, 0.1,
-    0.1, 0.2, 0.1, 0.1, 0.2, 0.1, 0.1, 0.2, 0.1, 0.1, 0.2
-  };
-  for (int j = 0; j < 3 * kMaxNPhotons + 1; j++) {
-    mSteps[j] = step[j];
-  }  // for
   std::vector<Float_t> towerWidth = geometry->towerWidths(detectorId);
   mTowerWidth = towerWidth[0];
   StFmsClusterFitter::mTowerWidthXY[0] = towerWidth[0];
@@ -76,7 +75,7 @@ Double_t StFmsClusterFitter::fit(const Double_t* para, const Double_t* step,
                                  const Double_t* low, const Double_t* up,
                                  PhotonList* photons) {
   if (!step) {
-    step = mSteps;
+    step = kDefaultMinuitStepSizes.data();
   }  // if
   Double_t chiSq(-1.);  // Return value
   // Check that there is a pointer to TObjArray of towers
@@ -175,7 +174,7 @@ Int_t StFmsClusterFitter::fit2PhotonCluster(const Double_t* para,
                                             const Double_t* up,
                                             PhotonList* photons) {
   if (!step) {
-    step = mSteps;
+    step = kDefaultMinuitStepSizes.data();
   }  // if
   Double_t chiSq(-1.);  // Return value
   // Check that there is a pointer to TObjArray of towers

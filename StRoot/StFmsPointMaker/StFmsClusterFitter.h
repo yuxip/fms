@@ -162,7 +162,6 @@ class StFmsClusterFitter : public TObject {
   static void minimizationFunction2Photon(Int_t& nparam, Double_t* grad,
                                           Double_t& fval, Double_t* param,
                                           Int_t iflag);
-  Double_t mSteps[3 * kMaxNPhotons + 1];  ///< Step size in each fit variable
   Double_t mTowerWidth;  ///< width of one lead glass module
   TMinuit mMinuit;  ///< Minuit fitting interface
   static StFmsTowerCluster::Towers* mTowers;  ///< List of towers to fit
