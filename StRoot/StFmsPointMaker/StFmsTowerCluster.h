@@ -13,14 +13,13 @@
 #ifndef STROOT_STFMSPOINTMAKER_STFMSTOWERCLUSTER_H_
 #define STROOT_STFMSPOINTMAKER_STFMSTOWERCLUSTER_H_
 
-#include <TObject.h>
+#include "Rtypes.h"  // For ClassDef macro
 
 #include <list>
 #include <memory>
 
 #include "StFmsPointMaker/StFmsFittedPhoton.h"
 
-class TObjArray;
 class StFmsCluster;
 
 namespace FMSCluster {  // $NMSPC

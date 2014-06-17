@@ -15,14 +15,12 @@
 #include <cmath>
 
 #include "TMath.h"
-#include "TObjArray.h"
 #include "TVector2.h"
 
 #include "StEvent/StFmsCluster.h"
 #include "StEvent/StFmsHit.h"
 
 #include "StFmsPointMaker/StFmsTower.h"
-#include "StFmsPointMaker/StFmsFittedPhoton.h"
 
 namespace FMSCluster {
 StFmsTowerCluster::StFmsTowerCluster(StFmsCluster* cluster)
