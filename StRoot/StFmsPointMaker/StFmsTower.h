@@ -13,7 +13,7 @@
 #ifndef STROOT_STFMSPOINTMAKER_STFMSTOWER_H_
 #define STROOT_STFMSPOINTMAKER_STFMSTOWER_H_
 
-#include <TObjArray.h>
+#include "TObject.h"
 
 class StFmsHit;
 class StFmsDbMaker;
