@@ -56,10 +56,9 @@ StFmsClusterFitter::StFmsClusterFitter(const StFmsGeometry* geometry,
                                        Int_t detectorId)
     : mMinuit(3 * kMaxNPhotons + 1) {
   std::vector<Float_t> towerWidth = geometry->towerWidths(detectorId);
-  mTowerWidth = towerWidth[0];
   StFmsClusterFitter::mTowerWidthXY[0] = towerWidth[0];
   StFmsClusterFitter::mTowerWidthXY[1] = towerWidth[1];
-  double parameters[kNFitParameters] = {mTowerWidth, 1.070804, 0.167773,
+  double parameters[kNFitParameters] = {towerWidth.at(0), 1.070804, 0.167773,
                                         -0.238578, 0.535845, 0.850233, 2.382637,
                                         0.0, 0.0, 1.0};
   showerShapeFitFunction.SetParameters(parameters);
