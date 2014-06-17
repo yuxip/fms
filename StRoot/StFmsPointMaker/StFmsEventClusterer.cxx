@@ -18,7 +18,7 @@
 #include <list>
 #include <numeric>
 
-#include <TRandom.h>  // For ROOT global random generator, gRandom
+#include "TRandom.h"  // For ROOT global random generator, gRandom
 
 #include "StRoot/St_base/StMessMgr.h"
 #include "StEvent/StFmsCluster.h"

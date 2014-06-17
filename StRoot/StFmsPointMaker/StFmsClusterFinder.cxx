@@ -19,8 +19,8 @@
 #include <list>
 #include <memory>
 
-#include <TCollection.h>
-#include <TObjArray.h>
+#include "TCollection.h"
+#include "TObjArray.h"
 
 #include "St_base/StMessMgr.h"
 #include "StEvent/StFmsCluster.h"

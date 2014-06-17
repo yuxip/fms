@@ -16,7 +16,7 @@
 #include <list>
 #include <memory>  // For std::unique_ptr
 
-#include <Rtypes.h>  // Provides ROOT ClassDef macro
+#include "Rtypes.h"  // Provides ROOT ClassDef macro
 
 class TObjArray;
 

@@ -15,8 +15,8 @@
 
 #include <list>
 
-#include <TMinuit.h>
-#include <TObject.h>
+#include "TMinuit.h"
+#include "TObject.h"
 
 #include "StFmsPointMaker/StFmsFittedPhoton.h"
 #include "StFmsPointMaker/StFmsTowerCluster.h"
