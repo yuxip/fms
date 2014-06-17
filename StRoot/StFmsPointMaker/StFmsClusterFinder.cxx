@@ -164,7 +164,7 @@ class TowerClusterAssociation : public TObject {
    
    Initialise with the StFmsTower of interest.
    */
-  TowerClusterAssociation(StFmsTower* tower) : mTower(tower) { }
+  explicit TowerClusterAssociation(StFmsTower* tower) : mTower(tower) { }
   /** Returns this tower. */
   StFmsTower* tower() { return mTower; }
   /** \overload */
