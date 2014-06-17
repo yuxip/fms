@@ -16,10 +16,7 @@
 #include <algorithm>
 #include <cmath>
 #include <functional>
-#include <list>
-#include <memory>
 
-#include "TCollection.h"
 #include "TObjArray.h"
 
 #include "St_base/StMessMgr.h"
