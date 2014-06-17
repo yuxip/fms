@@ -29,13 +29,22 @@ const Int_t kNFitParameters = 10;
 TF2 showerShapeFitFunction("showerShapeFitFunction",
                        &FMSCluster::StFmsClusterFitter::energyDepositionInTower,
                       -25.0, 25.0, -25.0, 25.0, kNFitParameters);
-// Minuit step size in each fit variable.
-// The first value is for the number of photons.
-// Each subsequent triplet is for the (x, y, E) of a photon, up to kMaxNPhotons.
-const std::vector<double> kDefaultMinuitStepSizes = {
-  0.0, 0.1, 0.1, 0.2, 0.1, 0.1, 0.2, 0.1, 0.1, 0.2, 0.1,
-  0.1, 0.2, 0.1, 0.1, 0.2, 0.1, 0.1, 0.2, 0.1, 0.1, 0.2
-};
+/*
+ Compose Minuit step size in each fit variable.
+ The first value is for the number of photons.
+ Each subsequent triplet is for the (x, y, E) of a photon, up to kMaxNPhotons.
+ Implement it via a function so we can initialise a constant vector,
+ with a number of elements dependent on kMaxNPhotons.
+ */
+std::vector<double> defaultMinuitStepSizes() {
+  std::vector<double> steps(1, 0.);  // Initialise with nPhoton step
+  // Append default (x, y, E) steps for each photon
+  for (int i(0); i < kMaxNPhotons; ++i) {
+    steps.insert(steps.end(), {0.1, 0.1, 0.2});
+  }  // for
+  return steps;
+}
+const std::vector<double> kDefaultMinuitStepSizes = defaultMinuitStepSizes();
 }  // unnamed namespace
 
 namespace FMSCluster {
