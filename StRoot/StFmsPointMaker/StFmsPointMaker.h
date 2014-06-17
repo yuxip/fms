@@ -16,7 +16,6 @@
 #include <vector>
 
 #include "StRoot/StChain/StMaker.h"
-#include "StRoot/StFmsPointMaker/StFmsTower.h"
 #include "StRoot/StFmsPointMaker/StFmsGeometry.h"
 
 class StFmsCollection;
@@ -24,8 +23,9 @@ class StFmsDbMaker;
 class StFmsPoint;
 
 namespace FMSCluster {
-class StFmsTowerCluster;
 class StFmsFittedPhoton;
+class StFmsTower;
+class StFmsTowerCluster;
 }  // namespace FMSCluster
 
 /**

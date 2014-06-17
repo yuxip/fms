@@ -25,6 +25,7 @@
 
 #include "StRoot/StFmsPointMaker/StFmsEventClusterer.h"
 #include "StRoot/StFmsPointMaker/StFmsFittedPhoton.h"
+#include "StRoot/StFmsPointMaker/StFmsTower.h"
 #include "StRoot/StFmsPointMaker/StFmsTowerCluster.h"
 
 namespace {
