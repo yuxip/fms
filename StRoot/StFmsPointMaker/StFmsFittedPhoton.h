@@ -13,7 +13,7 @@
 #ifndef STROOT_STFMSPOINTMAKER_STFMSFITTEDPHOTON_H_
 #define STROOT_STFMSPOINTMAKER_STFMSFITTEDPHOTON_H_
 
-#include <Rtypes.h>
+#include "Rtypes.h"  // For ClassDef macro
 
 namespace FMSCluster {  // $NMSPC
 /**
