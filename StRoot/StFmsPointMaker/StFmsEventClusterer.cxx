@@ -18,13 +18,19 @@
 #include <list>
 #include <numeric>
 
+#include "TF2.h"  // To use shower-shape function
+#include "TMath.h"
 #include "TRandom.h"  // For ROOT global random generator, gRandom
 
 #include "StRoot/St_base/StMessMgr.h"
 #include "StEvent/StFmsCluster.h"
 #include "StEvent/StFmsHit.h"
 
+#include "StFmsPointMaker/StFmsClusterFitter.h"
+#include "StFmsPointMaker/StFmsFittedPhoton.h"
+#include "StFmsPointMaker/StFmsGeometry.h"
 #include "StFmsPointMaker/StFmsTower.h"
+#include "StFmsPointMaker/StFmsTowerCluster.h"
 
 using namespace std;
 using namespace FMSCluster;

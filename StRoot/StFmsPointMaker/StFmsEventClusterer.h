@@ -15,20 +15,14 @@
 
 #include <vector>
 
-#include "TF2.h"
-#include "TLorentzVector.h"
-#include "TMath.h"
-#include "TObjArray.h"
-#include "TRandom.h"
-#include "TVector3.h"
+#include "TObject.h"
 
-#include "StFmsPointMaker/StFmsGeometry.h"
-#include "StFmsPointMaker/StFmsClusterFitter.h"
-#include "StFmsPointMaker/StFmsTowerCluster.h"
-#include "StFmsPointMaker/StFmsFittedPhoton.h"
 #include "StFmsPointMaker/StFmsClusterFinder.h"
 
 namespace FMSCluster {  // $NMSPC
+class StFmsClusterFitter;
+class StFmsFittedPhoton;
+class StFmsGeometry;
 class StFmsEventClusterer: public TObject {
  public:
   /**
