@@ -9,9 +9,9 @@
  \date      2014
  \copyright Brookhaven National Lab
  */
-#include "StFmsCluster.h"
+#include "StEvent/StFmsCluster.h"
 
-#include "StMessMgr.h"
+#include "St_base/StMessMgr.h"
 
 #define MAX_PHOTON_PER_CLUSTER 2
 

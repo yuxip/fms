@@ -14,7 +14,7 @@
 
 #include <TLorentzVector.h>
 
-#include "StObject.h"
+#include "St_base/StObject.h"
 
 #include "StEvent/StContainers.h"  // For StPtrVecFmsHit, StPtrVecFmsPoint
 

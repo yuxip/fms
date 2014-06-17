@@ -17,8 +17,8 @@
 #ifndef StFmsCollection_hh
 #define StFmsCollection_hh
 
-#include "StObject.h"
-#include "StContainers.h"  // StSPtrVecFmsHit/Cluster/Point definitions
+#include "St_base/StObject.h"
+#include "StEvent/StContainers.h"  // StSPtrVecFmsHit/Cluster/Point definitions
 
 class StFmsHit;
 class StFmsCluster;

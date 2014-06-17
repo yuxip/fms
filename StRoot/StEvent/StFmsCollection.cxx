@@ -14,7 +14,7 @@
  * Initial Revision.
  *
  **************************************************************************/
-#include "StFmsCollection.h"
+#include "StEvent/StFmsCollection.h"
 
 static const char rcsid[] = "$Id: StFmsCollection.cxx,v 2.1 2010/01/08 22:42:30 ullrich Exp $";
 
