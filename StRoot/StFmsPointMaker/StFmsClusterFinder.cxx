@@ -90,7 +90,7 @@ bool towerIsNeighbor(const StFmsTower* test, const StFmsTower* reference) {
 
 /*
  Filter out towers below the minimum energy threshold from a list.
- 
+
  Returns a pointer list of below-threshold towers and erases those towers from
  the input list. The order of towers after filtering is not guaranteed.
  */
@@ -113,12 +113,7 @@ enum ETowerClusterDistance {
   kClusterCenter  // Distance from tower to calculated center of cluster
 };
 
-/**
- Sort the towers in an array of clusters in order of ascending energy.
- 
- \todo Replace cluster list with an STL list, which will make sorting and
-       reversing much simpler than with a ROOT container
- */
+/** Sort the towers in an array of clusters in order of ascending energy. */
 void sortTowersEnergyDescending(FMSCluster::ClusterList* clusters,
                                int nClusters) {
   for (auto i = clusters->begin(); i != clusters->end(); ++i) {
@@ -177,8 +172,7 @@ class TowerClusterAssociation : public TObject {
   double separation(const StFmsTowerCluster* cluster,
                     const ETowerClusterDistance distance) {
     if (kPeakTower == distance) {
-      const StFmsTower* peak = cluster->towers().front();
-      return separation(peak);
+      return separation(cluster->towers().front());
     } else {
       // Use calculated cluster center (x0, y0).
       // Subtract 0.5 from tower (column, row) to give tower center.
@@ -237,34 +231,28 @@ class TowerClusterAssociation : public TObject {
 
    Returns true if the new cluster is added, false if not.
    */
-  bool add(StFmsTowerCluster* cluster, const ETowerClusterDistance distance) {
-    bool inserted(false);
+  void add(StFmsTowerCluster* cluster, const ETowerClusterDistance distance) {
     if (canAssociate(cluster)) {
       if (mClusters.empty()) {
-        // There is nothing in the list yet, add the cluster, simples!
-        mClusters.push_back(cluster);
-        mTower->setCluster(cluster->index());
-        inserted = true;
+        associate(cluster);
       } else {
         // Cluster(s) are already present, so only add the new one if it is
         // not further away. If it is closer, remove the existing cluster.
         double distNew = separation(cluster, distance);
         double distOld = separation(mClusters.front(), distance);
-        // If the new cluster is closer, remove the old ones
         if (distNew < distOld) {
           mClusters.clear();
         }  // if
-        /** \todo I don't like using simple float comparison here, look into a
-                  more robust method */
         // Add the new cluster if it is not further away than existing ones
-        if (distNew <= distOld) {
-          mClusters.push_back(cluster);
-          mTower->setCluster(cluster->index());
-          inserted = true;
+        if (!(distNew > distOld)) {
+          associate(cluster);
         }  // if
       }  // if
     }  // if
-    return inserted;
+  }
+  void associate(StFmsTowerCluster* cluster) {
+    mClusters.push_back(cluster);
+    mTower->setCluster(cluster->index());
   }
   /**
    Calculate the nearest cluster out of the list of potential associates.
@@ -279,7 +267,7 @@ class TowerClusterAssociation : public TObject {
     StFmsTowerCluster* nearest = nullptr;
     double minDist = 99999.;
     for (auto i = mClusters.begin(); i != mClusters.end(); ++i) {
-      float distance = separation(*i, kClusterCenter);
+      double distance = separation(*i, kClusterCenter);
       // Check if the distance to the "center" of this cluster is smaller
       if (distance < minDist) {
         minDist = distance;
@@ -299,13 +287,10 @@ StFmsClusterFinder::StFmsClusterFinder(double energyCutoff)
 
 StFmsClusterFinder::~StFmsClusterFinder() { }
 
-// Calculate moments of a cluster (position, sigma...)
 void StFmsClusterFinder::calculateClusterMoments(
     StFmsTowerCluster* cluster) const {
-  if (cluster) {
-    cluster->calculateClusterMoments(mEnergyCutoff);
-    cluster->cluster()->setNTowers(cluster->towers().size());
-  }  // if
+  cluster->calculateClusterMoments(mEnergyCutoff);
+  cluster->cluster()->setNTowers(cluster->towers().size());
 }
 
 int StFmsClusterFinder::categorise(StFmsTowerCluster* towerCluster) {
@@ -313,7 +298,7 @@ int StFmsClusterFinder::categorise(StFmsTowerCluster* towerCluster) {
   if (cluster->nTowers() < 5) {
     cluster->setCategory(k1PhotonCluster);
   } else {  // Categorise cluster based on empirical criteria
-    const float sigmaMaxE = cluster->sigmaMax() * cluster->energy();
+    const double sigmaMaxE = cluster->sigmaMax() * cluster->energy();
     if (cluster->energy() < 2.1 * (sigmaMaxE - 7.)) {
       if (sigmaMaxE > 35.) {
         cluster->setCategory(k2PhotonCluster);
@@ -336,14 +321,10 @@ int StFmsClusterFinder::categorise(StFmsTowerCluster* towerCluster) {
 int StFmsClusterFinder::findClusters(TowerList* towers, ClusterList* clusters) {
   // Remove towers below energy threshold, but save them for later use
   TowerList belowThreshold = filterTowersBelowEnergyThreshold(towers);
-  // List of non-peak towers in clusters
-  TowerList neighbors;
-  // Locate cluster seeds
+  TowerList neighbors;  // List of non-peak towers in clusters
   locateClusterSeeds(towers, &neighbors, clusters);
   // We have now found all seeds. Now decide the affiliation of neighbor towers
   // i.e. which peak each neighbor is associated with in a cluster.
-  // First, we need to sort the neighbors towers, because we want to
-  // consider them from higher towers to lower towers
   neighbors.sort(std::ptr_fun(&ascendingTowerEnergySorter));
   // Associated neighbor towers grow outward from the seed tower.
   // Keep trying to make tower-cluster associations until we make an entire loop
@@ -369,6 +350,7 @@ int StFmsClusterFinder::findClusters(TowerList* towers, ClusterList* clusters) {
   do {
     nAssociations = associateResidualTowersWithClusters(&neighbors, clusters);
   } while (nAssociations > 0);
+  /** \todo Check that this sort action is still needed */
   sortTowersEnergyDescending(clusters, mNClusts);
   // Recalculate various moment of clusters
   for (auto i = clusters->begin(); i != clusters->end(); ++i) {
