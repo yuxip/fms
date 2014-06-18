@@ -70,11 +70,13 @@ TF2* StFmsClusterFitter::showerShapeFunction() {
   return &showerShapeFitFunction;
 }
 
-Double_t StFmsClusterFitter::fit(const Double_t* para, const Double_t* step,
-                                 const Double_t* low, const Double_t* up,
+Double_t StFmsClusterFitter::fit(const std::vector<double>& para,
+                                 std::vector<double> step,
+                                 const std::vector<double>& low,
+                                 const std::vector<double>& up,
                                  PhotonList* photons) {
-  if (!step) {
-    step = kDefaultMinuitStepSizes.data();
+  if (step.empty()) {
+    step = defaultMinuitStepSizes();
   }  // if
   Double_t chiSq(-1.);  // Return value
   // Check that there is a pointer to TObjArray of towers

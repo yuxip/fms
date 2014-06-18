@@ -73,7 +73,7 @@ class StFmsClusterFitter : public TObject {
 
    All array arguments are of size 3N+1 for an N-photon fit:
     - par: initial guess values for each fit variable.
-    - step: step size when fitting (if NULL use default values).
+    - step: step size when fitting (if empty use default values).
     - low: lower bound on each fit variable.
     - up: upper bound on each fit variable.
 
@@ -85,8 +85,9 @@ class StFmsClusterFitter : public TObject {
 
    Returns the &chi;<sup>2</sup> of the fit.
    */
-  Double_t fit(const Double_t* par, const Double_t* step,
-               const Double_t* low, const Double_t* up, PhotonList* photons);
+  Double_t fit(const std::vector<double>& par, std::vector<double> step,
+               const std::vector<double>& low, const std::vector<double>& up,
+               PhotonList* photons);
   /**
    Specialized fit function for exactly 2-photon fit.
    

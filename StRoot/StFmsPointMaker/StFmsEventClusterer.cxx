@@ -273,23 +273,24 @@ Float_t StFmsEventClusterer::fitOnePhoton(StFmsTowerCluster* p_clust) {
   // position, cluster y position and cluster energy. Set the starting points
   // for the fitting routine, plus lower and upper bounds on allowed values.
   // - set starting points for the fit parameters:
-  const Double_t start[4] = {
+  const std::vector<double> start = {
     1.0, mTowerWidthXY[0] * p_clust->cluster()->x(),
     mTowerWidthXY[1] * p_clust->cluster()->y(),
     p_clust->cluster()->energy()};
   // - maximum deviations from the start points during fit:
-  const Double_t delta[4] = {
+  const std::vector<double> delta = {
     0.5, 0.5 * mTowerWidthXY[0], 0.5 * mTowerWidthXY[1],
     0.15 * p_clust->cluster()->energy()};
   // - set lower and upper physical limits of fit parameters = start +/- delta
   //   The parameters will stay within these ranges during the fit
-  Double_t lowLim[4], upLim[4];
-  for (int i(0); i < 4; ++i) {
-    lowLim[i] = start[i] - delta[i];
-    upLim[i] = start[i] + delta[i];
+  std::vector<double> lowLim, upLim;
+  for (unsigned i(0); i < start.size(); ++i) {
+    lowLim.push_back(start.at(i) - delta.at(i));
+    upLim.push_back(start.at(i) + delta.at(i));
   }  // for
   PhotonList photons;
-  Double_t chiSq = mFitter->fit(start, NULL, lowLim, upLim, &photons);
+  Double_t chiSq = mFitter->fit(start, std::vector<double>(),
+                                lowLim, upLim, &photons);
   if (photons.empty()) {  // check return status in case of a bad fit
     LOG_ERROR << "1-photon Minuit fit returns error!" << endm;
   }  // if
@@ -365,8 +366,8 @@ Float_t StFmsEventClusterer::globalFit(const Int_t nPh, const Int_t nCl,
       << nPh << "! I will try " << totPh << " instead!" << endm;
   }  // if
   PhotonList photons;
-  Double_t chiSq = mFitter->fit(&start.at(0), NULL,
-                                &lowLim.at(0), &upLim.at(0), &photons);
+  Double_t chiSq = mFitter->fit(start, std::vector<double>(),
+                                lowLim, upLim, &photons);
   if (photons.empty()) {
     LOG_WARN << "Global Minuit fit returns error!" << endm;
   }  // if
