@@ -28,16 +28,6 @@
 #include "StFmsPointMaker/StFmsTowerCluster.h"
 
 namespace {
-/*
- Cluster-finding constants used within this file.
- Some are only used once, but it is easier to keep track of their values, and
- more self-documenting, if they are all named, and set in the same location.
- */
-const Float_t maxDistanceFromPeak = 0.3;
-const Float_t minTowerEnergy = 0.01;
-// Extreme distance between towers (no distance can be this large!)
-const Float_t ExtremelyFaraway = 99999;
-
 typedef FMSCluster::StFmsClusterFinder::TowerList TowerList;
 typedef TowerList::const_reverse_iterator TowerConstRIter;
 
@@ -80,7 +70,7 @@ bool descendingTowerEnergySorter(const StFmsTower* a, const StFmsTower* b) {
 
 /* Predicate testing for tower energy above the global cutoff */
 bool towerEnergyIsAboveThreshold(const StFmsTower* tower) {
-  return !(tower->hit()->energy() < minTowerEnergy);
+  return !(tower->hit()->energy() < 0.01);
 }
 
 /**
@@ -287,7 +277,7 @@ class TowerClusterAssociation : public TObject {
    */
   StFmsTowerCluster* nearestCluster() {
     StFmsTowerCluster* nearest = nullptr;
-    double minDist = ExtremelyFaraway;
+    double minDist = 99999.;
     for (auto i = mClusters.begin(); i != mClusters.end(); ++i) {
       float distance = separation(*i, kClusterCenter);
       // Check if the distance to the "center" of this cluster is smaller
@@ -536,8 +526,7 @@ void StFmsClusterFinder::associateSubThresholdTowersWithClusters(
       association.add(i->get(), kPeakTower);
     }  // for
     StFmsTowerCluster* cluster = association.nearestCluster();
-    if (cluster &&
-        association.separation(cluster, kClusterCenter) < maxDistanceFromPeak) {
+    if (cluster && association.separation(cluster, kClusterCenter) < 0.3) {
       (*tower)->setCluster(cluster->index());
       cluster->towers().push_back(*tower);
     }  // if
