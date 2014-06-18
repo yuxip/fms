@@ -45,7 +45,6 @@ std::vector<double> defaultMinuitStepSizes() {
   }  // for
   return steps;
 }
-const std::vector<double> kDefaultMinuitStepSizes = defaultMinuitStepSizes();
 std::vector<float> towerWidths;  // Tower (x, y) width in cm
 }  // unnamed namespace
 
