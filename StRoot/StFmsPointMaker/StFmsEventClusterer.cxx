@@ -105,10 +105,8 @@ const StFmsTower* searchClusterTowers(int row, int column,
 }  // unnamed namespace
 
 StFmsEventClusterer::StFmsEventClusterer(const StFmsGeometry* geometry,
-                                         Int_t detectorId) {
-  mGeometry = geometry;
-  mDetectorId = detectorId;
-}
+                                         Int_t detectorId)
+    : mClusterFinder(0.5), mGeometry(geometry), mDetectorId(detectorId) { }
 
 StFmsEventClusterer::~StFmsEventClusterer() {
   if (mFitter) {
@@ -118,7 +116,6 @@ StFmsEventClusterer::~StFmsEventClusterer() {
 
 Bool_t StFmsEventClusterer::cluster(std::vector<StFmsTower>* towerList) {
   mTowers = towerList;
-  mClusterFinder.setMomentEnergyCutoff(.5);
   mTowerWidthXY = mGeometry->towerWidths(mDetectorId);
   /** \todo Test of number of towers should be detector-dependent */
   if (mTowers->size() > 578) {

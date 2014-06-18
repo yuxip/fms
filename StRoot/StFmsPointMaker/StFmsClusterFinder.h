@@ -37,8 +37,13 @@ class StFmsClusterFinder {
  public:
   // Typedef StFmsTower pointer list for convenience
   typedef std::list<FMSCluster::StFmsTower*> TowerList;
-  /** Constructor. */
-  StFmsClusterFinder();
+  /**
+   Constructor.
+
+   The argument sets the energy cutoff on towers - towers below this are not
+   included in the calculation of the cluster moments (mean and sigma x, y).
+   */
+  StFmsClusterFinder(double energyCutoff = 0.5);
   // Use default copy constructor and assignment operator.
   /** Destructor */
   ~StFmsClusterFinder();
@@ -55,13 +60,6 @@ class StFmsClusterFinder {
    See EFmsClusterCategory in StEvent/StFmsCluster.h for valid categories.
    */
   int categorise(StFmsTowerCluster* cluster);
-  /**
-   Set energy cutoff on towers used when calculating cluster moments.
-
-   Towers below this energy will not be included in the calculation of the
-   cluster's position (mean and sigma x, y).
-   */
-  void setMomentEnergyCutoff(float cutoff = 0.5) { mEnergyCutoff = cutoff; }
   /** Return energy cutoff on towers used when calculating cluster moments */
   float momentEnergyCutoff() const { return mEnergyCutoff; }
 #ifndef __CINT__  // Hide ClusterList from CINT
@@ -144,7 +142,7 @@ class StFmsClusterFinder {
   void associateSubThresholdTowersWithClusters(TowerList* towers,
                                                ClusterList* clusters) const;
 #endif  // __CINT__
-  Float_t mEnergyCutoff;  ///< Tower energy cutoff for cluster moments
+  Double_t mEnergyCutoff;  ///< Tower energy cutoff for cluster moments
   Int_t mNClusts;  ///< Counter for number of found clusters
   ClassDef(StFmsClusterFinder, 0)
 };  // class StFmsClusterFinder

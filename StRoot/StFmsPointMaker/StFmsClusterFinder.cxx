@@ -318,12 +318,10 @@ class TowerClusterAssociation : public TObject {
   std::list<StFmsTowerCluster*> mClusters;   ///< Associable clusters
 };
 
-StFmsClusterFinder::StFmsClusterFinder() : mNClusts(0) {
-  setMomentEnergyCutoff();
-}
+StFmsClusterFinder::StFmsClusterFinder(double energyCutoff)
+    : mEnergyCutoff(energyCutoff), mNClusts(0) { }
 
-StFmsClusterFinder::~StFmsClusterFinder() {
-}
+StFmsClusterFinder::~StFmsClusterFinder() { }
 
 // Calculate moments of a cluster (position, sigma...)
 void StFmsClusterFinder::calculateClusterMoments(
