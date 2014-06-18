@@ -16,6 +16,7 @@
 
 #include "TF2.h"
 #include "TMath.h"
+#include "TString.h"
 
 #include "StRoot/St_base/StMessMgr.h"
 #include "StEvent/StFmsHit.h"
@@ -100,14 +101,9 @@ Double_t StFmsClusterFitter::fit(const std::vector<double>& para,
   // Set the rest of parameters: 3 parameters per photon
   for (Int_t i = 0; i < nPh; i++) {
     Int_t j = 3 * i + 1;  // Need to set 3 parameters per photon
-    mMinuit.mnparm(j, Form("x%d", i + 1),
-                   para[j], step[j], low[j], up[j], ierflg);
-    j++;
-    mMinuit.mnparm(j, Form("y%d", i + 1),
-                   para[j], step[j], low[j], up[j], ierflg);
-    j++;
-    mMinuit.mnparm(j, Form("E%d", i + 1),
-                   para[j], step[j], low[j], up[j], ierflg);
+    setMinuitParameter(j++, Form("x%d", i + 1), para, step, low, up);
+    setMinuitParameter(j++, Form("y%d", i + 1), para, step, low, up);
+    setMinuitParameter(j++, Form("E%d", i + 1), para, step, low, up);
   }  // if
   std::vector<double> arglist = {1000., 1.};
   ierflg = 0;
@@ -195,12 +191,12 @@ Int_t StFmsClusterFitter::fit2PhotonCluster(const std::vector<double>& para,
   Int_t ierflg = 0;
   Double_t nPhotons(nPh);  // Minuit needs a double argument
   mMinuit.mnparm(0, "nph", nPhotons, 0, 1.5, 2.5, ierflg);
-  mMinuit.mnparm(1, "xPi"  , para[1], step[1], low[1], up[1], ierflg);
-  mMinuit.mnparm(2, "yPi"  , para[2], step[2], low[2], up[2], ierflg);
-  mMinuit.mnparm(3, "d_gg" , para[3], step[3], low[3], up[3], ierflg);
-  mMinuit.mnparm(4, "theta", para[4], step[4], low[4], up[4], ierflg);
-  mMinuit.mnparm(5, "z_gg" , para[5], step[5], low[5], up[5], ierflg);
-  mMinuit.mnparm(6, "E_gg" , para[6], step[6], low[6], up[6], ierflg);
+  const std::vector<TString> names = {
+    "xPi", "yPi", "d_gg", "theta", "z_gg", "E_gg"
+  };
+  for (unsigned i = 0; i < names.size(); ++i) {
+    setMinuitParameter(i + 1, names.at(i), para, step, low, up);
+  }  // for
   // Fix E_total and theta, we don't want these to be free parameters
   mMinuit.FixParameter(6);
   mMinuit.FixParameter(4);
@@ -367,5 +363,16 @@ void StFmsClusterFitter::minimizationFunction2Photon(Int_t& nparam,
   oldParam[6] = param[6] * (1 - param[5]) / 2.0;  // Energy 2
   // Now call the regular minimization function with the translated parameters
   minimizationFunctionNPhoton(nparam, grad, fval, oldParam, iflag);
+}
+
+int StFmsClusterFitter::setMinuitParameter(int index, const TString& name,
+                                           const std::vector<double>& par,
+                                           const std::vector<double>& step,
+                                           const std::vector<double>& low,
+                                           const std::vector<double>& up) {
+  int error = 0;
+  mMinuit.mnparm(index, name, par.at(index), step.at(index),
+                 low.at(index), up.at(index), error);
+  return error;
 }
 }  // namespace FMSCluster

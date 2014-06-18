@@ -22,6 +22,7 @@
 #include "StFmsPointMaker/StFmsTowerCluster.h"
 
 class TF2;
+class TString;
 
 namespace FMSCluster {  // $NMSPC
 typedef std::list<StFmsFittedPhoton> PhotonList;
@@ -164,6 +165,17 @@ class StFmsClusterFitter : public TObject {
   static void minimizationFunction2Photon(Int_t& nparam, Double_t* grad,
                                           Double_t& fval, Double_t* param,
                                           Int_t iflag);
+  /**
+   Sets the nth Minuit fit parameter.
+
+   See fit() for the meaning of the vector arguments.
+   Returns the Minuit error flag.
+   */
+  int setMinuitParameter(int index, const TString& name,
+                         const std::vector<double>& par,
+                         const std::vector<double>& step,
+                         const std::vector<double>& low,
+                         const std::vector<double>& up);
   TMinuit mMinuit;  ///< Minuit fitting interface
   static StFmsTowerCluster::Towers* mTowers;  ///< List of towers to fit
   ClassDef(StFmsClusterFitter, 0)
