@@ -54,6 +54,12 @@ std::vector<float> towerWidths;  // Tower (x, y) width in cm
 double addTowerEnergy(double energy, const FMSCluster::StFmsTower* tower) {
   return energy + tower->hit()->energy();
 }
+
+// Returns a * f(x,y,b) as defined here:
+// https://drupal.star.bnl.gov/STAR/blog/leun/2010/aug/02/fms-meeting-20100802
+double showerShapeComponent(double x, double y, double a, double b) {
+  return a * atan(x * y / (b * sqrt(b * b + x * x + y * y)));
+}
 }  // unnamed namespace
 
 namespace FMSCluster {
@@ -275,16 +281,12 @@ int StFmsClusterFitter::maxNFittedPhotons() {
 Double_t StFmsClusterFitter::energyDepositionDistribution(
     Double_t* xy,
     Double_t* parameters) {
-  Double_t f = 0;
-  Double_t x = xy[0];
-  Double_t y = xy[1];
-  for (Int_t i = 1; i <= 3; i++) {
-    // The parameter array has 10 elements, but we only use 6
-    // Parameters 1 to 6 are a1, a2, a3, b1, b2, b3 as defined in
-    // https://drupal.star.bnl.gov/STAR/blog/leun/2010/aug/02/fms-meeting-20100802
-    Double_t a = parameters[i];
-    Double_t b = parameters[i + 3];
-    f += a * atan(x * y / (b * sqrt(b * b + x * x + y * y)));
+  double f = 0;
+  // The parameter array has 10 elements, but we only use 6
+  // Parameters 1 to 6 are a1, a2, a3, b1, b2, b3 as defined in
+  // https://drupal.star.bnl.gov/STAR/blog/leun/2010/aug/02/fms-meeting-20100802
+  for (int i = 1; i < 4; i++) {  // 1, 2, 3
+    f += showerShapeComponent(xy[0], xy[1], parameters[i], parameters[i + 3]);
   }  // for
   return f / TMath::TwoPi();
 }
