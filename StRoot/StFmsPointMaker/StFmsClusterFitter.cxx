@@ -12,6 +12,8 @@
  */
 #include "StFmsPointMaker/StFmsClusterFitter.h"
 
+#include <cmath>
+#include <functional>
 #include <numeric>
 #include <vector>
 
@@ -49,7 +51,7 @@ std::vector<double> defaultMinuitStepSizes() {
 std::vector<float> towerWidths;  // Tower (x, y) width in cm
 
 // Helper function for accumulating tower energies
-double addTowerEnergy(double energy, const StFmsTower* tower) {
+double addTowerEnergy(double energy, const FMSCluster::StFmsTower* tower) {
   return energy + tower->hit()->energy();
 }
 }  // unnamed namespace
@@ -294,47 +296,37 @@ void StFmsClusterFitter::minimizationFunctionNPhoton(Int_t& npara,
                                                      Double_t& fval,
                                                      Double_t* para,
                                                      Int_t iflag) {
-  // Number of expected photons should ALWAYS be the first parameter "para[0]"
-  Int_t numbPh = (Int_t)para[0];
   // Sum energy of all towers being studied
   const double energySum = std::accumulate(mTowers->begin(), mTowers->end(),
                                            0., addTowerEnergy);
   // Loop over all towers that are involved in the fit
   fval = 0;  // Stores sum of chi2 over each tower
+  const int nPhotons = static_cast<int>(para[0]);
   for (auto i = mTowers->begin(); i != mTowers->end(); ++i) {
     const StFmsTower* tower = *i;
     // The shower shape function expects the centers of towers in units of cm
     // Tower centers are stored in row/column i.e. local coordinates
     // Therefore convert to cm, remembering to subtract 0.5 from row/column to
     // get centres not edges
-    const Double_t x = (tower->column() - 0.5) * towerWidths.at(0);
-    const Double_t y = (tower->row() - 0.5) * towerWidths.at(1);
-    // Measured energy
-    const Double_t eMeas = tower->hit()->energy();
-    // Expected energy from Shower-Shape
-    Double_t eSS = 0;
-    for (Int_t iph = 0; iph < numbPh; iph++) {
-      Int_t j = 3 * iph;
-      Double_t Eshape = para[j + 3] *
-                        showerShapeFitFunction.Eval(x - para[j + 1],
-                                                    y - para[j + 2], 0);
-      eSS += Eshape;
+    const double x = towerWidths.at(0) * (tower->column() - 0.5);
+    const double y = towerWidths.at(1) * (tower->row() - 0.5);
+    // Add expected energy in tower from each photon, according to shower-shape
+    double expected = 0;
+    for (int j = 0; j < nPhotons; ++j) {  // Recall there are 3 paras per photon
+      int k = 3 * j;
+      expected += para[k + 3] *  // total energy
+                  showerShapeFitFunction.Eval(x - para[k + 1], y - para[k + 2]);
     }  // for
-    const Double_t dev = eMeas - eSS;
-    const Double_t errFactor = 0.03;
-    const Double_t errQ = 0.01;
-    // Larisa's Chi2 function
-    const Double_t err = errFactor *
-                         pow(eMeas / energySum, 1. - 0.001 * energySum) *
-                         pow(1 - eMeas / energySum, 1. - 0.007 * energySum) *
-                         energySum + errQ;
-    const Double_t dchi2 = dev * dev / err;  // Calculate chi^2 of this tower
-    fval += dchi2;  // Add chi2 for this tower to the sum
+    const double measured = tower->hit()->energy();
+    const double deviation = measured - expected;
+    // Larisa's chi2 function definition
+    const Double_t err = 0.03 *
+                         pow(measured / energySum, 1. - 0.001 * energySum) *
+                         pow(1 - measured / energySum, 1. - 0.007 * energySum) *
+                         energySum + 0.01;
+    fval += pow(deviation, 2.) / err;  // Add chi2 for this tower to the sum
   }  // for
-  // require that the fraction be positive!
-  if (fval < 0) {
-    fval = 0;
-  }  // if
+  fval = std::max(fval, 0.);  // require that the fraction be positive
 }
 
 // Uses the signature needed for TMinuit interface:
