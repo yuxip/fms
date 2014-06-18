@@ -34,10 +34,6 @@ namespace {
  more self-documenting, if they are all named, and set in the same location.
  */
 const Float_t maxDistanceFromPeak = 0.3;
-const Int_t minTowerCatag02 = 5;
-const Float_t cutEcSigma[2][2] = {{2.1, 7.0}, {2.1, 2.0}};
-const Float_t minEcSigma2Ph = 35.;
-const Float_t maxEcSigma1Ph = 10.;
 const Float_t minTowerEnergy = 0.01;
 const Float_t minRatioPeakTower = 1.6;
 // Extreme distance between towers (no distance can be this large!)
@@ -328,35 +324,29 @@ void StFmsClusterFinder::calculateClusterMoments(
   }  // if
 }
 
-// Categorise a cluster
-int StFmsClusterFinder::categorise(StFmsTowerCluster* cluster) {
-  // If the number of towers in a cluster is less than "minTowerCatag02"
-  // always consider the cluster a one-photon cluster
-  if (cluster->cluster()->nTowers() < minTowerCatag02) {
-    cluster->cluster()->setCategory(k1PhotonCluster);
-  } else {
-    // Categorise cluster based on its properties
-    Float_t sMaxEc = cluster->cluster()->sigmaMax() *
-                     cluster->cluster()->energy();
-    if (cluster->cluster()->energy() < cutEcSigma[0][0] *
-        (sMaxEc - cutEcSigma[0][1])) {
-      if (sMaxEc > minEcSigma2Ph) {
-        cluster->cluster()->setCategory(k2PhotonCluster);
+int StFmsClusterFinder::categorise(StFmsTowerCluster* towerCluster) {
+  StFmsCluster* cluster = towerCluster->cluster();
+  if (cluster->nTowers() < 5) {
+    cluster->setCategory(k1PhotonCluster);
+  } else {  // Categorise cluster based on empirical criteria
+    const float sigmaMaxE = cluster->sigmaMax() * cluster->energy();
+    if (cluster->energy() < 2.1 * (sigmaMaxE - 7.)) {
+      if (sigmaMaxE > 35.) {
+        cluster->setCategory(k2PhotonCluster);
       } else {
-        cluster->cluster()->setCategory(kAmbiguousCluster);
+        cluster->setCategory(kAmbiguousCluster);
       }  // if
-    } else if (cluster->cluster()->energy() >
-               cutEcSigma[1][0] * (sMaxEc - cutEcSigma[1][1])) {
-      if (sMaxEc < maxEcSigma1Ph) {
-        cluster->cluster()->setCategory(k1PhotonCluster);
+    } else if (cluster->energy() > 2.1 * (sigmaMaxE - 2.)) {
+      if (sigmaMaxE < 10.) {
+        cluster->setCategory(k1PhotonCluster);
       } else {
-        cluster->cluster()->setCategory(kAmbiguousCluster);
+        cluster->setCategory(kAmbiguousCluster);
       }  // if
     } else {
-      cluster->cluster()->setCategory(kAmbiguousCluster);
-    }  // if (cluster->hit->energy()...)
-  }  // if (cluster->numbTower...)
-  return cluster->cluster()->category();
+      cluster->setCategory(kAmbiguousCluster);
+    }  // if
+  }  // if
+  return cluster->category();
 }
 
 int StFmsClusterFinder::findClusters(TowerList* towers, ClusterList* clusters) {
