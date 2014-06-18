@@ -44,10 +44,7 @@ const Float_t minRatioPeakTower = 1.6;
 const Float_t ExtremelyFaraway = 99999;
 
 typedef FMSCluster::StFmsClusterFinder::TowerList TowerList;
-typedef TowerList::iterator TowerIter;
 typedef TowerList::const_reverse_iterator TowerConstRIter;
-typedef FMSCluster::ClusterList::iterator ClusterIter;
-typedef FMSCluster::ClusterList::value_type ClusterPtr;
 
 using FMSCluster::StFmsTower;
 
@@ -62,7 +59,7 @@ using FMSCluster::StFmsTower;
  */
 Bool_t couldBePeakTower(const StFmsTower* tower, TowerList* nonPeakTowers) {
   Bool_t couldBePeak(true);
-  for (TowerIter i = nonPeakTowers->begin(); i != nonPeakTowers->end(); ++i) {
+  for (auto i = nonPeakTowers->begin(); i != nonPeakTowers->end(); ++i) {
     // Compare this tower's energy with that of its immediate neighbours
     if (tower->isNeighbor(**i)) {
       if (tower->hit()->energy() < minRatioPeakTower * (*i)->hit()->energy()) {
@@ -114,8 +111,8 @@ TowerList filterTowersBelowEnergyThreshold(TowerList* towers) {
   // Move towers above threshold to the front and those below to the end
   // newEnd marks the end of the above-threshold towers and the beginning of the
   // below-threshold towers
-  TowerIter newEnd = std::partition(towers->begin(), towers->end(),
-                                    std::ptr_fun(&towerEnergyIsAboveThreshold));
+  auto newEnd = std::partition(towers->begin(), towers->end(),
+                               std::ptr_fun(&towerEnergyIsAboveThreshold));
   // Store the below-threshold towers in a new list
   TowerList belowThreshold(newEnd, towers->end());
   // Remove the below-threshold towers from the input list
@@ -137,7 +134,7 @@ enum ETowerClusterDistance {
  */
 void sortTowersEnergyDescending(FMSCluster::ClusterList* clusters,
                                int nClusters) {
-  for (ClusterIter i = clusters->begin(); i != clusters->end(); ++i) {
+  for (auto i = clusters->begin(); i != clusters->end(); ++i) {
     (*i)->towers().sort(std::ptr_fun(&descendingTowerEnergySorter));
   }  // for
 }
@@ -301,8 +298,7 @@ class TowerClusterAssociation : public TObject {
   StFmsTowerCluster* nearestCluster() {
     StFmsTowerCluster* nearest = nullptr;
     double minDist = ExtremelyFaraway;
-    std::list<StFmsTowerCluster*>::iterator i;
-    for (i = mClusters.begin(); i != mClusters.end(); ++i) {
+    for (auto i = mClusters.begin(); i != mClusters.end(); ++i) {
       float distance = separation(*i, kClusterCenter);
       // Check if the distance to the "center" of this cluster is smaller
       if (distance < minDist) {
@@ -401,7 +397,7 @@ int StFmsClusterFinder::findClusters(TowerList* towers, ClusterList* clusters) {
   } while (nAssociations > 0);
   sortTowersEnergyDescending(clusters, mNClusts);
   // Recalculate various moment of clusters
-  for (ClusterIter i = clusters->begin(); i != clusters->end(); ++i) {
+  for (auto i = clusters->begin(); i != clusters->end(); ++i) {
     calculateClusterMoments(i->get());
   }  // for
   // Finally add "zero" energy towers to the clusters
@@ -425,6 +421,7 @@ unsigned StFmsClusterFinder::locateClusterSeeds(TowerList* towers,
     if (couldBePeakTower(high, neighbors)) {
       // Add "high" to cluster and move towers neighboring "high" to "neighbor"
       high->setCluster(clusters->size());
+      typedef FMSCluster::ClusterList::value_type ClusterPtr;
       clusters->push_back(ClusterPtr(new StFmsTowerCluster(new StFmsCluster)));
       clusters->back()->setIndex(high->cluster());
       clusters->back()->towers().push_back(high);
@@ -432,7 +429,7 @@ unsigned StFmsClusterFinder::locateClusterSeeds(TowerList* towers,
       // Partition the remaining towers so that neighbours of the high tower are
       // placed at the beginning, and non-neighbours placed at the end. Use
       // stable_partition so we don't alter the energy ordering.
-      TowerIter neighborEnd =
+      auto neighborEnd =
         std::stable_partition(towers->begin(), towers->end(),
                               std::bind2nd(std::ptr_fun(&towerIsNeighbor),
                                            high));
@@ -446,7 +443,7 @@ unsigned StFmsClusterFinder::locateClusterSeeds(TowerList* towers,
     // become a peak by the above logic. To close this loophole, loop again
     // over towers and move any with energy <= any of its neighbors to the
     // neighbor list.
-    TowerIter towerIter = towers->begin();
+    auto towerIter = towers->begin();
     while (towerIter != towers->end()) {
       // Need to remove list items whilst iterating, so be careful to increment
       // the iterator before erasing items to avoid iterator invalidation
@@ -473,7 +470,7 @@ unsigned StFmsClusterFinder::associateTowersWithClusters(
     // Populate association information of this tower with each cluster
     std::unique_ptr<TowerClusterAssociation> association(
       new TowerClusterAssociation(*tower));
-    for (ClusterIter i = clusters->begin(); i != clusters->end(); ++i) {
+    for (auto i = clusters->begin(); i != clusters->end(); ++i) {
       association->add(i->get(), kPeakTower);
     }  // for
     // Attempt to move the tower to the appropriate cluster
@@ -489,7 +486,7 @@ unsigned StFmsClusterFinder::associateTowersWithClusters(
     }  // if
   }  // loop over TObjArray "neighbor"
   // Remove associated neighbors from the neighbor list
-  for (TowerIter i = associated.begin(); i != associated.end(); ++i) {
+  for (auto i = associated.begin(); i != associated.end(); ++i) {
     neighbors->remove(*i);
   }  // for
   return associated.size();
@@ -526,7 +523,7 @@ unsigned StFmsClusterFinder::associateResidualTowersWithClusters(
   for (tower = neighbors->rbegin(); tower != neighbors->rend(); ++tower) {
     // Populate tower-cluster association information
     TowerClusterAssociation association(*tower);
-    for (ClusterIter i = clusters->begin(); i != clusters->end(); ++i) {
+    for (auto i = clusters->begin(); i != clusters->end(); ++i) {
       // There are already some towers in the cluster so we can use a computed
       // cluster center to give a better estimate of tower-cluster separation
       calculateClusterMoments(i->get());
@@ -539,7 +536,7 @@ unsigned StFmsClusterFinder::associateResidualTowersWithClusters(
       associated.push_back(*tower);
     }  // if
   }  // loop over TObjArray "neighbor"
-  for (TowerIter i = associated.begin(); i != associated.end(); ++i) {
+  for (auto i = associated.begin(); i != associated.end(); ++i) {
     neighbors->remove(*i);
   }  // for
   return associated.size();
@@ -548,11 +545,10 @@ unsigned StFmsClusterFinder::associateResidualTowersWithClusters(
 void StFmsClusterFinder::associateSubThresholdTowersWithClusters(
     TowerList* towers,
     ClusterList* clusters) const {
-  TowerIter tower;
-  for (tower = towers->begin(); tower != towers->end(); ++tower) {
+  for (auto tower = towers->begin(); tower != towers->end(); ++tower) {
     TowerClusterAssociation association(*tower);
     // loop over all clusters
-    for (ClusterIter i = clusters->begin(); i != clusters->end(); ++i) {
+    for (auto i = clusters->begin(); i != clusters->end(); ++i) {
       association.add(i->get(), kPeakTower);
     }  // for
     StFmsTowerCluster* cluster = association.nearestCluster();
