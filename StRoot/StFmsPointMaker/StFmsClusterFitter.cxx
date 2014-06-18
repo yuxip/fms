@@ -12,6 +12,7 @@
  */
 #include "StFmsPointMaker/StFmsClusterFitter.h"
 
+#include <numeric>
 #include <vector>
 
 #include "TF2.h"
@@ -46,6 +47,11 @@ std::vector<double> defaultMinuitStepSizes() {
   return steps;
 }
 std::vector<float> towerWidths;  // Tower (x, y) width in cm
+
+// Helper function for accumulating tower energies
+double addTowerEnergy(double energy, const StFmsTower* tower) {
+  return energy + tower->hit()->energy();
+}
 }  // unnamed namespace
 
 namespace FMSCluster {
@@ -291,10 +297,8 @@ void StFmsClusterFitter::minimizationFunctionNPhoton(Int_t& npara,
   // Number of expected photons should ALWAYS be the first parameter "para[0]"
   Int_t numbPh = (Int_t)para[0];
   // Sum energy of all towers being studied
-  Double_t sumCl = 0;
-  for (auto i = mTowers->begin(); i != mTowers->end(); ++i) {
-    sumCl += (*i)->hit()->energy();
-  }  // for
+  const double energySum = std::accumulate(mTowers->begin(), mTowers->end(),
+                                           0., addTowerEnergy);
   // Loop over all towers that are involved in the fit
   fval = 0;  // Stores sum of chi2 over each tower
   for (auto i = mTowers->begin(); i != mTowers->end(); ++i) {
@@ -320,9 +324,10 @@ void StFmsClusterFitter::minimizationFunctionNPhoton(Int_t& npara,
     const Double_t errFactor = 0.03;
     const Double_t errQ = 0.01;
     // Larisa's Chi2 function
-    const Double_t err = (errFactor * pow(eMeas / sumCl, 1. - 0.001 * sumCl) *
-                         pow(1 - eMeas / sumCl, 1. - 0.007 * sumCl)) * sumCl
-                         + errQ;
+    const Double_t err = errFactor *
+                         pow(eMeas / energySum, 1. - 0.001 * energySum) *
+                         pow(1 - eMeas / energySum, 1. - 0.007 * energySum) *
+                         energySum + errQ;
     const Double_t dchi2 = dev * dev / err;  // Calculate chi^2 of this tower
     fval += dchi2;  // Add chi2 for this tower to the sum
   }  // for
