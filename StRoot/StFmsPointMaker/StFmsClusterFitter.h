@@ -105,8 +105,10 @@ class StFmsClusterFitter : public TObject {
 
    Returns the &chi;<sup>2</sup> of the fit.
    */
-  Int_t fit2PhotonCluster(const Double_t* para, const Double_t* step,
-                          const Double_t* low, const Double_t* up,
+  Int_t fit2PhotonCluster(const std::vector<double>& para,
+                          std::vector<double> step,
+                          const std::vector<double>& low,
+                          const std::vector<double>& up,
                           PhotonList* photons);
   /**
    Energy-deposition shower-shape function, for use with a TF2.
