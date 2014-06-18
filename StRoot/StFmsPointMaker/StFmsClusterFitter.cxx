@@ -292,13 +292,12 @@ void StFmsClusterFitter::minimizationFunctionNPhoton(Int_t& npara,
   Int_t numbPh = (Int_t)para[0];
   // Sum energy of all towers being studied
   Double_t sumCl = 0;
-  typedef StFmsTowerCluster::Towers::const_iterator TowerIter;
-  for (TowerIter i = mTowers->begin(); i != mTowers->end(); ++i) {
+  for (auto i = mTowers->begin(); i != mTowers->end(); ++i) {
     sumCl += (*i)->hit()->energy();
   }  // for
   // Loop over all towers that are involved in the fit
   fval = 0;  // Stores sum of chi2 over each tower
-  for (TowerIter i = mTowers->begin(); i != mTowers->end(); ++i) {
+  for (auto i = mTowers->begin(); i != mTowers->end(); ++i) {
     const StFmsTower* tower = *i;
     // The shower shape function expects the centers of towers in units of cm
     // Tower centers are stored in row/column i.e. local coordinates
