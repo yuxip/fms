@@ -85,7 +85,7 @@ Double_t StFmsClusterFitter::fit(const std::vector<double>& para,
     return chiSq;
   }  // if
   mMinuit.SetFCN(minimizationFunctionNPhoton);
-  Int_t nPh = (Int_t)para[0];  // Get the number of photons from parameters
+  int nPh = para.size() / 3;
   if (nPh < 1 || nPh > kMaxNPhotons) {
     LOG_ERROR << "nPh = " << nPh << "! Number of photons must be between 1 and "
       << kMaxNPhotons << "! Set it to be 1!" << endm;
@@ -103,28 +103,25 @@ Double_t StFmsClusterFitter::fit(const std::vector<double>& para,
     setMinuitParameter(j++, Form("E%d", i + 1), para, step, low, up);
   }  // if
   std::vector<double> arglist = {1000., 1.};
+  // Perform the minimization
   int ierflg = 0;
   mMinuit.mnexcm("MIGRAD", arglist.data(), arglist.size(), ierflg);
-  // Populate the list of photons
+  // Populate the list of photons from the fit results
   if (0 == mMinuit.GetStatus() && photons) {
     // Get the fit results for starting positions and errors
-    Double_t param[1 + 3 * kMaxNPhotons];
-    Double_t error[1 + 3 * kMaxNPhotons];
-    mMinuit.GetParameter(0, param[0], error[0]);
-    // There are 3 parameters per photon, plus the 1st parameter
-    nPh = (Int_t)param[0];  // Shouldn't have changed, but just to be safe...
-    const Int_t nPar = 3 * nPh + 1;
-    for (Int_t i(1); i < nPar; ++i) {  // Get remaining fit parameters (x, y, E)
-      mMinuit.GetParameter(i, param[i], error[i]);
+    std::vector<double> param(para.size(), 0.), error(para.size(), 0.);
+    // Get fit parameter results
+    for (unsigned i(0); i < para.size(); ++i) {
+      mMinuit.GetParameter(i, param.at(i), error.at(i));
     }  // for
-    for (Int_t par(1); par < nPar; par += 3) {  // Fill photons from parameters
+    for (unsigned i(1); i < para.size(); i += 3) {
       photons->push_back(  // x, y, E, error x, error y, error E
-        StFmsFittedPhoton(param[par], param[par + 1], param[par + 2],
-                          error[par], error[par + 1], error[par + 2]));
+        StFmsFittedPhoton(param.at(i), param.at(i + 1), param.at(i + 2),
+                          error.at(i), error.at(i + 1), error.at(i + 2)));
     }  // for
     // Evaluate chi-square (*not* chi-square per degree of freedom)
     Int_t iflag = 1;  // Don't calculate 1st derivatives, 2nd argument unneeded
-    mMinuit.Eval(photons->size(), NULL, chiSq, param, iflag);
+    mMinuit.Eval(photons->size(), NULL, chiSq, param.data(), iflag);
   }  // for
   return chiSq;
 }
@@ -175,7 +172,7 @@ Int_t StFmsClusterFitter::fit2PhotonCluster(const std::vector<double>& para,
     return chiSq;
   }  // if
   mMinuit.SetFCN(minimizationFunction2Photon);
-  Int_t nPh = (Int_t)para[0];
+  int nPh = para.size() / 3;
   if (nPh != 2) {
     LOG_ERROR << "number of photons must be 2 for special 2-photon cluster "
       << "fitter \"Int_t StFmsClusterFitter::fit2PhotonCluster(...)\"!"
@@ -195,17 +192,16 @@ Int_t StFmsClusterFitter::fit2PhotonCluster(const std::vector<double>& para,
   mMinuit.FixParameter(6);
   mMinuit.FixParameter(4);
   std::vector<double> arglist = {1000., 1.};
+  // Perform the minimization
   int ierflg = 0;
   mMinuit.mnexcm("MIGRAD", arglist.data(), arglist.size(), ierflg);
   mMinuit.mnfree(0);  // Free fixed parameters before next use of mMinuit
   if (0 == mMinuit.GetStatus() && photons) {
-    // Get the fit results
-    Double_t param[7];  // 3 * nPhotons + 1 parameters = 7 for 2 photons
-    Double_t error[7];
-    mMinuit.GetParameter(0, param[0], error[0]);
-    Int_t nPar = 3 * (Int_t)param[0] + 1;  // Should be 7
-    for (Int_t ipar = 1; ipar < nPar; ipar++) {  // Get the remaining parameters
-      mMinuit.GetParameter(ipar, param[ipar], error[ipar]);
+    // Get the fit results for starting positions and errors
+    // 3 * nPhotons + 1 parameters = 7 for 2 photons
+    std::vector<double> param(7, 0.), error(7, 0.);
+    for (unsigned i = 0; i < param.size(); ++i) {
+      mMinuit.GetParameter(i, param.at(i), error.at(i));
     }  // for
     // Put the fit result back in "clust". Need to translate the special
     // parameters for 2-photon fit into x, y, E, which looks a bit complicated!
