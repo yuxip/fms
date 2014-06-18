@@ -296,10 +296,10 @@ class TowerClusterAssociation : public TObject {
    therefore StFmsTowerCluster::calculateClusterMoments() must have been called
    before doing this, in order to calculate x0 and y0 of the cluster.
 
-   Returns NULL if there are no clusters in the list.
+   Returns nullptr if there are no clusters in the list.
    */
   StFmsTowerCluster* nearestCluster() {
-    StFmsTowerCluster* nearest(NULL);
+    StFmsTowerCluster* nearest = nullptr;
     double minDist = ExtremelyFaraway;
     std::list<StFmsTowerCluster*>::iterator i;
     for (i = mClusters.begin(); i != mClusters.end(); ++i) {

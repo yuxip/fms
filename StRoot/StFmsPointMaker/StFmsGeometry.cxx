@@ -90,7 +90,7 @@ std::vector<Float_t> StFmsGeometry::towerWidths(Int_t detectorId) const {
 }
 
 const fmsDetectorPosition_st* StFmsGeometry::find(Int_t detectorId) const {
-  const fmsDetectorPosition_st* positions(NULL);
+  const fmsDetectorPosition_st* positions = nullptr;
   Table::const_iterator entry = mPositions.find(detectorId);
   if (entry != mPositions.end()) {
     positions = entry->second;

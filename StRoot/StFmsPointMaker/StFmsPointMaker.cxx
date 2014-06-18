@@ -38,7 +38,7 @@ TLorentzVector compute4Momentum(const TVector3& xyz, Double_t energy) {
 }  // unnamed namespace
 
 StFmsPointMaker::StFmsPointMaker(const char* name)
-    : StMaker(name), mFmsDbMaker(NULL), mObjectCount(0) { }
+    : StMaker(name), mFmsDbMaker(nullptr), mObjectCount(0) { }
 
 StFmsPointMaker::~StFmsPointMaker() { }
 
@@ -84,7 +84,7 @@ void StFmsPointMaker::Clear(Option_t* option) {
 
 StFmsCollection* StFmsPointMaker::getFmsCollection() {
   StEvent* event = static_cast<StEvent*>(GetInputDS("StEvent"));
-  StFmsCollection* fms(NULL);
+  StFmsCollection* fms = nullptr;
   if (event) {
     fms = event->fmsCollection();
   }  // if

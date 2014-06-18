@@ -75,7 +75,7 @@ class StFmsTower : public TObject {
   /**
    Returns the hit information for this tower.
 
-   (NULL if unknown, in which case you probably shouln't use this tower!)
+   (nullptr if unknown, in which case you probably shouln't use this tower!)
    */
   const StFmsHit* hit() const { return mHit; }
   /** Returns the row of this tower (-1 if unknown). */

@@ -50,7 +50,7 @@ std::vector<float> towerWidths;  // Tower (x, y) width in cm
 
 namespace FMSCluster {
 // Instantiate static members
-StFmsTowerCluster::Towers* StFmsClusterFitter::mTowers(NULL);
+StFmsTowerCluster::Towers* StFmsClusterFitter::mTowers(nullptr);
 
 StFmsClusterFitter::StFmsClusterFitter(const StFmsGeometry* geometry,
                                        Int_t detectorId)
@@ -121,7 +121,7 @@ Double_t StFmsClusterFitter::fit(const std::vector<double>& para,
     }  // for
     // Evaluate chi-square (*not* chi-square per degree of freedom)
     Int_t iflag = 1;  // Don't calculate 1st derivatives, 2nd argument unneeded
-    mMinuit.Eval(photons->size(), NULL, chiSq, param.data(), iflag);
+    mMinuit.Eval(photons->size(), nullptr, chiSq, param.data(), iflag);
   }  // for
   return chiSq;
 }
@@ -231,7 +231,7 @@ Int_t StFmsClusterFitter::fit2PhotonCluster(const std::vector<double>& para,
     photons->push_back(StFmsFittedPhoton(x, y, E, xErr, yErr, EErr));
     // Evaluate the Chi-square function
     Int_t iflag = 1;  // Don't calculate 1st derivatives, 2nd argument unneeded
-    mMinuit.Eval(7, NULL, chiSq, param.data(), iflag);
+    mMinuit.Eval(7, nullptr, chiSq, param.data(), iflag);
   }  // if
   return chiSq;
 }

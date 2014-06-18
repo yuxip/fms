@@ -66,7 +66,7 @@ class StFmsGeometry : public TObject {
   /**
    Initialise geometry from the FMS database.
 
-   If the argument is NULL, attempt to locate an StFmsDbMaker in the current
+   If the argument is nullptr, attempt to locate an StFmsDbMaker in the current
    chain and use that.
    Return true if the geometry is initialised, false if it is not.
    */
@@ -110,7 +110,7 @@ class StFmsGeometry : public TObject {
   /**
    Return the position information of a detector.
 
-   Returns NULL if the argument is an invalid detector ID or the geometry is
+   Returns nullptr if the argument is an invalid detector ID or the geometry is
    uninitialized.
    */
   const fmsDetectorPosition_st* find(Int_t detectorId) const;

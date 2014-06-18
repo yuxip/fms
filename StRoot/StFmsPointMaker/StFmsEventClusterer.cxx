@@ -63,11 +63,11 @@ struct IsBadCluster
  Returns a pointer to the lowest energy photon in a cluster
  
  Assumes the cluster is either 1- or 2-photon
- Returns NULL if there is no photon in the cluster
+ Returns nullptr if there is no photon in the cluster
  */
 const StFmsFittedPhoton* findLowestEnergyPhoton(
     const StFmsTowerCluster* cluster) {
-  const StFmsFittedPhoton* photon(NULL);
+  const StFmsFittedPhoton* photon = nullptr;
   switch (cluster->cluster()->nPhotons()) {
     case 1:
       photon = &(cluster->photons()[0]);
@@ -79,7 +79,7 @@ const StFmsFittedPhoton* findLowestEnergyPhoton(
         photon = &(cluster->photons()[1]);
       }  // if
     default:
-      break;  // photon remains NULL
+      break;  // photon remains nullptr
   }  // switch
   return photon;
 }
@@ -87,11 +87,11 @@ const StFmsFittedPhoton* findLowestEnergyPhoton(
 /*
  Search towers in a cluster for one matching a row and column number
  
- Return a pointer to the matching tower if one is found, NULL otherwise.
+ Return a pointer to the matching tower if one is found, nullptr otherwise.
  */
 const StFmsTower* searchClusterTowers(int row, int column,
                                       const StFmsTowerCluster& cluster) {
-  const StFmsTower* match(NULL);
+  const StFmsTower* match = nullptr;
   const Towers& towers = cluster.towers();
   for (auto i = towers.begin(); i != towers.end(); ++i) {
     const StFmsTower* tower = *i;
@@ -321,7 +321,7 @@ Float_t StFmsEventClusterer::globalFit(const Int_t nPh, const Int_t nCl,
   std::vector<double> start(1, 0.), lowLim(1, 0.), upLim(1, 0.);
   // The positions (e.b. cluster->photons()[jp].xPos) are already in unit of cm
   // Clusters have already had all their fields properly filled
-  // (for example cluster[].photons()[0] should NOT be NULL!)
+  // (for example cluster[].photons()[0] should NOT be nullptr!)
   Int_t totPh = 0;
   // Loop over all clusters
   /** \todo Improve this implementation? This approach is necessary because the
@@ -485,7 +485,7 @@ bool StFmsEventClusterer::validate2ndPhoton(ClusterConstIter cluster) const {
   // Now check whether this tower is one of the non-zero towers of the cluster
   // The temporary StFmsTower only needs row and column set for the test
   const StFmsTower* tower = searchClusterTowers(row, column, **cluster);
-  // If tower is non-NULL, the photon does hit in a tower in this cluster.
+  // If tower is non-nullptr, the photon does hit in a tower in this cluster.
   if (!tower) {
     return false;
   }  // if

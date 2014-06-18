@@ -17,7 +17,7 @@
 
 namespace FMSCluster {
 StFmsTower::StFmsTower()
-    : mHit(NULL), mColumn(-1), mRow(-1), mCluster(-1) { }
+    : mHit(nullptr), mColumn(-1), mRow(-1), mCluster(-1) { }
 
 StFmsTower::StFmsTower(StFmsHit* fmsHit)
     : mHit(fmsHit), mColumn(-1), mRow(-1), mCluster(-1) { }
