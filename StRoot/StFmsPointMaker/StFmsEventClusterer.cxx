@@ -134,6 +134,7 @@ Int_t StFmsEventClusterer::fitEvent() {
   }  // for
   mClusterFinder.findClusters(&towerList, &mClusters);
   // Cluster energy should be at least 2 GeV (parameter "minRealClusterEne")
+  /** \todo Use detector ID enums here */
   if (mDetectorId == 8 || mDetectorId == 9) {
     mClusters.remove_if(IsBadCluster(0.75, 25));
   } else {  // Different cuts for small cell

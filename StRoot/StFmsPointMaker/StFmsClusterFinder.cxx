@@ -250,6 +250,7 @@ class TowerClusterAssociation : public TObject {
       }  // if
     }  // if
   }
+  /** Add a cluster to the list and set this tower's cluster index */
   void associate(StFmsTowerCluster* cluster) {
     mClusters.push_back(cluster);
     mTower->setCluster(cluster->index());

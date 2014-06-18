@@ -176,9 +176,8 @@ bool StFmsPointMaker::processTowerCluster(
     cluster->points().push_back(point);
   }  // for
   // Save the tower hit info.
-  typedef std::list<FMSCluster::StFmsTower*>::const_iterator TowerIter;
-  std::list<FMSCluster::StFmsTower*>& towers = towerCluster->towers();
-  for (TowerIter i = towers.begin(); i != towers.end(); ++i) {
+  auto& towers = towerCluster->towers();
+  for (auto i = towers.begin(); i != towers.end(); ++i) {
     if ((*i)->hit()->adc() >= 1) {  // Min ADC = 1
       cluster->hits().push_back((*i)->hit());
     }  // if
@@ -209,8 +208,8 @@ bool StFmsPointMaker::populateTowerLists() {
   if (!fmsCollection) {
       return false;
   }  // if
-  StSPtrVecFmsHit& hits = fmsCollection->hits();
-  for (StSPtrVecFmsHitIterator i = hits.begin(); i != hits.end(); ++i) {
+  auto& hits = fmsCollection->hits();
+  for (auto i = hits.begin(); i != hits.end(); ++i) {
     StFmsHit* hit = *i;
     const int detector = hit->detectorId();
     const int row = mFmsDbMaker->getRowNumber(detector, hit->channel());
@@ -222,7 +221,7 @@ bool StFmsPointMaker::populateTowerLists() {
       // Insert a tower list for this detector ID if there isn't one already
       // This method is faster than using find() followed by insert()
       // http://stackoverflow.com/questions/97050/stdmap-insert-or-stdmap-find
-      TowerMap::iterator low = mTowers.lower_bound(detector);
+      auto low = mTowers.lower_bound(detector);
       if (low == mTowers.end() || mTowers.key_comp()(detector, low->first)) {
         mTowers.insert(TowerMap::value_type(detector, TowerList()));
       }  // if
