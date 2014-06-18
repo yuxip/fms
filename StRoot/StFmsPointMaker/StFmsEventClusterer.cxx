@@ -39,7 +39,6 @@ namespace {
 // We use the tower list defined in StFmsTowerCluster throughout this file.
 // Define some typedefs for convenience.
 typedef StFmsTowerCluster::Towers Towers;
-typedef Towers::const_iterator TowerIter;
 
 /* Helper function to add numbers of photons using std::accumulate */
 int accumulatePhotons(int nPhotons, const ClusterList::value_type& cluster) {
@@ -94,7 +93,7 @@ const StFmsTower* searchClusterTowers(int row, int column,
                                       const StFmsTowerCluster& cluster) {
   const StFmsTower* match(NULL);
   const Towers& towers = cluster.towers();
-  for (TowerIter i = towers.begin(); i != towers.end(); ++i) {
+  for (auto i = towers.begin(); i != towers.end(); ++i) {
     const StFmsTower* tower = *i;
     if (tower->row() == row && tower->column() == column) {
       match = tower;
@@ -133,9 +132,8 @@ Bool_t StFmsEventClusterer::cluster(std::vector<StFmsTower>* towerList) {
 Int_t StFmsEventClusterer::fitEvent() {
   // Possible alternative clusters for 1-photon fit: for catagory 0
   StFmsClusterFinder::TowerList towerList;
-  std::vector<StFmsTower>::iterator towerIter;
-  for (towerIter = mTowers->begin(); towerIter != mTowers->end(); ++towerIter) {
-    towerList.push_back(&(*towerIter));
+  for (auto i = mTowers->begin(); i != mTowers->end(); ++i) {
+    towerList.push_back(&(*i));
   }  // for
   mClusterFinder.findClusters(&towerList, &mClusters);
   // Cluster energy should be at least 2 GeV (parameter "minRealClusterEne")
@@ -145,14 +143,14 @@ Int_t StFmsEventClusterer::fitEvent() {
     mClusters.remove_if(IsBadCluster(2.0, 49));
   }  // if
   // Must do moment analysis before catagorization
-  for (ClusterIter i = mClusters.begin(); i != mClusters.end(); ++i) {
+  for (auto i = mClusters.begin(); i != mClusters.end(); ++i) {
     (*i)->findClusterAxis(mClusterFinder.momentEnergyCutoff());
   }  // for
   // Loop over clusters, catagorize, guess the photon locations for cat 0 or 2
   // clusters then fit, compare, and choose the best fit
   bool badEvent = false;
   const double max2PhotonFitChi2 = 10.;
-  for (ClusterIter cluster = mClusters.begin(); cluster != mClusters.end();
+  for (auto cluster = mClusters.begin(); cluster != mClusters.end();
        ++cluster) {
     Int_t clustCatag = mClusterFinder.categorise(cluster->get());
     // point to the real TObjArray that contains the towers to be fitted
@@ -221,7 +219,7 @@ Int_t StFmsEventClusterer::fitEvent() {
   }  // if
   // For global fit, add all towers from all clusters
   Towers allTow;
-  for (ClusterIter cluster = mClusters.begin(); cluster != mClusters.end();
+  for (auto cluster = mClusters.begin(); cluster != mClusters.end();
        ++cluster) {
     allTow.insert(allTow.end(), (*cluster)->towers().begin(),
                   (*cluster)->towers().end());
@@ -249,7 +247,7 @@ Double_t StFmsEventClusterer::photonEnergyInCluster(
   Double_t eSS = 0;
   // Sum depositions by the photon in all towers of this cluster
   const Towers& towers = p_clust->towers();
-  for (TowerIter tower = towers.begin(); tower != towers.end(); ++tower) {
+  for (auto tower = towers.begin(); tower != towers.end(); ++tower) {
     eSS += photonEnergyInTower(widthLG, *tower, p_photon);
   }  // for
   return eSS;
