@@ -107,11 +107,9 @@ Double_t StFmsClusterFitter::fit(const Double_t* para, const Double_t* step,
     mMinuit.mnparm(j, Form("E%d", i + 1),
                    para[j], step[j], low[j], up[j], ierflg);
   }  // if
-  Double_t arglist[10];
-  arglist[0] = 1000;
-  arglist[1] = 1.;
+  std::vector<double> arglist = {1000., 1.};
   ierflg = 0;
-  mMinuit.mnexcm("MIGRAD", arglist, 2, ierflg);
+  mMinuit.mnexcm("MIGRAD", arglist.data(), arglist.size(), ierflg);
   // Populate the list of photons
   if (0 == mMinuit.GetStatus() && photons) {
     // Get the fit results for starting positions and errors
@@ -204,11 +202,9 @@ Int_t StFmsClusterFitter::fit2PhotonCluster(const Double_t* para,
   // Fix E_total and theta, we don't want these to be free parameters
   mMinuit.FixParameter(6);
   mMinuit.FixParameter(4);
-  Double_t arglist[10];
-  arglist[0] = 1000;
-  arglist[1] = 1.;
+  std::vector<double> arglist = {1000., 1.};
   ierflg = 0;
-  mMinuit.mnexcm("MIGRAD", arglist, 2, ierflg);
+  mMinuit.mnexcm("MIGRAD", arglist.data(), arglist.size(), ierflg);
   mMinuit.mnfree(0);  // Free fixed parameters before next use of mMinuit
   if (0 == mMinuit.GetStatus() && photons) {
     // Get the fit results
