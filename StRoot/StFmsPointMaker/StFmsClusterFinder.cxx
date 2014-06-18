@@ -35,7 +35,6 @@ namespace {
  */
 const Float_t maxDistanceFromPeak = 0.3;
 const Float_t minTowerEnergy = 0.01;
-const Float_t minRatioPeakTower = 1.6;
 // Extreme distance between towers (no distance can be this large!)
 const Float_t ExtremelyFaraway = 99999;
 
@@ -45,26 +44,28 @@ typedef TowerList::const_reverse_iterator TowerConstRIter;
 using FMSCluster::StFmsTower;
 
 /*
- Test for a tower that can be a cluster peak.
- 
- Returns true if a tower can be a peak tower, given a global population of
- known non-peak towers and a minimum ratio between the energy of peak towers and
- non-peak towers. Returns false if the tower can not possibly be a peak. Note
- that returning true does not mean the tower *is* a peak, merely that it *can*
+ Test if a tower could be a cluster peak compared to another tower.
+
+ Note returning true does not mean the tower *is* a peak, merely that it *can*
  be (i.e. it is consistent with that hypothesis given this input).
  */
-Bool_t couldBePeakTower(const StFmsTower* tower, TowerList* nonPeakTowers) {
-  Bool_t couldBePeak(true);
-  for (auto i = nonPeakTowers->begin(); i != nonPeakTowers->end(); ++i) {
-    // Compare this tower's energy with that of its immediate neighbours
-    if (tower->isNeighbor(**i)) {
-      if (tower->hit()->energy() < minRatioPeakTower * (*i)->hit()->energy()) {
-        couldBePeak = false;
-        break;
-      }  // if
+bool couldBePeakTower(const StFmsTower* tower, const StFmsTower* other) {
+  return tower->hit()->energy() >= 1.6 * other->hit()->energy();
+}
+
+/*
+ Test if a tower could be a peak compared to a group of neighbor towers.
+
+ Returns true if the towers passes the peak test with all neighbors, false if
+ it fails the test with any.
+ */
+bool couldBePeakTower(const StFmsTower* tower, TowerList* others) {
+  for (auto i = others->begin(); i != others->end(); ++i) {
+    if (tower->isNeighbor(**i) && !couldBePeakTower(tower, *i)) {
+      return false;
     }  // if
-  }  // end of for loop over non-peak towers
-  return couldBePeak;
+  }  // for
+  return true;
 }
 
 /** Comparison function to sort towers in order of ascending energy. */
@@ -201,8 +202,7 @@ class TowerClusterAssociation : public TObject {
    A tower is defined as associable with a cluster if it:
     - has energy less than that of the cluster's highest-energy tower.
     - is physically adjacent to at least one tower in the cluster, so long as...
-    - its energy is less than minRatioPeakTower * adjacent tower energy
-      i.e. this tower cannot fulfil the criterion for being a peak w.r.t. to
+    - it cannot fulfil the criterion for being a peak w.r.t. to
       the adjacent tower.
 
    Note this is a "potential" association; a tower may pass the association
@@ -221,14 +221,8 @@ class TowerClusterAssociation : public TObject {
     }  // if
     // Loop over all towers in this cluster to see if this tower is
     // physically adjacent to any of them.
-    typedef StFmsTowerCluster::Towers::const_iterator TowerIter;
-    for (TowerIter tower = towers.begin(); tower != towers.end(); ++tower) {
-      // Place an energy selection when determining adjacent towers, as a
-      // neighbor cannot exceed an adjacent tower by a factor more than
-      // minRatioPeakTower, otherwise it will be considered a peak itself.
-      if (mTower->isNeighbor(**tower) &&
-          mTower->hit()->energy() < minRatioPeakTower *
-          (*tower)->hit()->energy()) {
+    for (auto tower = towers.begin(); tower != towers.end(); ++tower) {
+      if (mTower->isNeighbor(**tower) && !couldBePeakTower(mTower, *tower)) {
         return true;  // Stop looping once we find any match
       }  // if
     }  // for loop over all towers in a cluster
