@@ -95,9 +95,7 @@ Double_t StFmsClusterFitter::fit(const std::vector<double>& para,
   mMinuit.mncler();  // Clear old parameters so we can define the new parameters
   // The first parameter tells Minuit how many photons to fit!
   // It should be a fixed parameter, and between 1 and the max number of photons
-  Int_t ierflg = 0;
-  Double_t nPhotons(nPh);  // Minuit needs a double argument
-  mMinuit.mnparm(0, "nph", nPhotons, 0, 0.5, 4.5, ierflg);
+  setMinuitParameter(0, "nph", para, step, low, up);
   // Set the rest of parameters: 3 parameters per photon
   for (Int_t i = 0; i < nPh; i++) {
     Int_t j = 3 * i + 1;  // Need to set 3 parameters per photon
@@ -106,7 +104,7 @@ Double_t StFmsClusterFitter::fit(const std::vector<double>& para,
     setMinuitParameter(j++, Form("E%d", i + 1), para, step, low, up);
   }  // if
   std::vector<double> arglist = {1000., 1.};
-  ierflg = 0;
+  int ierflg = 0;
   mMinuit.mnexcm("MIGRAD", arglist.data(), arglist.size(), ierflg);
   // Populate the list of photons
   if (0 == mMinuit.GetStatus() && photons) {
@@ -188,20 +186,17 @@ Int_t StFmsClusterFitter::fit2PhotonCluster(const std::vector<double>& para,
   mMinuit.mncler();  // Clear old parameters so we can define the new parameters
   // The first parameter tells Minuit how many photons to fit!
   // It should be a fixed parameter, in this case 2
-  Int_t ierflg = 0;
-  Double_t nPhotons(nPh);  // Minuit needs a double argument
-  mMinuit.mnparm(0, "nph", nPhotons, 0, 1.5, 2.5, ierflg);
   const std::vector<TString> names = {
-    "xPi", "yPi", "d_gg", "theta", "z_gg", "E_gg"
+    "nph", "xPi", "yPi", "d_gg", "theta", "z_gg", "E_gg"
   };
   for (unsigned i = 0; i < names.size(); ++i) {
-    setMinuitParameter(i + 1, names.at(i), para, step, low, up);
+    setMinuitParameter(i, names.at(i), para, step, low, up);
   }  // for
   // Fix E_total and theta, we don't want these to be free parameters
   mMinuit.FixParameter(6);
   mMinuit.FixParameter(4);
   std::vector<double> arglist = {1000., 1.};
-  ierflg = 0;
+  int ierflg = 0;
   mMinuit.mnexcm("MIGRAD", arglist.data(), arglist.size(), ierflg);
   mMinuit.mnfree(0);  // Free fixed parameters before next use of mMinuit
   if (0 == mMinuit.GetStatus() && photons) {
