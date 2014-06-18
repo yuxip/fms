@@ -230,8 +230,8 @@ Int_t StFmsClusterFitter::fit2PhotonCluster(const std::vector<double>& para,
     EErr = error[6] * (1 - param[5]) / 2.0 - param[6] * error[5] / 2.0;
     photons->push_back(StFmsFittedPhoton(x, y, E, xErr, yErr, EErr));
     // Evaluate the Chi-square function
-    Int_t iflag = 1;  // Don't calculate 1st derivatives...
-    mMinuit.Eval(7, NULL, chiSq, param, iflag);  // ... so 2nd argument unneeded
+    Int_t iflag = 1;  // Don't calculate 1st derivatives, 2nd argument unneeded
+    mMinuit.Eval(7, NULL, chiSq, param.data(), iflag);
   }  // if
   return chiSq;
 }
@@ -250,9 +250,8 @@ Double_t StFmsClusterFitter::energyDepositionInTower(Double_t* xy,
       Double_t signY = pow(-1.0, iy);  // 1 or -1
       // para[0] is the cell width
       // para[7] and para[8] are offsets that are normally zero
-      Double_t s[2];
-      s[0] = xy[0] - para[7] + signX * para[0] / 2.0;  // x +/- d/2
-      s[1] = xy[1] - para[8] + signY * para[0] / 2.0;  // y +/- d/2
+      Double_t s[2] = {xy[0] - para[7] + signX * para[0] / 2.0,   // x +/- d/2
+                       xy[1] - para[8] + signY * para[0] / 2.0};  // y +/- d/2
       gg += signX * signY * energyDepositionDistribution(s, para);
     }  // for
   }  // for
@@ -342,15 +341,16 @@ void StFmsClusterFitter::minimizationFunction2Photon(Int_t& nparam,
                                                      Double_t* param,
                                                      Int_t iflag) {
   // Only need to translate into the old parameterization
-  Double_t oldParam[7];
-  float dd = param[3];
-  oldParam[0] = param[0];  // Number of photons, unchanged
-  oldParam[1] = param[1] + cos(param[4]) * dd * (1 - param[5]) / 2.0;  // x 1
-  oldParam[2] = param[2] + sin(param[4]) * dd * (1 - param[5]) / 2.0;  // y 1
-  oldParam[3] = param[6] * (1 + param[5]) / 2.0;  // Energy 1
-  oldParam[4] = param[1] - cos(param[4]) * dd * (1 + param[5]) / 2.0;  // x 2
-  oldParam[5] = param[2] - sin(param[4]) * dd * (1 + param[5]) / 2.0;  // y 2
-  oldParam[6] = param[6] * (1 - param[5]) / 2.0;  // Energy 2
+  const float dd = param[3];
+  Double_t oldParam[7] = {
+    param[0],  // Number of photons, unchanged
+    param[1] + cos(param[4]) * dd * (1 - param[5]) / 2.0,  // x 1
+    param[2] + sin(param[4]) * dd * (1 - param[5]) / 2.0,  // y 1
+    param[6] * (1 + param[5]) / 2.0,  // Energy 1
+    param[1] - cos(param[4]) * dd * (1 + param[5]) / 2.0,  // x 2
+    param[2] - sin(param[4]) * dd * (1 + param[5]) / 2.0,  // y 2
+    param[6] * (1 - param[5]) / 2.0  // Energy 2
+  };
   // Now call the regular minimization function with the translated parameters
   minimizationFunctionNPhoton(nparam, grad, fval, oldParam, iflag);
 }
