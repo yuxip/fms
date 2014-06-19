@@ -118,7 +118,7 @@ int StFmsPointMaker::clusterDetector(TowerList* towers, const int detectorId,
     return kStWarn;
   }  // if
   // Saved cluster info into StFmsCluster
-  FMSCluster::ClusterList& clusters = clustering.clusters();
+  auto& clusters = clustering.clusters();
   for (auto cluster = clusters.begin(); cluster != clusters.end(); ++cluster) {
     processTowerCluster(cluster->get(), detectorId, fmsCollection);
   }  // for
