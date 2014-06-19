@@ -45,6 +45,18 @@ int accumulatePhotons(int nPhotons, const ClusterList::value_type& cluster) {
   return nPhotons + cluster->cluster()->nPhotons();
 }
 
+/* Sum the total number of photons in a list of clusters */
+template<class Iterator>
+int sumPhotonsOverClusters(Iterator start, Iterator end) {
+  return std::accumulate(start, end, 0, accumulatePhotons);
+}
+
+/* Sum the total number of photons in a list of clusters */
+template<class Container>
+int sumPhotonsOverClusters(const Container& clusters) {
+  return sumPhotonsOverClusters(clusters.begin(), clusters.end());
+}
+
 /* Unary predicate for selecting bad clusters. */
 struct IsBadCluster
     : public std::unary_function<const ClusterList::value_type&, bool> {
@@ -212,8 +224,7 @@ Int_t StFmsEventClusterer::fitEvent() {
         " clusters! Don't know how to fit it!" << endm;
     }  // if (clustCatag...)
   }  // Loop over all real clusters
-  Int_t nPh = std::accumulate(mClusters.begin(), mClusters.end(), 0,
-                              accumulatePhotons);
+  const int nPh = sumPhotonsOverClusters(mClusters);
   if (nPh > StFmsClusterFitter::maxNFittedPhotons()) {
     // myFitter can only do up to "maxNFittedPhotons()"-photon fit
     LOG_WARN << "Can not fit " << nPh << " (more than " <<
@@ -234,8 +245,7 @@ Int_t StFmsEventClusterer::fitEvent() {
     globalFit(nPh, mClusters.size(), mClusters.begin());
     // Check for errors in the global fit - the number of photons returned by
     // the global fit should equal the sum of photons in the fitted clusters
-    Int_t iph = std::accumulate(mClusters.begin(), mClusters.end(), 0,
-                                accumulatePhotons);
+    const int iph = sumPhotonsOverClusters(mClusters);
     if (iph != nPh) {
       LOG_ERROR << "total nPh=" << nPh << " iPh=" << iph << endm;
     }  // if
