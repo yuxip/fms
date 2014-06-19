@@ -117,14 +117,18 @@ class StFmsEventClusterer: public TObject {
    Update the (x, y) positions end energies of the photons in each cluster based
    on a global fit including all photons.
    Only makes sense when there is more than one photon in the event.
+   Also, should only be done after prior single- or N-photon fits of the
+   clusters concerned, in order to provide starting values for the photon
+   positions and energies.
    Arguments:
-    - nPh, number of photons in the event
-    - nCl, number of clusters containing those photons
+    - nPhotons, number of photons in the event
+    - nClusters, number of clusters containing those photons
     - first, iterator to the first cluster
 
    Returns the &chi;<sup>2</sup> of the fit.
    */
-  Float_t globalFit(const Int_t, const Int_t, ClusterIter first);
+  Float_t globalFit(const Int_t nPhotons, const Int_t nClusters,
+                    ClusterIter first);
   /*
    Special 2-photon fit for a single cluster.
 
