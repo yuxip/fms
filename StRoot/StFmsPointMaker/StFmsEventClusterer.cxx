@@ -84,23 +84,28 @@ const StFmsFittedPhoton* findLowestEnergyPhoton(
   return photon;
 }
 
+/* Functor returning true if a tower matches (row, column) */
+struct HasRowColumn {
+  int row, column;
+  HasRowColumn(int r, int c) : row(r), column(c) { }
+  bool operator()(const StFmsTower* tower) const {
+    return tower->row() == row && tower->column() == column;
+  }
+};
+
 /*
  Search towers in a cluster for one matching a row and column number
- 
+
  Return a pointer to the matching tower if one is found, nullptr otherwise.
  */
 const StFmsTower* searchClusterTowers(int row, int column,
                                       const StFmsTowerCluster& cluster) {
-  const StFmsTower* match = nullptr;
-  const Towers& towers = cluster.towers();
-  for (auto i = towers.begin(); i != towers.end(); ++i) {
-    const StFmsTower* tower = *i;
-    if (tower->row() == row && tower->column() == column) {
-      match = tower;
-      break;
-    }  // if
-  }  // for
-  return match;
+  auto found = std::find_if(cluster.towers().begin(), cluster.towers().end(),
+                            HasRowColumn(row, column));
+  if (found != cluster.towers().end()) {
+    return *found;
+  }  // if
+  return nullptr;
 }
 }  // unnamed namespace
 
