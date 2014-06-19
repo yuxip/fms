@@ -335,7 +335,6 @@ Float_t StFmsEventClusterer::globalFit(const Int_t nPh, const Int_t nCl,
   // The positions (e.b. cluster->photons()[jp].xPos) are already in unit of cm
   // Clusters have already had all their fields properly filled
   // (for example cluster[].photons()[0] should NOT be nullptr!)
-  Int_t totPh = 0;
   // Loop over all clusters
   /** \todo Improve this implementation? This approach is necessary because the
             original code uses a pointer to a StFmsTowerCluster in the fitting
@@ -343,14 +342,15 @@ Float_t StFmsEventClusterer::globalFit(const Int_t nPh, const Int_t nCl,
             clusters .*/
   ClusterIter end = first;
   std::advance(end, nCl);
+  const int totPh = sumPhotonsOverClusters(first, end);
+  if (totPh > StFmsClusterFitter::maxNFittedPhotons()) {
+    LOG_ERROR << "Total # of photons in " << nCl << " clusters is "
+      << totPh << "! I can NOT do fit!" << endm;
+    return -9999;
+  }  // if
   for (ClusterIter cluster = first; cluster != end; ++cluster) {
     // Loop over all photons in cluster
     for (Int_t jp = 0; jp < (*cluster)->cluster()->nPhotons(); jp++) {
-      if (totPh > StFmsClusterFitter::maxNFittedPhotons()) {
-        LOG_ERROR << "Total # of photons in " << nCl << " clusters is at least "
-          << totPh << "! I can NOT do fit!" << endm;
-        return -9999;
-      }  // if
       // Note positions are in centimetres, not tower units
       // Set x position start, lower and upper values
       start.push_back((*cluster)->photons()[jp].xPos);
@@ -364,7 +364,6 @@ Float_t StFmsEventClusterer::globalFit(const Int_t nPh, const Int_t nCl,
       start.push_back((*cluster)->photons()[jp].energy);
       lowLim.push_back(start.back() * (1 - 0.3));  // Limit to +/- 30% energy
       upLim.push_back(start.back() * (1 + 0.3));
-      totPh++;
     }  // for
   }  // for
   // Set the number-of-photons fit parameter
