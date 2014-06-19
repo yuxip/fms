@@ -327,19 +327,8 @@ Float_t StFmsEventClusterer::globalFit(const Int_t nPh, const Int_t nCl,
     LOG_ERROR << nCl << " clusters! Global fit will NOT work!" << endm;
     return -9999;
   }  // if
-  // Fit has 3 parameters per photon (x, y, E), plus 1 for the number of photons
-  // Starting position, lower and upper limit of parameters
-  // Initialise with a single value, which we will later set to the number-of-
-  // photon parameters.
+  // Fit has 1 parameter for the number of photons plus 3 per photon (x, y, E)
   std::vector<double> start(1, 0.), lowLim(1, 0.), upLim(1, 0.);
-  // The positions (e.b. cluster->photons()[jp].xPos) are already in unit of cm
-  // Clusters have already had all their fields properly filled
-  // (for example cluster[].photons()[0] should NOT be nullptr!)
-  // Loop over all clusters
-  /** \todo Improve this implementation? This approach is necessary because the
-            original code uses a pointer to a StFmsTowerCluster in the fitting
-            routines as both a pointer to a single cluster, and an array of
-            clusters .*/
   ClusterIter end = first;
   std::advance(end, nCl);
   const int totPh = sumPhotonsOverClusters(first, end);
@@ -349,24 +338,18 @@ Float_t StFmsEventClusterer::globalFit(const Int_t nPh, const Int_t nCl,
     return -9999;
   }  // if
   for (ClusterIter cluster = first; cluster != end; ++cluster) {
-    // Loop over all photons in cluster
     for (Int_t jp = 0; jp < (*cluster)->cluster()->nPhotons(); jp++) {
-      // Note positions are in centimetres, not tower units
-      // Set x position start, lower and upper values
       start.push_back((*cluster)->photons()[jp].xPos);
       lowLim.push_back(start.back() - 1.25);
       upLim.push_back(start.back() + 1.25);
-      // Set y position start, lower and upper values
       start.push_back((*cluster)->photons()[jp].yPos);
       lowLim.push_back(start.back() - 1.25);
       upLim.push_back(start.back() + 1.25);
-      // Set energy start, lower and upper values
       start.push_back((*cluster)->photons()[jp].energy);
       lowLim.push_back(start.back() * (1 - 0.3));  // Limit to +/- 30% energy
       upLim.push_back(start.back() * (1 + 0.3));
     }  // for
   }  // for
-  // Set the number-of-photons fit parameter
   start.front() = totPh;
   lowLim.front() = 0.5;
   upLim.front() = StFmsClusterFitter::maxNFittedPhotons() + 0.5;
@@ -382,16 +365,13 @@ Float_t StFmsEventClusterer::globalFit(const Int_t nPh, const Int_t nCl,
     LOG_WARN << "Global Minuit fit returns error!" << endm;
   }  // if
   // Put the fit result back in the clusters
-  // Loop over all clusters
   PhotonList::const_iterator photonIter = photons.begin();
   for (ClusterIter cluster = first; cluster != end; ++cluster) {
-    // Loop over all photons in cluster
     for (Int_t jp = 0; jp < (*cluster)->cluster()->nPhotons();
          jp++, ++photonIter) {
       (*cluster)->photons()[jp] = *photonIter;
     }  // for loop over photons
   }  // for loop over clusters
-  // Evaluate the Chi-square function and return it
   return chiSq;
 }
 
