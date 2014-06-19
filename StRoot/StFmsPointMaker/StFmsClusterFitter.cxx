@@ -37,8 +37,6 @@ TF2 showerShapeFitFunction("showerShapeFitFunction",
  Compose Minuit step size in each fit variable.
  The first value is for the number of photons.
  Each subsequent triplet is for the (x, y, E) of a photon, up to kMaxNPhotons.
- Implement it via a function so we can initialise a constant vector,
- with a number of elements dependent on kMaxNPhotons.
  */
 std::vector<double> defaultMinuitStepSizes() {
   std::vector<double> steps(1, 0.);  // Initialise with nPhoton step
@@ -122,9 +120,8 @@ Double_t StFmsClusterFitter::fit(const std::vector<double>& para,
   mMinuit.mnexcm("MIGRAD", arglist.data(), arglist.size(), ierflg);
   // Populate the list of photons from the fit results
   if (0 == mMinuit.GetStatus() && photons) {
-    // Get the fit results for starting positions and errors
+    // Get the fit results and errors
     std::vector<double> param(para.size(), 0.), error(para.size(), 0.);
-    // Get fit parameter results
     for (unsigned i(0); i < para.size(); ++i) {
       mMinuit.GetParameter(i, param.at(i), error.at(i));
     }  // for
@@ -180,7 +177,6 @@ Int_t StFmsClusterFitter::fit2PhotonCluster(const std::vector<double>& para,
     step = defaultMinuitStepSizes();
   }  // if
   Double_t chiSq(-1.);  // Return value
-  // Check that there is a pointer to TObjArray of towers
   if (!StFmsClusterFitter::mTowers) {
     LOG_ERROR << "no tower data available! return -1!" << endm;
     return chiSq;
@@ -194,8 +190,7 @@ Int_t StFmsClusterFitter::fit2PhotonCluster(const std::vector<double>& para,
     nPh = 2;
   }  // if
   mMinuit.mncler();  // Clear old parameters so we can define the new parameters
-  // The first parameter tells Minuit how many photons to fit!
-  // It should be a fixed parameter, in this case 2
+  // The first parameter tells Minuit how many photons to fit, in this case 2
   const std::vector<TString> names = {
     "nph", "xPi", "yPi", "d_gg", "theta", "z_gg", "E_gg"
   };
@@ -219,7 +214,7 @@ Int_t StFmsClusterFitter::fit2PhotonCluster(const std::vector<double>& para,
     }  // for
     // Put the fit result back in "clust". Need to translate the special
     // parameters for 2-photon fit into x, y, E, which looks a bit complicated!
-    // First photons
+    // First photon
     double x = param[1] + cos(param[4]) * param[3] * (1 - param[5]) / 2.0;
     double xErr = error[1] +
       (cos(param[4]) * error[3] - error[4] * sin(param[4]) * param[3]) *
@@ -243,7 +238,7 @@ Int_t StFmsClusterFitter::fit2PhotonCluster(const std::vector<double>& para,
     E = param[6] * (1 - param[5]) / 2.0;
     EErr = error[6] * (1 - param[5]) / 2.0 - param[6] * error[5] / 2.0;
     photons->push_back(StFmsFittedPhoton(x, y, E, xErr, yErr, EErr));
-    // Evaluate the Chi-square function
+    // Evaluate the chi-square function
     Int_t iflag = 1;  // Don't calculate 1st derivatives, 2nd argument unneeded
     mMinuit.Eval(7, nullptr, chiSq, param.data(), iflag);
   }  // if
@@ -282,8 +277,8 @@ Double_t StFmsClusterFitter::energyDepositionDistribution(
     Double_t* xy,
     Double_t* parameters) {
   double f = 0;
-  // The parameter array has 10 elements, but we only use 6
-  // Parameters 1 to 6 are a1, a2, a3, b1, b2, b3 as defined in
+  // The parameter array has 10 elements, but we only use 6 here
+  // 1 to 6 are a1, a2, a3, b1, b2, b3 as defined in
   // https://drupal.star.bnl.gov/STAR/blog/leun/2010/aug/02/fms-meeting-20100802
   for (int i = 1; i < 4; i++) {  // 1, 2, 3
     f += showerShapeComponent(xy[0], xy[1], parameters[i], parameters[i + 3]);
@@ -298,10 +293,8 @@ void StFmsClusterFitter::minimizationFunctionNPhoton(Int_t& npara,
                                                      Double_t& fval,
                                                      Double_t* para,
                                                      Int_t iflag) {
-  // Sum energy of all towers being studied
   const double energySum = std::accumulate(mTowers->begin(), mTowers->end(),
                                            0., addTowerEnergy);
-  // Loop over all towers that are involved in the fit
   fval = 0;  // Stores sum of chi2 over each tower
   const int nPhotons = static_cast<int>(para[0]);
   for (auto i = mTowers->begin(); i != mTowers->end(); ++i) {
@@ -326,7 +319,7 @@ void StFmsClusterFitter::minimizationFunctionNPhoton(Int_t& npara,
                          pow(measured / energySum, 1. - 0.001 * energySum) *
                          pow(1 - measured / energySum, 1. - 0.007 * energySum) *
                          energySum + 0.01;
-    fval += pow(deviation, 2.) / err;  // Add chi2 for this tower to the sum
+    fval += pow(deviation, 2.) / err;
   }  // for
   fval = std::max(fval, 0.);  // require that the fraction be positive
 }
