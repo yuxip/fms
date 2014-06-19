@@ -315,29 +315,27 @@ Float_t StFmsEventClusterer::fitOnePhoton(StFmsTowerCluster* p_clust) {
   return p_clust->chiSquare();
 }
 
-Float_t StFmsEventClusterer::globalFit(const Int_t nPhotons,
+Float_t StFmsEventClusterer::globalFit(Int_t nPhotons,
                                        const Int_t nClusters,
                                        ClusterIter first) {
-  // By design, we can only fit up to "maxNFittedPhotons()" photons
-  if (nPhotons > StFmsClusterFitter::maxNFittedPhotons() || nPhotons < 2) {
-    LOG_ERROR << "Global fit! Can not fit " << nPhotons << " photons!" << endm;
-    return -9999;
-  }  // if
-  // Check that there is at least one cluster
   if (nClusters < 1) {
-    LOG_ERROR << nClusters << " clusters! Global fit will NOT work!" << endm;
+    LOG_ERROR << "Global fit cannot fit " << nClusters << " clusters" << endm;
     return -9999;
   }  // if
   ClusterIter end = first;
-  std::advance(end, nClusters);
+  std::advance(end, nClusters);  // Marks end point for cluster iteration
   const int totalPhotons = sumPhotonsOverClusters(first, end);
-  if (totalPhotons > StFmsClusterFitter::maxNFittedPhotons()) {
-    LOG_ERROR << "Total # of photons in " << nClusters << " clusters is "
-      << totalPhotons << "! I can NOT do fit!" << endm;
+  if (totalPhotons != nPhotons) {
+    LOG_WARN << "Global fit called for " << nPhotons << " but found " <<
+      totalPhotons << "... will proceed with " << totalPhotons << endm;
+    nPhotons = totalPhotons;
+  }  // if
+  if (nPhotons > StFmsClusterFitter::maxNFittedPhotons() || nPhotons < 2) {
+    LOG_ERROR << "Global fit cannot fit " << nPhotons << " photons" << endm;
     return -9999;
   }  // if
   // Fit has 1 parameter for the number of photons plus 3 per photon (x, y, E)
-  std::vector<double> start(1, totalPhotons);
+  std::vector<double> start(1, nPhotons);
   std::vector<double> lower(1, 0.5);
   std::vector<double> upper(1, StFmsClusterFitter::maxNFittedPhotons() + 0.5);
   for (ClusterIter cluster = first; cluster != end; ++cluster) {
@@ -353,17 +351,11 @@ Float_t StFmsEventClusterer::globalFit(const Int_t nPhotons,
       upper.push_back(start.back() * (1 + 0.3));
     }  // for
   }  // for
-  if (totalPhotons != nPhotons) {
-    LOG_WARN << "WARNING! Total # of photons in " << nClusters <<
-      " clusters is at least " << totalPhotons <<
-      "! Not the same as the nPhotons = "
-      << nPhotons << "! I will try " << totalPhotons << " instead!" << endm;
-  }  // if
   PhotonList photons;
   Double_t chiSquare = mFitter->fit(start, std::vector<double>(),
                                     lower, upper, &photons);
   if (photons.empty()) {
-    LOG_WARN << "Global Minuit fit returns error!" << endm;
+    LOG_WARN << "Global Minuit fit found no photons" << endm;
   }  // if
   // Put the fit result back in the clusters
   PhotonList::const_iterator photon = photons.begin();
