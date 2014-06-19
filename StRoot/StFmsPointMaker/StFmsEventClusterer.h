@@ -23,6 +23,12 @@ namespace FMSCluster {  // $NMSPC
 class StFmsClusterFitter;
 class StFmsFittedPhoton;
 class StFmsGeometry;
+/**
+ Performs clustering and photon-fitting for a single detector and event.
+
+ Clusters towers in a single sub-detector and performs photon shower-shape
+ fitting on all the formed clusters.
+ */
 class StFmsEventClusterer: public TObject {
  public:
   /**
@@ -44,7 +50,7 @@ class StFmsEventClusterer: public TObject {
   int detector() const { return mDetectorId; }
   /**
    Perform cluster-finding and photon-fitting on a list of towers.
-   
+
    Returns true if photon fits to all clusters succeed, or false if one or more
    clusters have a photon fit with a chi-square exceeding the maximum allowed
    value.
