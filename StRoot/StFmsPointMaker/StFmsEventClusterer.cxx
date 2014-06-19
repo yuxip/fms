@@ -294,14 +294,14 @@ Float_t StFmsEventClusterer::fitOnePhoton(StFmsTowerCluster* p_clust) {
     0.15 * p_clust->cluster()->energy()};
   // - set lower and upper physical limits of fit parameters = start +/- delta
   //   The parameters will stay within these ranges during the fit
-  std::vector<double> lowLim, upLim;
+  std::vector<double> lower, upper;
   for (unsigned i(0); i < start.size(); ++i) {
-    lowLim.push_back(start.at(i) - delta.at(i));
-    upLim.push_back(start.at(i) + delta.at(i));
+    lower.push_back(start.at(i) - delta.at(i));
+    upper.push_back(start.at(i) + delta.at(i));
   }  // for
   PhotonList photons;
   Double_t chiSq = mFitter->fit(start, std::vector<double>(),
-                                lowLim, upLim, &photons);
+                                lower, upper, &photons);
   if (photons.empty()) {  // check return status in case of a bad fit
     LOG_ERROR << "1-photon Minuit fit returns error!" << endm;
   }  // if
@@ -327,8 +327,6 @@ Float_t StFmsEventClusterer::globalFit(const Int_t nPh, const Int_t nCl,
     LOG_ERROR << nCl << " clusters! Global fit will NOT work!" << endm;
     return -9999;
   }  // if
-  // Fit has 1 parameter for the number of photons plus 3 per photon (x, y, E)
-  std::vector<double> start(1, 0.), lowLim(1, 0.), upLim(1, 0.);
   ClusterIter end = first;
   std::advance(end, nCl);
   const int totPh = sumPhotonsOverClusters(first, end);
@@ -337,22 +335,24 @@ Float_t StFmsEventClusterer::globalFit(const Int_t nPh, const Int_t nCl,
       << totPh << "! I can NOT do fit!" << endm;
     return -9999;
   }  // if
+  // Fit has 1 parameter for the number of photons plus 3 per photon (x, y, E)
+  std::vector<double> start(1, 0.), lower(1, 0.), upper(1, 0.);
   for (ClusterIter cluster = first; cluster != end; ++cluster) {
     for (Int_t jp = 0; jp < (*cluster)->cluster()->nPhotons(); jp++) {
       start.push_back((*cluster)->photons()[jp].xPos);
-      lowLim.push_back(start.back() - 1.25);
-      upLim.push_back(start.back() + 1.25);
+      lower.push_back(start.back() - 1.25);
+      upper.push_back(start.back() + 1.25);
       start.push_back((*cluster)->photons()[jp].yPos);
-      lowLim.push_back(start.back() - 1.25);
-      upLim.push_back(start.back() + 1.25);
+      lower.push_back(start.back() - 1.25);
+      upper.push_back(start.back() + 1.25);
       start.push_back((*cluster)->photons()[jp].energy);
-      lowLim.push_back(start.back() * (1 - 0.3));  // Limit to +/- 30% energy
-      upLim.push_back(start.back() * (1 + 0.3));
+      lower.push_back(start.back() * (1 - 0.3));  // Limit to +/- 30% energy
+      upper.push_back(start.back() * (1 + 0.3));
     }  // for
   }  // for
   start.front() = totPh;
-  lowLim.front() = 0.5;
-  upLim.front() = StFmsClusterFitter::maxNFittedPhotons() + 0.5;
+  lower.front() = 0.5;
+  upper.front() = StFmsClusterFitter::maxNFittedPhotons() + 0.5;
   if (totPh != nPh) {
     LOG_WARN << "WARNING! Total # of photons in " << nCl <<
       " clusters is at least " << totPh << "! Not the same as the nPh = "
@@ -360,7 +360,7 @@ Float_t StFmsEventClusterer::globalFit(const Int_t nPh, const Int_t nCl,
   }  // if
   PhotonList photons;
   Double_t chiSq = mFitter->fit(start, std::vector<double>(),
-                                lowLim, upLim, &photons);
+                                lower, upper, &photons);
   if (photons.empty()) {
     LOG_WARN << "Global Minuit fit returns error!" << endm;
   }  // if
@@ -387,11 +387,11 @@ Float_t StFmsEventClusterer::fit2PhotonClust(ClusterIter p_clust) {
   Double_t EcSigmaMax = (*p_clust)->cluster()->energy() *
                         (*p_clust)->cluster()->sigmaMax();
   // Starting position, lower and upper limit of parameters
-  std::vector<double> start(7, 0.), lowLim(7, 0.), upLim(7, 0.);
+  std::vector<double> start(7, 0.), lower(7, 0.), upper(7, 0.);
   // First parameter is the number of photons, which is constant = 2 photons
   start[0] = 2;
-  lowLim[0] = 1.5;
-  upLim[0] = 2.5;
+  lower[0] = 1.5;
+  upper[0] = 2.5;
   // Parameter starting points and limits are determined by looking at cluster
   // information
   //  - xPi and yPi: rarely do they go beyond 0.3 unit of lgd
@@ -410,35 +410,35 @@ Float_t StFmsEventClusterer::fit2PhotonClust(ClusterIter p_clust) {
   start[3] = dggPara[1] * mTowerWidthXY[0] * (*p_clust)->cluster()->sigmaMax();
   // Randomize the starting point of Z_gg (from -0.1 to 0.1)
   start[5]  = 0.1 * (2 * gRandom->Rndm() - 1);
-  lowLim[1] = start[1] - 0.2 * mTowerWidthXY[0];
-  lowLim[2] = start[2] - 0.2 * mTowerWidthXY[1];
-  lowLim[6] = start[6] * (1. - 0.05);
-  upLim[1]  = start[1] + 0.2 * mTowerWidthXY[0];
-  upLim[2]  = start[2] + 0.2 * mTowerWidthXY[1];
-  upLim[6]  = start[6] * (1. + 0.05);
-  lowLim[4] = start[4] - maxTheta;
-  lowLim[5] = - 1.0;
-  lowLim[3] = dggPara[0] / pow(EcSigmaMax, 0.8);
-  if (lowLim[3] < dggPara[2]) {
-    lowLim[3] = dggPara[2];
+  lower[1] = start[1] - 0.2 * mTowerWidthXY[0];
+  lower[2] = start[2] - 0.2 * mTowerWidthXY[1];
+  lower[6] = start[6] * (1. - 0.05);
+  upper[1]  = start[1] + 0.2 * mTowerWidthXY[0];
+  upper[2]  = start[2] + 0.2 * mTowerWidthXY[1];
+  upper[6]  = start[6] * (1. + 0.05);
+  lower[4] = start[4] - maxTheta;
+  lower[5] = - 1.0;
+  lower[3] = dggPara[0] / pow(EcSigmaMax, 0.8);
+  if (lower[3] < dggPara[2]) {
+    lower[3] = dggPara[2];
   }  // if
-  lowLim[3] *= mTowerWidthXY[0];
-  if (lowLim[3] >= start[3]) {
-    lowLim[3] = start[3] * 0.9;
+  lower[3] *= mTowerWidthXY[0];
+  if (lower[3] >= start[3]) {
+    lower[3] = start[3] * 0.9;
   }  // if
-  upLim[3] = dggPara[4] * (dggPara[3] - EcSigmaMax);
-  if (upLim[3] > dggPara[5]) {
-    upLim[3] = dggPara[5];
+  upper[3] = dggPara[4] * (dggPara[3] - EcSigmaMax);
+  if (upper[3] > dggPara[5]) {
+    upper[3] = dggPara[5];
   }  // if
-  upLim[3] *= mTowerWidthXY[0];
-  if (upLim[3] <= start[3]) {
-    upLim[3] = start[3] * 1.1;
+  upper[3] *= mTowerWidthXY[0];
+  if (upper[3] <= start[3]) {
+    upper[3] = start[3] * 1.1;
   }  // if
-  upLim[4] = start[4] + maxTheta;
-  upLim[5] = 1.0;
+  upper[4] = start[4] + maxTheta;
+  upper[5] = 1.0;
   // Call special 2-photon-cluster mFitter
   PhotonList photons;
-  Double_t chiSq = mFitter->fit2PhotonCluster(start, step2, lowLim, upLim,
+  Double_t chiSq = mFitter->fit2PhotonCluster(start, step2, lower, upper,
                                               &photons);
   if (photons.empty()) {
     LOG_WARN << "Minuit fit returns error!" << endm;
