@@ -336,7 +336,9 @@ Float_t StFmsEventClusterer::globalFit(const Int_t nPh, const Int_t nCl,
     return -9999;
   }  // if
   // Fit has 1 parameter for the number of photons plus 3 per photon (x, y, E)
-  std::vector<double> start(1, 0.), lower(1, 0.), upper(1, 0.);
+  std::vector<double> start(1, totPh);
+  std::vector<double> lower(1, 0.5);
+  std::vector<double> upper(1, StFmsClusterFitter::maxNFittedPhotons() + 0.5);
   for (ClusterIter cluster = first; cluster != end; ++cluster) {
     for (Int_t jp = 0; jp < (*cluster)->cluster()->nPhotons(); jp++) {
       start.push_back((*cluster)->photons()[jp].xPos);
@@ -350,9 +352,6 @@ Float_t StFmsEventClusterer::globalFit(const Int_t nPh, const Int_t nCl,
       upper.push_back(start.back() * (1 + 0.3));
     }  // for
   }  // for
-  start.front() = totPh;
-  lower.front() = 0.5;
-  upper.front() = StFmsClusterFitter::maxNFittedPhotons() + 0.5;
   if (totPh != nPh) {
     LOG_WARN << "WARNING! Total # of photons in " << nCl <<
       " clusters is at least " << totPh << "! Not the same as the nPh = "
