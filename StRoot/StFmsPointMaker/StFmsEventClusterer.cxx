@@ -354,16 +354,18 @@ Float_t StFmsEventClusterer::globalFit(Int_t nPhotons,
   PhotonList photons;
   Double_t chiSquare = mFitter->fit(start, std::vector<double>(),
                                     lower, upper, &photons);
-  if (photons.empty()) {
-    LOG_WARN << "Global Minuit fit found no photons" << endm;
+  if (photons.size() == nPhotons) {
+    // Put the fit result back in the clusters
+    PhotonList::const_iterator photon = photons.begin();
+    for (ClusterIter cluster = first; cluster != end; ++cluster) {
+      for (int i = 0; i < (*cluster)->cluster()->nPhotons(); ++i, ++photon) {
+        (*cluster)->photons()[i] = *photon;
+      }  // for loop over photons
+    }  // for loop over clusters
+  } else {
+    LOG_WARN << "Global Minuit fit found " << photons.size() <<
+      " photons but expected " << nPhotons << endm;
   }  // if
-  // Put the fit result back in the clusters
-  PhotonList::const_iterator photon = photons.begin();
-  for (ClusterIter cluster = first; cluster != end; ++cluster) {
-    for (int i = 0; i < (*cluster)->cluster()->nPhotons(); ++i, ++photon) {
-      (*cluster)->photons()[i] = *photon;
-    }  // for loop over photons
-  }  // for loop over clusters
   return chiSquare;
 }
 
