@@ -274,19 +274,19 @@ Double_t StFmsEventClusterer::photonEnergyInTower(
 
 Float_t StFmsEventClusterer::fitOnePhoton(StFmsTowerCluster* towerCluster) {
   auto cluster = towerCluster->cluster();
-  // 4 parameters are passed to the fitting routine: nPhotons, cluster x
-  // position, cluster y position and cluster energy. Set the starting points
-  // for the fitting routine, plus lower and upper bounds on allowed values.
-  // - set starting points for the fit parameters:
+  // 4 parameters: nPhotons, cluster x, cluster y  and cluster energy.
   const std::vector<double> start = {
-    1.0, mTowerWidthXY.at(0) * cluster->x(), mTowerWidthXY.at(1) * cluster->y(),
-    cluster->energy()};
-  // Maximum deviations from the start points during fit:
+    1.0,
+    mTowerWidthXY.at(0) * cluster->x(),
+    mTowerWidthXY.at(1) * cluster->y(),
+    cluster->energy()
+  };
   const std::vector<double> delta = {
-    0.5, 0.5 * mTowerWidthXY.at(0), 0.5 * mTowerWidthXY.at(1),
-    0.15 * cluster->energy()};
-  // Set lower and upper physical limits of fit parameters = start +/- delta
-  // The parameters will stay within these ranges during the fit
+    0.5,
+    mTowerWidthXY.at(0) * 0.5,
+    mTowerWidthXY.at(1) * 0.5,
+    cluster->energy() * 0.15
+  };
   std::vector<double> lower, upper;
   for (unsigned i(0); i < start.size(); ++i) {
     lower.push_back(start.at(i) - delta.at(i));
