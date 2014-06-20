@@ -296,9 +296,10 @@ Float_t StFmsEventClusterer::fitOnePhoton(StFmsTowerCluster* towerCluster) {
   Double_t chiSquare = mFitter->fit(start, std::vector<double>(),
                                     lower, upper, &photons);
   if (photons.empty()) {  // check return status in case of a bad fit
-    LOG_ERROR << "1-photon Minuit fit returns error!" << endm;
+    LOG_ERROR << "1-photon Minuit fit found no photons" << endm;
+  } else {
+    towerCluster->photons()[0] = photons.back();
   }  // if
-  towerCluster->photons()[0] = photons.back();
   cluster->setNPhotons(photons.size());
   const int nDegreesOfFreedom =
     std::max(int(towerCluster->towers().size()) - 3, 1);
