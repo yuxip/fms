@@ -121,7 +121,37 @@ const StFmsTower* searchClusterTowers(int row, int column,
 }
 
 /*
- Yields fit parameter start points and limits for 2-photon fit.
+ Gives fit parameter start points and limits for 1-photon fit.
+
+ See SFmsClusterFitter::fit() for parameter meanings
+ */
+struct OnePhotonFitParameters {
+  std::vector<double> start, lower, upper;
+  OnePhotonFitParameters(const std::vector<float>& xyWidth,
+                         const StFmsCluster* cluster) {
+    const double x = xyWidth.at(0);
+    const double y = xyWidth.at(1);
+    start = {
+      1.0,
+      x * cluster->x(),
+      y * cluster->y(),
+      cluster->energy()
+    };
+    const std::vector<double> delta = {
+      0.5,
+      x * 0.5,
+      y * 0.5,
+      cluster->energy() * 0.15
+    };
+    for (unsigned i(0); i < start.size(); ++i) {
+      lower.push_back(start.at(i) - delta.at(i));
+      upper.push_back(start.at(i) + delta.at(i));
+    }  // for
+  }
+};
+
+/*
+ Gives fit parameter start points and limits for 2-photon fit.
 
  See SFmsClusterFitter::fit2PhotonCluster() for parameter meanings
  */
@@ -324,34 +354,16 @@ Double_t StFmsEventClusterer::photonEnergyInTower(
 
 /* 1-photon fitting function */
 Float_t StFmsEventClusterer::fitOnePhoton(StFmsTowerCluster* towerCluster) {
-  auto cluster = towerCluster->cluster();
-  // 4 parameters: nPhotons, cluster x, cluster y  and cluster energy.
-  const std::vector<double> start = {
-    1.0,
-    mTowerWidthXY.at(0) * cluster->x(),
-    mTowerWidthXY.at(1) * cluster->y(),
-    cluster->energy()
-  };
-  const std::vector<double> delta = {
-    0.5,
-    mTowerWidthXY.at(0) * 0.5,
-    mTowerWidthXY.at(1) * 0.5,
-    cluster->energy() * 0.15
-  };
-  std::vector<double> lower, upper;
-  for (unsigned i(0); i < start.size(); ++i) {
-    lower.push_back(start.at(i) - delta.at(i));
-    upper.push_back(start.at(i) + delta.at(i));
-  }  // for
+  OnePhotonFitParameters parameters(mTowerWidthXY, towerCluster->cluster());
   PhotonList photons;
-  Double_t chiSquare = mFitter->fit(start, std::vector<double>(),
-                                    lower, upper, &photons);
+  double chiSquare = mFitter->fit(parameters.start, std::vector<double>(),
+                                  parameters.lower, parameters.upper, &photons);
   if (photons.empty()) {  // check return status in case of a bad fit
     LOG_ERROR << "1-photon Minuit fit found no photons" << endm;
   } else {
     towerCluster->photons()[0] = photons.back();
   }  // if
-  cluster->setNPhotons(photons.size());
+  towerCluster->cluster()->setNPhotons(photons.size());
   const int nDegreesOfFreedom =
     std::max(int(towerCluster->towers().size()) - 3, 1);
   towerCluster->setChiSquare(chiSquare / nDegreesOfFreedom);
