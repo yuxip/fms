@@ -272,40 +272,40 @@ Double_t StFmsEventClusterer::photonEnergyInTower(
   return photon->energy * mFitter->showerShapeFunction()->Eval(x, y);
 }
 
-Float_t StFmsEventClusterer::fitOnePhoton(StFmsTowerCluster* p_clust) {
+Float_t StFmsEventClusterer::fitOnePhoton(StFmsTowerCluster* towerCluster) {
+  auto cluster = towerCluster->cluster();
   // 4 parameters are passed to the fitting routine: nPhotons, cluster x
   // position, cluster y position and cluster energy. Set the starting points
   // for the fitting routine, plus lower and upper bounds on allowed values.
   // - set starting points for the fit parameters:
   const std::vector<double> start = {
-    1.0, mTowerWidthXY.at(0) * p_clust->cluster()->x(),
-    mTowerWidthXY.at(1) * p_clust->cluster()->y(),
-    p_clust->cluster()->energy()};
-  // - maximum deviations from the start points during fit:
+    1.0, mTowerWidthXY.at(0) * cluster->x(), mTowerWidthXY.at(1) * cluster->y(),
+    cluster->energy()};
+  // Maximum deviations from the start points during fit:
   const std::vector<double> delta = {
     0.5, 0.5 * mTowerWidthXY.at(0), 0.5 * mTowerWidthXY.at(1),
-    0.15 * p_clust->cluster()->energy()};
-  // - set lower and upper physical limits of fit parameters = start +/- delta
-  //   The parameters will stay within these ranges during the fit
+    0.15 * cluster->energy()};
+  // Set lower and upper physical limits of fit parameters = start +/- delta
+  // The parameters will stay within these ranges during the fit
   std::vector<double> lower, upper;
   for (unsigned i(0); i < start.size(); ++i) {
     lower.push_back(start.at(i) - delta.at(i));
     upper.push_back(start.at(i) + delta.at(i));
   }  // for
   PhotonList photons;
-  Double_t chiSq = mFitter->fit(start, std::vector<double>(),
-                                lower, upper, &photons);
+  Double_t chiSquare = mFitter->fit(start, std::vector<double>(),
+                                    lower, upper, &photons);
   if (photons.empty()) {  // check return status in case of a bad fit
     LOG_ERROR << "1-photon Minuit fit returns error!" << endm;
   }  // if
-  p_clust->photons()[0] = photons.back();
-  p_clust->cluster()->setNPhotons(photons.size());
-  int ndf = p_clust->towers().size() - 3;
-  if (ndf <= 0) {
-    ndf = 1;
+  towerCluster->photons()[0] = photons.back();
+  cluster->setNPhotons(photons.size());
+  int nDegreesOfFreedom = towerCluster->towers().size() - 3;
+  if (nDegreesOfFreedom <= 0) {
+    nDegreesOfFreedom = 1;
   }  // if
-  p_clust->setChiSquare(chiSq / ndf);
-  return p_clust->chiSquare();
+  towerCluster->setChiSquare(chiSquare / nDegreesOfFreedom);
+  return towerCluster->chiSquare();
 }
 
 Float_t StFmsEventClusterer::globalFit(unsigned nPhotons,
