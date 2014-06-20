@@ -266,15 +266,11 @@ Double_t StFmsEventClusterer::photonEnergyInCluster(
 }
 
 Double_t StFmsEventClusterer::photonEnergyInTower(
-    const StFmsTower *p_tower,
-    const StFmsFittedPhoton* p_photon) const {
-  Double_t xx = ((Double_t)p_tower->column() - 0.5) *
-                 mTowerWidthXY[0] - p_photon->xPos;
-  Double_t yy = ((Double_t)p_tower->row() - 0.5) *
-                 mTowerWidthXY[1] - p_photon->yPos;
-  Double_t eSS = p_photon->energy *
-                 mFitter->showerShapeFunction()->Eval(xx, yy, 0);
-  return eSS;
+    const StFmsTower* tower,
+    const StFmsFittedPhoton* photon) const {
+  double x = (tower->column() - 0.5) * mTowerWidthXY[0] - photon->xPos;
+  double y = (tower->row() - 0.5) * mTowerWidthXY[1] - photon->yPos;
+  return photon->energy * mFitter->showerShapeFunction()->Eval(x, y);
 }
 
 Float_t StFmsEventClusterer::fitOnePhoton(StFmsTowerCluster* p_clust) {
