@@ -256,13 +256,18 @@ Int_t StFmsEventClusterer::fitEvent() {
     towerList.push_back(&(*i));
   }  // for
   mClusterFinder.findClusters(&towerList, &mClusters);
-  // Cluster energy should be at least 2 GeV (parameter "minRealClusterEne")
-  /** \todo Use detector ID enums here */
-  if (mDetectorId == 8 || mDetectorId == 9) {
-    mClusters.remove_if(IsBadCluster(0.75, 25));
-  } else {  // Different cuts for small cell
-    mClusters.remove_if(IsBadCluster(2.0, 49));
-  }  // if
+  switch (mDetectorId) {
+    case kFmsNorthLarge:  // Deliberate fall-through
+    case kFmsSouthLarge:
+      mClusters.remove_if(IsBadCluster(0.75, 25));
+      break;
+    case kFmsNorthSmall:  // Deliberate fall-through
+    case kFmsSouthSmall:
+      mClusters.remove_if(IsBadCluster(2.0, 49));
+      break;
+    default:
+      break;
+  }  // switch
   // Must do moment analysis before catagorization
   for (auto i = mClusters.begin(); i != mClusters.end(); ++i) {
     (*i)->findClusterAxis(mClusterFinder.momentEnergyCutoff());
