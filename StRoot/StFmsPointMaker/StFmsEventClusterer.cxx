@@ -466,39 +466,30 @@ Float_t StFmsEventClusterer::fit2PhotonClust(ClusterIter towerCluster) {
  chi-square over towers that do not include the supposed peak tower. 
 */
 bool StFmsEventClusterer::validate2ndPhoton(ClusterConstIter cluster) const {
-  // Select the lower-energy of the two photons
+  // Find the tower hit by the lowest energy photon in a cluster
   const StFmsFittedPhoton* photon = findLowestEnergyPhoton(cluster->get());
-  // Tower row and column where the fitted photon of lower energy should hit
-  int column = 1 + (Int_t)(photon->xPos / mTowerWidthXY.at(0));
-  int row = 1 + (Int_t)(photon->yPos / mTowerWidthXY.at(1));
-  // Now check whether this tower is one of the non-zero towers of the cluster
-  // The temporary StFmsTower only needs row and column set for the test
+  int column = 1 + int(photon->xPos / mTowerWidthXY.at(0));
+  int row = 1 + int(photon->yPos / mTowerWidthXY.at(1));
   const StFmsTower* tower = searchClusterTowers(row, column, **cluster);
-  // If tower is non-nullptr, the photon does hit in a tower in this cluster.
+  // If tower is nullptr, the photon doesn't hit in a tower in this cluster.
   if (!tower) {
     return false;
   }  // if
-  // Now test the photon and tower properties.
   // Check if the fitted energy is too large compared to the energy of the tower
   if (tower->hit()->energy() < 0.25 * photon->energy) {
     return false;
   }  // if
-  // Check if the 2nd photon's "High-Tower" enery is too large compared to its
+  // Check if the 2nd photon's "high-hower" enery is too large compared to its
   // fitted energy. If so, it is probably splitting one photon into two
-  Double_t eSS = photonEnergyInTower(tower, photon);
-  if (tower->hit()->energy() > 1.5 * eSS) {
+  if (tower->hit()->energy() > 1.5 * photonEnergyInTower(tower, photon)) {
     return false;
   }  // if
   // Check that the 2nd photon is not near the edge of another cluster
-  // Namely, we check what would be the energy deposited in other clusters by
-  // this photon vs. energy deposited in its own cluster
-  // If the ratio is too high, this fitted photon is probably a bogus one
-  Double_t energyInOwnCluster = photonEnergyInCluster(cluster->get(), photon);
-  // Loop over all clusters except its own
+  const double energyInOwnCluster =
+    photonEnergyInCluster(cluster->get(), photon);
   for (ClusterConstIter i = mClusters.begin(); i != mClusters.end(); ++i) {
     if (i != cluster) {  // Skip the photon's own cluster
-      if (photonEnergyInCluster(i->get(), photon) >
-          (0.2 * energyInOwnCluster)) {
+      if (photonEnergyInCluster(i->get(), photon) > 0.2 * energyInOwnCluster) {
         return false;  // Stop as soon as we fail for one cluster
       }  // if
     }  // if
