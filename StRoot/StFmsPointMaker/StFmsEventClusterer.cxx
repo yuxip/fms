@@ -308,22 +308,18 @@ Float_t StFmsEventClusterer::fitOnePhoton(StFmsTowerCluster* p_clust) {
   return p_clust->chiSquare();
 }
 
-Float_t StFmsEventClusterer::globalFit(Int_t nPhotons,
-                                       const Int_t nClusters,
+Float_t StFmsEventClusterer::globalFit(unsigned nPhotons,
+                                       const unsigned nClusters,
                                        ClusterIter first) {
-  if (nClusters < 1) {
-    LOG_ERROR << "Global fit cannot fit " << nClusters << " clusters" << endm;
-    return -9999;
-  }  // if
   ClusterIter end = first;
   std::advance(end, nClusters);  // Marks end point for cluster iteration
-  const int totalPhotons = sumPhotonsOverClusters(first, end);
+  const unsigned totalPhotons = sumPhotonsOverClusters(first, end);
   if (totalPhotons != nPhotons) {
     LOG_WARN << "Global fit called for " << nPhotons << " but found " <<
       totalPhotons << "... will proceed with " << totalPhotons << endm;
     nPhotons = totalPhotons;
   }  // if
-  if (nPhotons > StFmsClusterFitter::maxNFittedPhotons() || nPhotons < 2) {
+  if (int(nPhotons) > StFmsClusterFitter::maxNFittedPhotons() || nPhotons < 2) {
     LOG_ERROR << "Global fit cannot fit " << nPhotons << " photons" << endm;
     return -9999;
   }  // if

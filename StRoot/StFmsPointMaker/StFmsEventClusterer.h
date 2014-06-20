@@ -126,7 +126,7 @@ class StFmsEventClusterer: public TObject {
 
    Returns the &chi;<sup>2</sup> of the fit.
    */
-  Float_t globalFit(const Int_t nPhotons, const Int_t nClusters,
+  Float_t globalFit(unsigned nPhotons, unsigned nClusters,
                     ClusterIter first);
   /*
    Special 2-photon fit for a single cluster.
