@@ -138,7 +138,7 @@ void setup2PhotonFitParameters(std::vector<double>& start,
     y * cluster->y(),
     2.2 * x * cluster->sigmaMax(),
     towerCluster->thetaAxis(),
-    0.1 * (2 * gRandom->Rndm() - 1),
+    gRandom->Uniform(-0.1, 0.1),
     cluster->energy(),
   };
   steps = {0, 0.02, 0.02, 0.01, 0.01, 0.01, 0.1};
