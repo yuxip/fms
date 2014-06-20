@@ -257,62 +257,41 @@ Int_t StFmsEventClusterer::fitEvent() {
   const double max2PhotonFitChi2 = 10.;
   for (auto cluster = mClusters.begin(); cluster != mClusters.end();
        ++cluster) {
-    Int_t clustCatag = mClusterFinder.categorise(cluster->get());
+    Int_t category = mClusterFinder.categorise(cluster->get());
     // point to the real TObjArray that contains the towers to be fitted
     // it is the same tower array for the cluster or all alternative clusters
     mFitter->setTowers(&(*cluster)->towers());
     // Number of Degree of Freedom for the fit
-    if (clustCatag == k1PhotonCluster) {
-      // Do 1-photon fit
+    if (category == k1PhotonCluster) {
       fitOnePhoton(cluster->get());
-    } else if (clustCatag == k2PhotonCluster) {
-      // Do 2-photon fit
+    } else if (category == k2PhotonCluster) {
       fit2PhotonClust(cluster);
       badEvent = (*cluster)->chiSquare() > max2PhotonFitChi2;
-    } else if (clustCatag == kAmbiguousCluster) {
-      // for catagory-0 cluster, first try 1-photon fit!
-      // If the fit is good enough, it is 1-photon. Else also
-      // try 2-photon fit, and find the best fit (including 1-photon fit).
-      Bool_t is2Photon = true;
-      double chiSq1 = fitOnePhoton(cluster->get());
+    } else if (category == kAmbiguousCluster) {
+      // First try 1-photon fit. If the fit is good enough, it is 1-photon.
+      // Otherwise try a 2-photon fit and choose the better result.
+      const double chiSq1 = fitOnePhoton(cluster->get());
       const StFmsFittedPhoton photon = (*cluster)->photons()[0];  // Cache
-      double chiSq2(NAN);  // Only set if do 2-photon fit
       // Decide if this 1-photon fit is good enough
-      if (chiSq1 < 5.) {
-        is2Photon = false;
-      } else {
-        // The 1-photon fit isn't good enough, so try 2-photon fit
-        chiSq2 = fit2PhotonClust(cluster);
-        // Check that the 2-photon fit didn't result in a bogus 2nd photon
-        if (validate2ndPhoton(cluster)) {
-          // If the 2nd photon in the 2-photon cluster is real, select 1- or 2-
-          // photon based on fit chi2/ndf.
-          is2Photon = chiSq2 <= chiSq1;
-        } else {
-          // The 2nd photon was bogus, it must really be a 1-photon cluster,
-          // even though the chi2 is poor
-          is2Photon = false;
-        }  // if (validate2ndPhoton...)
-      }  // if (chiSq1...)
-      // Now fill in the fit result, either 1- or 2-photon
-      if (is2Photon) {
-        // 2-photon fit is better
+      if (chiSq1 >= 5.) {
+        if (fit2PhotonClust(cluster) <= chiSq1 && validate2ndPhoton(cluster)) {
+          category = k2PhotonCluster;
+        }  // if
+      }  // if
+      if (category == k2PhotonCluster) {  // 2-photon fit is better
         (*cluster)->cluster()->setNPhotons(2);
-        (*cluster)->setChiSquare(chiSq2);
-        // Flag the event as bad if the fit chi2/ndf is too bad
         badEvent = (*cluster)->chiSquare() > max2PhotonFitChi2;
-      } else {
-        // 1-photon fit is better
+      } else {  // 1-photon fit is better
         (*cluster)->cluster()->setNPhotons(1);
-        (*cluster)->setChiSquare(chiSq1);
+        (*cluster)->setChiSquare(chiSq1);  // Was changed by 2-photon fit
         (*cluster)->photons()[0] = photon;
       }  // if (is2Photon)
     } else {  // Invalid cluster category
       // should not happen!
       LOG_ERROR << "Your logic of catagory is wrong! Something impossible " <<
-        "happens! This a catagory-" << clustCatag <<
+        "happens! This a catagory-" << category <<
         " clusters! Don't know how to fit it!" << endm;
-    }  // if (clustCatag...)
+    }  // if (category...)
   }  // Loop over all real clusters
   const int nPh = sumPhotonsOverClusters(mClusters);
   if (nPh > StFmsClusterFitter::maxNFittedPhotons()) {
