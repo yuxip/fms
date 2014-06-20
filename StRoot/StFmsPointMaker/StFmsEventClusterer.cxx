@@ -254,20 +254,18 @@ Int_t StFmsEventClusterer::fitEvent() {
 }
 
 Double_t StFmsEventClusterer::photonEnergyInCluster(
-    Double_t widthLG,
     const StFmsTowerCluster *p_clust,
     const StFmsFittedPhoton *p_photon) const {
   Double_t eSS = 0;
   // Sum depositions by the photon in all towers of this cluster
   const Towers& towers = p_clust->towers();
   for (auto tower = towers.begin(); tower != towers.end(); ++tower) {
-    eSS += photonEnergyInTower(widthLG, *tower, p_photon);
+    eSS += photonEnergyInTower(*tower, p_photon);
   }  // for
   return eSS;
 }
 
 Double_t StFmsEventClusterer::photonEnergyInTower(
-    Double_t widthLG,
     const StFmsTower *p_tower,
     const StFmsFittedPhoton* p_photon) const {
   Double_t xx = ((Double_t)p_tower->column() - 0.5) *
@@ -482,7 +480,7 @@ bool StFmsEventClusterer::validate2ndPhoton(ClusterConstIter cluster) const {
   }  // if
   // Check if the 2nd photon's "High-Tower" enery is too large compared to its
   // fitted energy. If so, it is probably splitting one photon into two
-  Double_t eSS = photonEnergyInTower(mTowerWidthXY[0], tower, photon);
+  Double_t eSS = photonEnergyInTower(tower, photon);
   if (tower->hit()->energy() > 1.5 * eSS) {
     return false;
   }  // if
@@ -490,12 +488,11 @@ bool StFmsEventClusterer::validate2ndPhoton(ClusterConstIter cluster) const {
   // Namely, we check what would be the energy deposited in other clusters by
   // this photon vs. energy deposited in its own cluster
   // If the ratio is too high, this fitted photon is probably a bogus one
-  Double_t energyInOwnCluster =
-    photonEnergyInCluster(mTowerWidthXY[0], cluster->get(), photon);
+  Double_t energyInOwnCluster = photonEnergyInCluster(cluster->get(), photon);
   // Loop over all clusters except its own
   for (ClusterConstIter i = mClusters.begin(); i != mClusters.end(); ++i) {
     if (i != cluster) {  // Skip the photon's own cluster
-      if (photonEnergyInCluster(mTowerWidthXY[0], i->get(), photon) >
+      if (photonEnergyInCluster(i->get(), photon) >
           (0.2 * energyInOwnCluster)) {
         return false;  // Stop as soon as we fail for one cluster
       }  // if

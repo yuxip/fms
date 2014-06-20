@@ -94,15 +94,14 @@ class StFmsEventClusterer: public TObject {
 
    This is the sum over all towers making the cluster.
    */
-  Double_t photonEnergyInCluster(Double_t towerWidth,
-                                 const StFmsTowerCluster* cluster,
+  Double_t photonEnergyInCluster(const StFmsTowerCluster* cluster,
                                  const StFmsFittedPhoton* photon) const;
   /**
    The energy deposit in a tower by a photon.
 
    Calculated using the shower-shape function.
    */
-  Double_t photonEnergyInTower(Double_t towerWidth, const StFmsTower* tower,
+  Double_t photonEnergyInTower(const StFmsTower* tower,
                                const StFmsFittedPhoton* photon) const;
   /**
    Perform a 1-photon fit on a single cluster.
