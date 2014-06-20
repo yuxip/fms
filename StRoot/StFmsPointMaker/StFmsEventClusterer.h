@@ -143,6 +143,16 @@ class StFmsEventClusterer: public TObject {
    */
   Float_t fit2PhotonClust(ClusterIter cluster);
   /*
+   Fit an ambiguous cluster (one that isn't obviously 1- or 2-photon).
+
+   First tries a 1-photon fit. If that fit is good enough, it is set as a
+   1-photon cluster.
+   Otherwise tries a 2-photon fit and chooses the better result.
+
+   Returns the category of the cluster (EFmsClusterCategory in StFmsCluster).
+   */
+  Int_t fitAmbiguousCluster(ClusterIter cluster);
+  /*
    Run tests on the lower-energy photon in a 2-photon cluster.
 
    Return true if the photon passes tests, in which case it is a real photon.

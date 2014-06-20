@@ -254,7 +254,6 @@ Int_t StFmsEventClusterer::fitEvent() {
   // Loop over clusters, catagorize, guess the photon locations for cat 0 or 2
   // clusters then fit, compare, and choose the best fit
   bool badEvent = false;
-  const double max2PhotonFitChi2 = 10.;
   for (auto cluster = mClusters.begin(); cluster != mClusters.end();
        ++cluster) {
     Int_t category = mClusterFinder.categorise(cluster->get());
@@ -267,23 +266,7 @@ Int_t StFmsEventClusterer::fitEvent() {
     } else if (category == k2PhotonCluster) {
       fit2PhotonClust(cluster);
     } else if (category == kAmbiguousCluster) {
-      // First try 1-photon fit. If the fit is good enough, it is 1-photon.
-      // Otherwise try a 2-photon fit and choose the better result.
-      const double chiSq1 = fitOnePhoton(cluster->get());
-      const StFmsFittedPhoton photon = (*cluster)->photons()[0];  // Cache
-      // Decide if this 1-photon fit is good enough
-      if (chiSq1 >= 5.) {
-        if (fit2PhotonClust(cluster) <= chiSq1 && validate2ndPhoton(cluster)) {
-          category = k2PhotonCluster;
-        }  // if
-      }  // if
-      if (category == k2PhotonCluster) {  // 2-photon fit is better
-        (*cluster)->cluster()->setNPhotons(2);
-      } else {  // 1-photon fit is better
-        (*cluster)->cluster()->setNPhotons(1);
-        (*cluster)->setChiSquare(chiSq1);  // Was changed by 2-photon fit
-        (*cluster)->photons()[0] = photon;
-      }  // if (is2Photon)
+      category = fitAmbiguousCluster(cluster);
     } else {  // Invalid cluster category
       // should not happen!
       LOG_ERROR << "Your logic of catagory is wrong! Something impossible " <<
@@ -441,6 +424,28 @@ Float_t StFmsEventClusterer::fit2PhotonClust(ClusterIter towerCluster) {
     int((*towerCluster)->towers().size() - 6));
   (*towerCluster)->setChiSquare(chiSquare / nDegreesOfFreedom);
   return (*towerCluster)->chiSquare();
+}
+
+/* Distinguish an ambiguous cluster as either 1- or 2-photon */
+Int_t StFmsEventClusterer::fitAmbiguousCluster(ClusterIter towerCluster) {
+  const double chiSquare1Photon = fitOnePhoton(towerCluster->get());
+  const StFmsFittedPhoton photon = (*towerCluster)->photons()[0];  // Cache
+  // Decide if this 1-photon fit is good enough, if not try 2-photon fit
+  int category = k1PhotonCluster;
+  if (chiSquare1Photon >= 5.) {
+    if (fit2PhotonClust(towerCluster) <= chiSquare1Photon &&
+        validate2ndPhoton(towerCluster)) {
+      category = k2PhotonCluster;
+    }  // if
+  }  // if
+  if (category == k2PhotonCluster) {  // 2-photon fit is better
+    (*towerCluster)->cluster()->setNPhotons(2);
+  } else {  // 1-photon fit was better, restore it's properties
+    (*towerCluster)->setChiSquare(chiSquare1Photon);
+    (*towerCluster)->photons()[0] = photon;
+    (*towerCluster)->cluster()->setNPhotons(1);
+  }  // if
+  return category;
 }
 
 /*
