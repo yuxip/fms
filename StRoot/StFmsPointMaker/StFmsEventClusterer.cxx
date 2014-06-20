@@ -417,12 +417,13 @@ Float_t StFmsEventClusterer::fit2PhotonClust(ClusterIter towerCluster) {
   PhotonList photons;
   Double_t chiSquare = mFitter->fit2PhotonCluster(start, steps, lower, upper,
                                                   &photons);
-  if (photons.empty()) {
-    LOG_WARN << "Minuit fit returns error!" << endm;
+  if (photons.size() == 2) {
+    (*towerCluster)->photons()[0] = photons.front();
+    (*towerCluster)->photons()[1] = photons.back();
+  } else {
+    LOG_WARN << "2-photon Minuit fit found " << photons.size() << " photons"
+      << endm;
   }  // if
-  // Do a global fit, using result of 1st fit as starting point
-  (*towerCluster)->photons()[0] = photons.front();
-  (*towerCluster)->photons()[1] = photons.back();
   (*towerCluster)->cluster()->setNPhotons(photons.size());
   chiSquare = globalFit(2, 1, towerCluster);
   int nDegreesOfFreedom = (*towerCluster)->towers().size() - 6;
