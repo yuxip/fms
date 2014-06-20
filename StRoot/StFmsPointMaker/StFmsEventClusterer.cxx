@@ -267,8 +267,8 @@ Double_t StFmsEventClusterer::photonEnergyInCluster(
 Double_t StFmsEventClusterer::photonEnergyInTower(
     const StFmsTower* tower,
     const StFmsFittedPhoton* photon) const {
-  double x = (tower->column() - 0.5) * mTowerWidthXY[0] - photon->xPos;
-  double y = (tower->row() - 0.5) * mTowerWidthXY[1] - photon->yPos;
+  double x = (tower->column() - 0.5) * mTowerWidthXY.at(0) - photon->xPos;
+  double y = (tower->row() - 0.5) * mTowerWidthXY.at(1) - photon->yPos;
   return photon->energy * mFitter->showerShapeFunction()->Eval(x, y);
 }
 
@@ -278,12 +278,12 @@ Float_t StFmsEventClusterer::fitOnePhoton(StFmsTowerCluster* p_clust) {
   // for the fitting routine, plus lower and upper bounds on allowed values.
   // - set starting points for the fit parameters:
   const std::vector<double> start = {
-    1.0, mTowerWidthXY[0] * p_clust->cluster()->x(),
-    mTowerWidthXY[1] * p_clust->cluster()->y(),
+    1.0, mTowerWidthXY.at(0) * p_clust->cluster()->x(),
+    mTowerWidthXY.at(1) * p_clust->cluster()->y(),
     p_clust->cluster()->energy()};
   // - maximum deviations from the start points during fit:
   const std::vector<double> delta = {
-    0.5, 0.5 * mTowerWidthXY[0], 0.5 * mTowerWidthXY[1],
+    0.5, 0.5 * mTowerWidthXY.at(0), 0.5 * mTowerWidthXY.at(1),
     0.15 * p_clust->cluster()->energy()};
   // - set lower and upper physical limits of fit parameters = start +/- delta
   //   The parameters will stay within these ranges during the fit
@@ -385,19 +385,19 @@ Float_t StFmsEventClusterer::fit2PhotonClust(ClusterIter p_clust) {
   //  - z_gg:        should just let it vary from -1 to 1.
   //  - d_gg:        a lower bound is given by r=sqrt(sigmaX^2+sigmaY^2).
   //                 d_gg > Max( 2.5*(r-0.6), 0.5 )
-  start[1]  = mTowerWidthXY[0] * (*p_clust)->cluster()->x();
-  start[2]  = mTowerWidthXY[1] * (*p_clust)->cluster()->y();
+  start[1]  = mTowerWidthXY.at(0) * (*p_clust)->cluster()->x();
+  start[2]  = mTowerWidthXY.at(1) * (*p_clust)->cluster()->y();
   start[6]  = (*p_clust)->cluster()->energy();
   start[4]  = (*p_clust)->thetaAxis();
   const float dggPara[6] = {18.0, 2.2, 0.5, 60.0, 0.085, 3.5};
-  start[3] = dggPara[1] * mTowerWidthXY[0] * (*p_clust)->cluster()->sigmaMax();
+  start[3] = dggPara[1] * mTowerWidthXY.at(0) * (*p_clust)->cluster()->sigmaMax();
   // Randomize the starting point of Z_gg (from -0.1 to 0.1)
   start[5]  = 0.1 * (2 * gRandom->Rndm() - 1);
-  lower[1] = start[1] - 0.2 * mTowerWidthXY[0];
-  lower[2] = start[2] - 0.2 * mTowerWidthXY[1];
+  lower[1] = start[1] - 0.2 * mTowerWidthXY.at(0);
+  lower[2] = start[2] - 0.2 * mTowerWidthXY.at(1);
   lower[6] = start[6] * (1. - 0.05);
-  upper[1]  = start[1] + 0.2 * mTowerWidthXY[0];
-  upper[2]  = start[2] + 0.2 * mTowerWidthXY[1];
+  upper[1]  = start[1] + 0.2 * mTowerWidthXY.at(0);
+  upper[2]  = start[2] + 0.2 * mTowerWidthXY.at(1);
   upper[6]  = start[6] * (1. + 0.05);
   lower[4] = start[4] - maxTheta;
   lower[5] = - 1.0;
@@ -405,7 +405,7 @@ Float_t StFmsEventClusterer::fit2PhotonClust(ClusterIter p_clust) {
   if (lower[3] < dggPara[2]) {
     lower[3] = dggPara[2];
   }  // if
-  lower[3] *= mTowerWidthXY[0];
+  lower[3] *= mTowerWidthXY.at(0);
   if (lower[3] >= start[3]) {
     lower[3] = start[3] * 0.9;
   }  // if
@@ -413,7 +413,7 @@ Float_t StFmsEventClusterer::fit2PhotonClust(ClusterIter p_clust) {
   if (upper[3] > dggPara[5]) {
     upper[3] = dggPara[5];
   }  // if
-  upper[3] *= mTowerWidthXY[0];
+  upper[3] *= mTowerWidthXY.at(0);
   if (upper[3] <= start[3]) {
     upper[3] = start[3] * 1.1;
   }  // if
@@ -455,8 +455,8 @@ bool StFmsEventClusterer::validate2ndPhoton(ClusterConstIter cluster) const {
   // Select the lower-energy of the two photons
   const StFmsFittedPhoton* photon = findLowestEnergyPhoton(cluster->get());
   // Tower row and column where the fitted photon of lower energy should hit
-  int column = 1 + (Int_t)(photon->xPos / mTowerWidthXY[0]);
-  int row = 1 + (Int_t)(photon->yPos / mTowerWidthXY[1]);
+  int column = 1 + (Int_t)(photon->xPos / mTowerWidthXY.at(0));
+  int row = 1 + (Int_t)(photon->yPos / mTowerWidthXY.at(1));
   // Now check whether this tower is one of the non-zero towers of the cluster
   // The temporary StFmsTower only needs row and column set for the test
   const StFmsTower* tower = searchClusterTowers(row, column, **cluster);
