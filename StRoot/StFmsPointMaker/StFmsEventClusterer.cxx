@@ -357,27 +357,28 @@ Float_t StFmsEventClusterer::globalFit(unsigned nPhotons,
   return chiSquare;
 }
 
-Float_t StFmsEventClusterer::fit2PhotonClust(ClusterIter towerCluster) {
-  const std::vector<double> steps = {0, 0.02, 0.02, 0.01, 0.01, 0.01, 0.1};
-  auto cluster = (*towerCluster)->cluster();
-  double maxTheta = cluster->sigmaMin() / cluster->sigmaMax() / 2.8;
-  maxTheta = std::min(maxTheta, TMath::PiOver2());
-  // Starting position, lower and upper limit of parameters
-  const double x = mTowerWidthXY.at(0), y = mTowerWidthXY.at(1);
-  // See SFmsClusterFitter::fit2PhotonCluster() for parameter meanings
-  std::vector<double> start = {
+// See SFmsClusterFitter::fit2PhotonCluster() for parameter meanings
+void setup2PhotonFitParameters(std::vector<double>& start,
+                               std::vector<double>& steps,
+                               std::vector<double>& lower,
+                               std::vector<double>& upper,
+                               double x, double y,
+                               const StFmsTowerCluster* towerCluster) {
+  const auto cluster = towerCluster->cluster();
+  start = {
     2,
     x * cluster->x(),
     y * cluster->y(),
     2.2 * x * cluster->sigmaMax(),
-    (*towerCluster)->thetaAxis(),
+    towerCluster->thetaAxis(),
     0.1 * (2 * gRandom->Rndm() - 1),
     cluster->energy(),
   };
-
+  steps = {0, 0.02, 0.02, 0.01, 0.01, 0.01, 0.1};
   const double sigmaMaxE = cluster->sigmaMax() * cluster->energy();
-
-  std::vector<double> lower = {
+  double maxTheta = cluster->sigmaMin() / cluster->sigmaMax() / 2.8;
+  maxTheta = std::min(maxTheta, TMath::PiOver2());
+  lower = {
     1.5,
     start.at(1) - 0.2 * x,
     start.at(2) - 0.2 * y,
@@ -386,9 +387,7 @@ Float_t StFmsEventClusterer::fit2PhotonClust(ClusterIter towerCluster) {
     -1.0,
     start.at(6) * (1. - 0.05)
   };
-  lower.at(3) = std::min(lower.at(3), 0.9 * start.at(3));
-
-  std::vector<double> upper = {
+  upper = {
     2.5,
     start.at(1) + 0.2 * x,
     start.at(2) + 0.2 * y,
@@ -397,8 +396,17 @@ Float_t StFmsEventClusterer::fit2PhotonClust(ClusterIter towerCluster) {
     1.0,
     start.at(6) * (1. + 0.05)
   };
+  // With the above approach the limits on parameter 3 can sometimes go beyond
+  // sensible values, so limit them.
+  lower.at(3) = std::min(lower.at(3), start.at(3) * 0.9);
   upper.at(3) = std::max(upper.at(3), start.at(3) * 1.1);
+}
 
+Float_t StFmsEventClusterer::fit2PhotonClust(ClusterIter towerCluster) {
+  std::vector<double> start, steps, lower, upper;
+  setup2PhotonFitParameters(start, steps, lower, upper,
+                            mTowerWidthXY.at(0), mTowerWidthXY.at(1),
+                            towerCluster->get());
   // Call special 2-photon-cluster mFitter
   PhotonList photons;
   Double_t chiSquare = mFitter->fit2PhotonCluster(start, steps, lower, upper,
@@ -409,7 +417,7 @@ Float_t StFmsEventClusterer::fit2PhotonClust(ClusterIter towerCluster) {
   // Do a global fit, using result of 1st fit as starting point
   (*towerCluster)->photons()[0] = photons.front();
   (*towerCluster)->photons()[1] = photons.back();
-  cluster->setNPhotons(photons.size());
+  (*towerCluster)->cluster()->setNPhotons(photons.size());
   chiSquare = globalFit(2, 1, towerCluster);
   int nDegreesOfFreedom = (*towerCluster)->towers().size() - 6;
   if (nDegreesOfFreedom < 1) {
