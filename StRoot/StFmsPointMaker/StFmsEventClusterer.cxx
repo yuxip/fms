@@ -199,6 +199,32 @@ struct TwoPhotonFitParameters {
     upper.at(3) = std::max(upper.at(3), start.at(3) * 1.1);
   }
 };
+
+typedef ClusterList::iterator ClusterIter;
+/* Gives fit parameters for global photon fit */
+struct GlobalPhotonFitParameters {
+  std::vector<double> start, lower, upper;
+  GlobalPhotonFitParameters(unsigned nPhotons,
+                            ClusterIter first, ClusterIter end)
+    // Initialise N-photons parameters as the first element
+    : start(1, nPhotons), lower(1, 0.5),
+      upper(1, StFmsClusterFitter::maxNFittedPhotons() + 0.5) {
+    // Append (x, y, E) fit parameters for each photon
+    for (auto cluster = first; cluster != end; ++cluster) {
+      for (int i = 0; i < (*cluster)->cluster()->nPhotons(); i++) {
+        start.push_back((*cluster)->photons()[i].xPos);
+        lower.push_back(start.back() - 1.25);
+        upper.push_back(start.back() + 1.25);
+        start.push_back((*cluster)->photons()[i].yPos);
+        lower.push_back(start.back() - 1.25);
+        upper.push_back(start.back() + 1.25);
+        start.push_back((*cluster)->photons()[i].energy);
+        lower.push_back(start.back() * (1 - 0.3));  // Limit to +/- 30% energy
+        upper.push_back(start.back() * (1 + 0.3));
+      }  // for
+    }  // for
+  }
+};
 }  // unnamed namespace
 
 StFmsEventClusterer::StFmsEventClusterer(const StFmsGeometry* geometry,
@@ -386,26 +412,11 @@ Float_t StFmsEventClusterer::globalFit(unsigned nPhotons,
     LOG_ERROR << "Global fit cannot fit " << nPhotons << " photons" << endm;
     return -9999;
   }  // if
-  // Fit has 1 parameter for the number of photons plus 3 per photon (x, y, E)
-  std::vector<double> start(1, nPhotons);
-  std::vector<double> lower(1, 0.5);
-  std::vector<double> upper(1, StFmsClusterFitter::maxNFittedPhotons() + 0.5);
-  for (ClusterIter cluster = first; cluster != end; ++cluster) {
-    for (int i = 0; i < (*cluster)->cluster()->nPhotons(); i++) {
-      start.push_back((*cluster)->photons()[i].xPos);
-      lower.push_back(start.back() - 1.25);
-      upper.push_back(start.back() + 1.25);
-      start.push_back((*cluster)->photons()[i].yPos);
-      lower.push_back(start.back() - 1.25);
-      upper.push_back(start.back() + 1.25);
-      start.push_back((*cluster)->photons()[i].energy);
-      lower.push_back(start.back() * (1 - 0.3));  // Limit to +/- 30% energy
-      upper.push_back(start.back() * (1 + 0.3));
-    }  // for
-  }  // for
+  GlobalPhotonFitParameters parameters(nPhotons, first, end);
   PhotonList photons;
-  Double_t chiSquare = mFitter->fit(start, std::vector<double>(),
-                                    lower, upper, &photons);
+  Double_t chiSquare = mFitter->fit(parameters.start, std::vector<double>(),
+                                    parameters.lower, parameters.upper,
+                                    &photons);
   if (photons.size() == nPhotons) {
     // Put the fit result back in the clusters
     PhotonList::const_iterator photon = photons.begin();
