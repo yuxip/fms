@@ -254,15 +254,14 @@ Int_t StFmsEventClusterer::fitEvent() {
 }
 
 Double_t StFmsEventClusterer::photonEnergyInCluster(
-    const StFmsTowerCluster *p_clust,
-    const StFmsFittedPhoton *p_photon) const {
-  Double_t eSS = 0;
-  // Sum depositions by the photon in all towers of this cluster
-  const Towers& towers = p_clust->towers();
+    const StFmsTowerCluster* cluster,
+    const StFmsFittedPhoton* photon) const {
+  double energy = 0.;
+  const Towers& towers = cluster->towers();
   for (auto tower = towers.begin(); tower != towers.end(); ++tower) {
-    eSS += photonEnergyInTower(*tower, p_photon);
+    energy += photonEnergyInTower(*tower, photon);
   }  // for
-  return eSS;
+  return energy;
 }
 
 Double_t StFmsEventClusterer::photonEnergyInTower(
