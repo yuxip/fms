@@ -257,32 +257,32 @@ Int_t StFmsEventClusterer::fitEvent() {
   for (auto cluster = mClusters.begin(); cluster != mClusters.end();
        ++cluster) {
     Int_t category = mClusterFinder.categorise(cluster->get());
-    // point to the real TObjArray that contains the towers to be fitted
-    // it is the same tower array for the cluster or all alternative clusters
     mFitter->setTowers(&(*cluster)->towers());
-    // Number of Degree of Freedom for the fit
-    if (category == k1PhotonCluster) {
-      fitOnePhoton(cluster->get());
-    } else if (category == k2PhotonCluster) {
-      fit2PhotonClust(cluster);
-    } else if (category == kAmbiguousCluster) {
-      category = fitAmbiguousCluster(cluster);
-    } else {  // Invalid cluster category
-      // should not happen!
-      LOG_ERROR << "Your logic of catagory is wrong! Something impossible " <<
-        "happens! This a catagory-" << category <<
-        " clusters! Don't know how to fit it!" << endm;
-    }  // if (category...)
+    switch (category) {
+      case k1PhotonCluster:
+        fitOnePhoton(cluster->get());
+        break;
+      case k2PhotonCluster:
+        fit2PhotonClust(cluster);
+        break;
+      case kAmbiguousCluster:
+        category = fitAmbiguousCluster(cluster);
+        break;
+      default:
+        LOG_ERROR << "The logic of cluster catagory is wrong and something "
+          << "impossible has happened! This a catagory-" << category <<
+          " cluster! Do not know how to fit it!" << endm;
+        break;
+    }  // switch
     if (category == k2PhotonCluster && (*cluster)->chiSquare() > 10.) {
       badEvent = true;
     }  // if
   }  // Loop over all real clusters
-  const int nPh = sumPhotonsOverClusters(mClusters);
-  if (nPh > StFmsClusterFitter::maxNFittedPhotons()) {
-    // myFitter can only do up to "maxNFittedPhotons()"-photon fit
-    LOG_WARN << "Can not fit " << nPh << " (more than " <<
-      StFmsClusterFitter::maxNFittedPhotons() << " photons!" << endm;
-    return nPh;
+  const int nPhotons = sumPhotonsOverClusters(mClusters);
+  if (nPhotons > StFmsClusterFitter::maxNFittedPhotons()) {
+    LOG_WARN << "Can not fit " << nPhotons << " (more than " <<
+      StFmsClusterFitter::maxNFittedPhotons() << ") photons!" << endm;
+    return nPhotons;
   }  // if
   // For global fit, add all towers from all clusters
   Towers allTow;
@@ -295,12 +295,12 @@ Int_t StFmsEventClusterer::fitEvent() {
   // Only do global fit for 2 or more clusters (2-photon fit for one cluster
   // already has global fit)
   if (mClusters.size() > 1) {
-    globalFit(nPh, mClusters.size(), mClusters.begin());
+    globalFit(nPhotons, mClusters.size(), mClusters.begin());
     // Check for errors in the global fit - the number of photons returned by
     // the global fit should equal the sum of photons in the fitted clusters
     const int iph = sumPhotonsOverClusters(mClusters);
-    if (iph != nPh) {
-      LOG_ERROR << "total nPh=" << nPh << " iPh=" << iph << endm;
+    if (iph != nPhotons) {
+      LOG_ERROR << "total nPhotons = " << nPhotons << " iPh = " << iph << endm;
     }  // if
   }  // if (mClusters.size() > 1)
   return !badEvent;
