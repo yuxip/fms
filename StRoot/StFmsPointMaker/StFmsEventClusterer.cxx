@@ -300,10 +300,8 @@ Float_t StFmsEventClusterer::fitOnePhoton(StFmsTowerCluster* towerCluster) {
   }  // if
   towerCluster->photons()[0] = photons.back();
   cluster->setNPhotons(photons.size());
-  int nDegreesOfFreedom = towerCluster->towers().size() - 3;
-  if (nDegreesOfFreedom <= 0) {
-    nDegreesOfFreedom = 1;
-  }  // if
+  const int nDegreesOfFreedom =
+    std::max(int(towerCluster->towers().size()) - 3, 1);
   towerCluster->setChiSquare(chiSquare / nDegreesOfFreedom);
   return towerCluster->chiSquare();
 }
