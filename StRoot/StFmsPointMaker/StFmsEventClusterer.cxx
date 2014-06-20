@@ -266,7 +266,6 @@ Int_t StFmsEventClusterer::fitEvent() {
       fitOnePhoton(cluster->get());
     } else if (category == k2PhotonCluster) {
       fit2PhotonClust(cluster);
-      badEvent = (*cluster)->chiSquare() > max2PhotonFitChi2;
     } else if (category == kAmbiguousCluster) {
       // First try 1-photon fit. If the fit is good enough, it is 1-photon.
       // Otherwise try a 2-photon fit and choose the better result.
@@ -280,7 +279,6 @@ Int_t StFmsEventClusterer::fitEvent() {
       }  // if
       if (category == k2PhotonCluster) {  // 2-photon fit is better
         (*cluster)->cluster()->setNPhotons(2);
-        badEvent = (*cluster)->chiSquare() > max2PhotonFitChi2;
       } else {  // 1-photon fit is better
         (*cluster)->cluster()->setNPhotons(1);
         (*cluster)->setChiSquare(chiSq1);  // Was changed by 2-photon fit
@@ -292,6 +290,9 @@ Int_t StFmsEventClusterer::fitEvent() {
         "happens! This a catagory-" << category <<
         " clusters! Don't know how to fit it!" << endm;
     }  // if (category...)
+    if (category == k2PhotonCluster && (*cluster)->chiSquare() > 10.) {
+      badEvent = true;
+    }  // if
   }  // Loop over all real clusters
   const int nPh = sumPhotonsOverClusters(mClusters);
   if (nPh > StFmsClusterFitter::maxNFittedPhotons()) {
