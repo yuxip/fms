@@ -119,6 +119,55 @@ const StFmsTower* searchClusterTowers(int row, int column,
   }  // if
   return nullptr;
 }
+
+/*
+ Yields fit parameter start points and limits for 2-photon fit.
+
+ See SFmsClusterFitter::fit2PhotonCluster() for parameter meanings
+ */
+void setup2PhotonFitParameters(std::vector<double>& start,
+                               std::vector<double>& steps,
+                               std::vector<double>& lower,
+                               std::vector<double>& upper,
+                               double x, double y,
+                               const StFmsTowerCluster* towerCluster) {
+  const auto cluster = towerCluster->cluster();
+  start = {
+    2,
+    x * cluster->x(),
+    y * cluster->y(),
+    2.2 * x * cluster->sigmaMax(),
+    towerCluster->thetaAxis(),
+    0.1 * (2 * gRandom->Rndm() - 1),
+    cluster->energy(),
+  };
+  steps = {0, 0.02, 0.02, 0.01, 0.01, 0.01, 0.1};
+  const double sigmaMaxE = cluster->sigmaMax() * cluster->energy();
+  double maxTheta = cluster->sigmaMin() / cluster->sigmaMax() / 2.8;
+  maxTheta = std::min(maxTheta, TMath::PiOver2());
+  lower = {
+    1.5,
+    start.at(1) - 0.2 * x,
+    start.at(2) - 0.2 * y,
+    std::max(18. / pow(sigmaMaxE, 0.8), 0.5) * x,
+    start.at(4) - maxTheta,
+    -1.,
+    start.at(6) * 0.95
+  };
+  upper = {
+    2.5,
+    start.at(1) + 0.2 * x,
+    start.at(2) + 0.2 * y,
+    std::min(0.085 * (60. - sigmaMaxE), 3.5) * x,
+    start.at(4) + maxTheta,
+    1.,
+    start.at(6) * 1.05
+  };
+  // With the above approach the limits on parameter 3 can sometimes go beyond
+  // sensible values, so limit them.
+  lower.at(3) = std::min(lower.at(3), start.at(3) * 0.9);
+  upper.at(3) = std::max(upper.at(3), start.at(3) * 1.1);
+}
 }  // unnamed namespace
 
 StFmsEventClusterer::StFmsEventClusterer(const StFmsGeometry* geometry,
@@ -272,6 +321,7 @@ Double_t StFmsEventClusterer::photonEnergyInTower(
   return photon->energy * mFitter->showerShapeFunction()->Eval(x, y);
 }
 
+/* 1-photon fitting function */
 Float_t StFmsEventClusterer::fitOnePhoton(StFmsTowerCluster* towerCluster) {
   auto cluster = towerCluster->cluster();
   // 4 parameters: nPhotons, cluster x, cluster y  and cluster energy.
@@ -307,6 +357,7 @@ Float_t StFmsEventClusterer::fitOnePhoton(StFmsTowerCluster* towerCluster) {
   return towerCluster->chiSquare();
 }
 
+/* Global fitting function, fitting photons across all clusters */
 Float_t StFmsEventClusterer::globalFit(unsigned nPhotons,
                                        const unsigned nClusters,
                                        ClusterIter first) {
@@ -357,57 +408,12 @@ Float_t StFmsEventClusterer::globalFit(unsigned nPhotons,
   return chiSquare;
 }
 
-// See SFmsClusterFitter::fit2PhotonCluster() for parameter meanings
-void setup2PhotonFitParameters(std::vector<double>& start,
-                               std::vector<double>& steps,
-                               std::vector<double>& lower,
-                               std::vector<double>& upper,
-                               double x, double y,
-                               const StFmsTowerCluster* towerCluster) {
-  const auto cluster = towerCluster->cluster();
-  start = {
-    2,
-    x * cluster->x(),
-    y * cluster->y(),
-    2.2 * x * cluster->sigmaMax(),
-    towerCluster->thetaAxis(),
-    0.1 * (2 * gRandom->Rndm() - 1),
-    cluster->energy(),
-  };
-  steps = {0, 0.02, 0.02, 0.01, 0.01, 0.01, 0.1};
-  const double sigmaMaxE = cluster->sigmaMax() * cluster->energy();
-  double maxTheta = cluster->sigmaMin() / cluster->sigmaMax() / 2.8;
-  maxTheta = std::min(maxTheta, TMath::PiOver2());
-  lower = {
-    1.5,
-    start.at(1) - 0.2 * x,
-    start.at(2) - 0.2 * y,
-    std::max(18. / pow(sigmaMaxE, 0.8), 0.5) * x,
-    start.at(4) - maxTheta,
-    -1.0,
-    start.at(6) * (1. - 0.05)
-  };
-  upper = {
-    2.5,
-    start.at(1) + 0.2 * x,
-    start.at(2) + 0.2 * y,
-    std::min(0.085 * (60. - sigmaMaxE), 3.5) * x,
-    start.at(4) + maxTheta,
-    1.0,
-    start.at(6) * (1. + 0.05)
-  };
-  // With the above approach the limits on parameter 3 can sometimes go beyond
-  // sensible values, so limit them.
-  lower.at(3) = std::min(lower.at(3), start.at(3) * 0.9);
-  upper.at(3) = std::max(upper.at(3), start.at(3) * 1.1);
-}
-
+/* 2-photon fitting function */
 Float_t StFmsEventClusterer::fit2PhotonClust(ClusterIter towerCluster) {
   std::vector<double> start, steps, lower, upper;
   setup2PhotonFitParameters(start, steps, lower, upper,
                             mTowerWidthXY.at(0), mTowerWidthXY.at(1),
                             towerCluster->get());
-  // Call special 2-photon-cluster mFitter
   PhotonList photons;
   Double_t chiSquare = mFitter->fit2PhotonCluster(start, steps, lower, upper,
                                                   &photons);
