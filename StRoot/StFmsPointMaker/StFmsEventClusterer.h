@@ -90,6 +90,12 @@ class StFmsEventClusterer: public TObject {
    */
   Int_t fitEvent();
   /**
+   Perform clustering for the current event.
+
+   Returns the number of found clusters.
+   */
+  Int_t findClusters();
+  /**
    The energy deposit in a cluster by a photon.
 
    This is the sum over all towers making the cluster.

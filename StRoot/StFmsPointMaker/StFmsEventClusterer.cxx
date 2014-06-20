@@ -250,28 +250,7 @@ Bool_t StFmsEventClusterer::cluster(std::vector<StFmsTower>* towerList) {
 }
 
 Int_t StFmsEventClusterer::fitEvent() {
-  // Possible alternative clusters for 1-photon fit: for catagory 0
-  StFmsClusterFinder::TowerList towerList;
-  for (auto i = mTowers->begin(); i != mTowers->end(); ++i) {
-    towerList.push_back(&(*i));
-  }  // for
-  mClusterFinder.findClusters(&towerList, &mClusters);
-  switch (mDetectorId) {
-    case kFmsNorthLarge:  // Deliberate fall-through
-    case kFmsSouthLarge:
-      mClusters.remove_if(IsBadCluster(0.75, 25));
-      break;
-    case kFmsNorthSmall:  // Deliberate fall-through
-    case kFmsSouthSmall:
-      mClusters.remove_if(IsBadCluster(2.0, 49));
-      break;
-    default:
-      break;
-  }  // switch
-  // Must do moment analysis before catagorization
-  for (auto i = mClusters.begin(); i != mClusters.end(); ++i) {
-    (*i)->findClusterAxis(mClusterFinder.momentEnergyCutoff());
-  }  // for
+  findClusters();
   // Loop over clusters, catagorize, guess the photon locations for cat 0 or 2
   // clusters then fit, compare, and choose the best fit
   bool badEvent = false;
@@ -362,6 +341,31 @@ Int_t StFmsEventClusterer::fitEvent() {
     }  // if
   }  // if (mClusters.size() > 1)
   return !badEvent;
+}
+
+Int_t StFmsEventClusterer::findClusters() {
+  StFmsClusterFinder::TowerList towerList;
+  for (auto i = mTowers->begin(); i != mTowers->end(); ++i) {
+    towerList.push_back(&(*i));
+  }  // for
+  mClusterFinder.findClusters(&towerList, &mClusters);
+  switch (mDetectorId) {
+    case kFmsNorthLarge:  // Deliberate fall-through
+    case kFmsSouthLarge:
+      mClusters.remove_if(IsBadCluster(0.75, 25));
+      break;
+    case kFmsNorthSmall:  // Deliberate fall-through
+    case kFmsSouthSmall:
+      mClusters.remove_if(IsBadCluster(2.0, 49));
+      break;
+    default:
+      break;
+  }  // switch
+  // Must do moment analysis before catagorization
+  for (auto i = mClusters.begin(); i != mClusters.end(); ++i) {
+    (*i)->findClusterAxis(mClusterFinder.momentEnergyCutoff());
+  }  // for
+  return mClusters.size();
 }
 
 Double_t StFmsEventClusterer::photonEnergyInCluster(
