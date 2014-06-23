@@ -256,7 +256,7 @@ Int_t StFmsEventClusterer::fitEvent() {
   if (nPhotons > StFmsClusterFitter::maxNFittedPhotons()) {
     LOG_WARN << "Can not fit " << nPhotons << " (more than " <<
       StFmsClusterFitter::maxNFittedPhotons() << ") photons!" << endm;
-    return nPhotons;
+    return false;
   }  // if
   // For global fit, add all towers from all clusters
   Towers allTow;
