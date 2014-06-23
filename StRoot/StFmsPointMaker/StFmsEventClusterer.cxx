@@ -251,33 +251,7 @@ Bool_t StFmsEventClusterer::cluster(std::vector<StFmsTower>* towerList) {
 
 Int_t StFmsEventClusterer::fitEvent() {
   findClusters();
-  // Loop over clusters, catagorize, guess the photon locations for cat 0 or 2
-  // clusters then fit, compare, and choose the best fit
-  bool badEvent = false;
-  for (auto cluster = mClusters.begin(); cluster != mClusters.end();
-       ++cluster) {
-    Int_t category = mClusterFinder.categorise(cluster->get());
-    mFitter->setTowers(&(*cluster)->towers());
-    switch (category) {
-      case k1PhotonCluster:
-        fitOnePhoton(cluster->get());
-        break;
-      case k2PhotonCluster:
-        fit2PhotonClust(cluster);
-        break;
-      case kAmbiguousCluster:
-        category = fitAmbiguousCluster(cluster);
-        break;
-      default:
-        LOG_ERROR << "The logic of cluster catagory is wrong and something "
-          << "impossible has happened! This a catagory-" << category <<
-          " cluster! Do not know how to fit it!" << endm;
-        break;
-    }  // switch
-    if (category == k2PhotonCluster && (*cluster)->chiSquare() > 10.) {
-      badEvent = true;
-    }  // if
-  }  // Loop over all real clusters
+  const bool success = fitClusters();
   const int nPhotons = sumPhotonsOverClusters(mClusters);
   if (nPhotons > StFmsClusterFitter::maxNFittedPhotons()) {
     LOG_WARN << "Can not fit " << nPhotons << " (more than " <<
@@ -303,7 +277,7 @@ Int_t StFmsEventClusterer::fitEvent() {
       LOG_ERROR << "total nPhotons = " << nPhotons << " iPh = " << iph << endm;
     }  // if
   }  // if (mClusters.size() > 1)
-  return !badEvent;
+  return success;
 }
 
 Int_t StFmsEventClusterer::findClusters() {
@@ -329,6 +303,36 @@ Int_t StFmsEventClusterer::findClusters() {
     (*i)->findClusterAxis(mClusterFinder.momentEnergyCutoff());
   }  // for
   return mClusters.size();
+}
+
+Bool_t StFmsEventClusterer::fitClusters() {
+  // Loop over clusters, catagorize, guess the photon locations for cat 0 or 2
+  // clusters then fit, compare, and choose the best fit
+  bool badFit = false;
+  for (auto iter = mClusters.begin(); iter != mClusters.end(); ++iter) {
+    int category = mClusterFinder.categorise(iter->get());
+    mFitter->setTowers(&(*iter)->towers());
+    switch (category) {
+      case k1PhotonCluster:
+        fitOnePhoton(iter->get());
+        break;
+      case k2PhotonCluster:
+        fit2PhotonClust(iter);
+        break;
+      case kAmbiguousCluster:
+        category = fitAmbiguousCluster(iter);
+        break;
+      default:
+        LOG_ERROR << "The logic of cluster catagory is wrong and something "
+          << "impossible has happened! This a catagory-" << category <<
+          " cluster! Do not know how to fit it!" << endm;
+        break;
+    }  // switch
+    if (category == k2PhotonCluster && (*iter)->chiSquare() > 10.) {
+      badFit = true;
+    }  // if
+  }  // Loop over all real clusters
+  return !badFit;
 }
 
 Double_t StFmsEventClusterer::photonEnergyInCluster(

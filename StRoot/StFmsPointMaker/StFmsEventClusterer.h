@@ -96,6 +96,12 @@ class StFmsEventClusterer: public TObject {
    */
   Int_t findClusters();
   /**
+   Fit all found clusters.
+
+   Returns true if all clusters are fit successfully, false if any fail.
+   */
+  Bool_t fitClusters();
+  /**
    The energy deposit in a cluster by a photon.
 
    This is the sum over all towers making the cluster.
