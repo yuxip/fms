@@ -102,6 +102,12 @@ class StFmsEventClusterer: public TObject {
    */
   Bool_t fitClusters();
   /**
+   Globally refit all photons from all clusters.
+
+   Returns true if all clusters are fit successfully, false if any fail.
+   */
+  Bool_t refitClusters();
+  /**
    The energy deposit in a cluster by a photon.
 
    This is the sum over all towers making the cluster.
