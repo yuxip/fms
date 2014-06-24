@@ -13,6 +13,7 @@
 #ifndef STROOT_STFMSPOINTMAKER_STFMSEVENTCLUSTERER_H_
 #define STROOT_STFMSPOINTMAKER_STFMSEVENTCLUSTERER_H_
 
+#include <memory>  // For std::unique_ptr
 #include <vector>
 
 #include "TObject.h"
@@ -178,12 +179,12 @@ class StFmsEventClusterer: public TObject {
    */
   bool validate2ndPhoton(ClusterConstIter cluster) const;
   ClusterList mClusters;  ///< List of clusters in this sub-detector/event
+  std::unique_ptr<StFmsClusterFitter> mFitter;   ///< Performs photon fits
 #endif  // __CINT__
   StFmsClusterFinder mClusterFinder;   ///< Cluster-finding routine
   const StFmsGeometry* mGeometry;   ///< FMS geometry for current run
   Int_t mDetectorId;   ///< ID of this FMS sub-detector
   std::vector<FMSCluster::StFmsTower>* mTowers;   ///< Towers to cluster
-  StFmsClusterFitter* mFitter;   ///< Routine for fitting photons to clusters
   std::vector<Float_t> mTowerWidthXY;   ///< Geometry for this sub-detector (cm)
   ClassDef(StFmsEventClusterer, 0)
 };

@@ -231,9 +231,6 @@ StFmsEventClusterer::StFmsEventClusterer(const StFmsGeometry* geometry,
     : mClusterFinder(0.5), mGeometry(geometry), mDetectorId(detectorId) { }
 
 StFmsEventClusterer::~StFmsEventClusterer() {
-  if (mFitter) {
-    delete mFitter;
-  }  // if
 }
 
 Bool_t StFmsEventClusterer::cluster(std::vector<StFmsTower>* towerList) {
@@ -244,7 +241,7 @@ Bool_t StFmsEventClusterer::cluster(std::vector<StFmsTower>* towerList) {
     LOG_ERROR << "Too many towers for Fit" << endm;
     return false;
   }  // if
-  mFitter = new StFmsClusterFitter(mGeometry, mDetectorId);
+  mFitter.reset(new StFmsClusterFitter(mGeometry, mDetectorId));
   return fitEvent();  // Return true for success
 }
 
