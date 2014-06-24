@@ -324,12 +324,7 @@ Bool_t StFmsEventClusterer::refitClusters() {
   mFitter->setTowers(&towers);
   const int nPhotons = sumPhotonsOverClusters(mClusters);
   globalFit(nPhotons, mClusters.size(), mClusters.begin());
-  const int newNPhotons = sumPhotonsOverClusters(mClusters);
-  if (newNPhotons != nPhotons) {
-    LOG_ERROR << "Global refit yielded " << newNPhotons << " from input of " <<
-      nPhotons << " << photons" << endm;
-  }  // if
-  return newNPhotons == nPhotons;
+  return nPhotons == sumPhotonsOverClusters(mClusters);  // Shouldn't change
 }
 
 Double_t StFmsEventClusterer::photonEnergyInCluster(
