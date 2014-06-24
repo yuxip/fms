@@ -111,7 +111,7 @@ class StFmsClusterFitter : public TObject {
    Returns the &chi;<sup>2</sup> of the fit.
    */
   Int_t fit2PhotonCluster(const std::vector<double>& para,
-                          std::vector<double> step,
+                          const std::vector<double>& step,
                           const std::vector<double>& low,
                           const std::vector<double>& up,
                           PhotonList* photons);

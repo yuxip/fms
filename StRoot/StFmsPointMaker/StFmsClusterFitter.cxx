@@ -173,13 +173,10 @@ Double_t StFmsClusterFitter::fit(const std::vector<double>& parameters,
                d_gg > Max(2.5 * (r - 0.6), 0.5)
  */
 Int_t StFmsClusterFitter::fit2PhotonCluster(const std::vector<double>& para,
-                                            std::vector<double> step,
+                                            const std::vector<double>& step,
                                             const std::vector<double>& low,
                                             const std::vector<double>& up,
                                             PhotonList* photons) {
-  if (step.empty()) {
-    step = defaultMinuitStepSizes();
-  }  // if
   Double_t chiSq(-1.);  // Return value
   if (!StFmsClusterFitter::mTowers) {
     LOG_ERROR << "no tower data available! return -1!" << endm;
