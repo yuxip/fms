@@ -32,13 +32,11 @@
 #include "StFmsPointMaker/StFmsTower.h"
 #include "StFmsPointMaker/StFmsTowerCluster.h"
 
-using namespace std;
-using namespace FMSCluster;
-
 namespace {
+using FMSCluster::ClusterList;
 // We use the tower list defined in StFmsTowerCluster throughout this file.
 // Define some typedefs for convenience.
-typedef StFmsTowerCluster::Towers Towers;
+typedef FMSCluster::StFmsTowerCluster::Towers Towers;
 
 /* Helper function to add numbers of photons using std::accumulate */
 int accumulatePhotons(int nPhotons, const ClusterList::value_type& cluster) {
@@ -76,9 +74,9 @@ struct IsBadCluster {
  Assumes the cluster is either 1- or 2-photon
  Returns nullptr if there is no photon in the cluster
  */
-const StFmsFittedPhoton* findLowestEnergyPhoton(
-    const StFmsTowerCluster* cluster) {
-  const StFmsFittedPhoton* photon = nullptr;
+const FMSCluster::StFmsFittedPhoton* findLowestEnergyPhoton(
+    const FMSCluster::StFmsTowerCluster* cluster) {
+  const FMSCluster::StFmsFittedPhoton* photon = nullptr;
   switch (cluster->cluster()->nPhotons()) {
     case 1:
       photon = &(cluster->photons()[0]);
@@ -99,7 +97,7 @@ const StFmsFittedPhoton* findLowestEnergyPhoton(
 struct HasRowColumn {
   int row, column;
   HasRowColumn(int r, int c) : row(r), column(c) { }
-  bool operator()(const StFmsTower* tower) const {
+  bool operator()(const FMSCluster::StFmsTower* tower) const {
     return tower->row() == row && tower->column() == column;
   }
 };
@@ -109,8 +107,8 @@ struct HasRowColumn {
 
  Return a pointer to the matching tower if one is found, nullptr otherwise.
  */
-const StFmsTower* searchClusterTowers(int row, int column,
-                                      const StFmsTowerCluster& cluster) {
+const FMSCluster::StFmsTower* searchClusterTowers(
+    int row, int column, const FMSCluster::StFmsTowerCluster& cluster) {
   auto found = std::find_if(cluster.towers().begin(), cluster.towers().end(),
                             HasRowColumn(row, column));
   if (found != cluster.towers().end()) {
@@ -157,7 +155,7 @@ struct OnePhotonFitParameters {
 struct TwoPhotonFitParameters {
   std::vector<double> start, steps, lower, upper;
   TwoPhotonFitParameters(const std::vector<float>& xyWidth,
-                         const StFmsTowerCluster* towerCluster) {
+                         const FMSCluster::StFmsTowerCluster* towerCluster) {
     const double x = xyWidth.at(0);
     const double y = xyWidth.at(1);
     const auto cluster = towerCluster->cluster();
@@ -207,7 +205,7 @@ struct GlobalPhotonFitParameters {
                             ClusterIter first, ClusterIter end)
     // Initialise N-photons parameters as the first element
     : start(1, nPhotons), lower(1, 0.5),
-      upper(1, StFmsClusterFitter::maxNFittedPhotons() + 0.5) {
+      upper(1, FMSCluster::StFmsClusterFitter::maxNFittedPhotons() + 0.5) {
     // Append (x, y, E) fit parameters for each photon
     for (auto cluster = first; cluster != end; ++cluster) {
       for (int i = 0; i < (*cluster)->cluster()->nPhotons(); i++) {
@@ -226,6 +224,7 @@ struct GlobalPhotonFitParameters {
 };
 }  // unnamed namespace
 
+namespace FMSCluster {
 StFmsEventClusterer::StFmsEventClusterer(const StFmsGeometry* geometry,
                                          Int_t detectorId)
     : mClusterFinder(0.5), mGeometry(geometry), mDetectorId(detectorId) { }
@@ -483,3 +482,4 @@ bool StFmsEventClusterer::validate2ndPhoton(ClusterConstIter cluster) const {
   }  // for
   return true;  // The photon passed all tests; it's real
 }
+}  // namespace FMSCluster
