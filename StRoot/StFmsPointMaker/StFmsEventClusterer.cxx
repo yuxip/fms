@@ -58,8 +58,7 @@ int sumPhotonsOverClusters(const Container& clusters) {
 }
 
 /* Unary predicate for selecting bad clusters. */
-struct IsBadCluster
-    : public std::unary_function<const ClusterList::value_type&, bool> {
+struct IsBadCluster {
   // Set minimum allowed cluster energy and maximum number of towers
   IsBadCluster(double minEnergy, unsigned maxTowers)
       : energy(minEnergy), towers(maxTowers) { }
