@@ -126,8 +126,26 @@ class StFmsEventClusterer: public TObject {
 
    Returns the &chi;<sup>2</sup> of the fit.
    */
-  Float_t fitOnePhoton(StFmsTowerCluster* cluster);
+  Float_t fit1PhotonCluster(StFmsTowerCluster* cluster);
 #ifndef __CINT__  // Hide Cluster(Const)Iter from CINT as it uses C++11
+  /*
+   Special 2-photon fit for a single cluster.
+
+   Cluster moments must have been calculated first
+
+   Returns the &chi;<sup>2</sup> of the fit.
+   */
+  Float_t fit2PhotonCluster(ClusterIter cluster);
+  /*
+   Fit an ambiguous cluster (one that isn't obviously 1- or 2-photon).
+
+   First tries a 1-photon fit. If that fit is good enough, it is set as a
+   1-photon cluster.
+   Otherwise tries a 2-photon fit and chooses the better result.
+
+   Returns the category of the cluster (EFmsClusterCategory in StFmsCluster).
+   */
+  Int_t fitAmbiguousCluster(ClusterIter cluster);
   /*
    Perform a global fit of all photons in an event.
 
@@ -144,26 +162,8 @@ class StFmsEventClusterer: public TObject {
 
    Returns the &chi;<sup>2</sup> of the fit.
    */
-  Float_t globalFit(unsigned nPhotons, unsigned nClusters,
-                    ClusterIter first);
-  /*
-   Special 2-photon fit for a single cluster.
-
-   Cluster moments must have been calculated first
-
-   Returns the &chi;<sup>2</sup> of the fit.
-   */
-  Float_t fit2PhotonClust(ClusterIter cluster);
-  /*
-   Fit an ambiguous cluster (one that isn't obviously 1- or 2-photon).
-
-   First tries a 1-photon fit. If that fit is good enough, it is set as a
-   1-photon cluster.
-   Otherwise tries a 2-photon fit and chooses the better result.
-
-   Returns the category of the cluster (EFmsClusterCategory in StFmsCluster).
-   */
-  Int_t fitAmbiguousCluster(ClusterIter cluster);
+  Float_t fitGlobalClusters(unsigned nPhotons, unsigned nClusters,
+                            ClusterIter first);
   /*
    Run tests on the lower-energy photon in a 2-photon cluster.
 

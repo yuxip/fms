@@ -290,10 +290,10 @@ Bool_t StFmsEventClusterer::fitClusters() {
     mFitter->setTowers(&(*iter)->towers());
     switch (category) {
       case k1PhotonCluster:
-        fitOnePhoton(iter->get());
+        fit1PhotonCluster(iter->get());
         break;
       case k2PhotonCluster:
-        fit2PhotonClust(iter);
+        fit2PhotonCluster(iter);
         break;
       case kAmbiguousCluster:
         category = fitAmbiguousCluster(iter);
@@ -323,7 +323,7 @@ Bool_t StFmsEventClusterer::refitClusters() {
   }  // for
   mFitter->setTowers(&towers);
   const int nPhotons = sumPhotonsOverClusters(mClusters);
-  globalFit(nPhotons, mClusters.size(), mClusters.begin());
+  fitGlobalClusters(nPhotons, mClusters.size(), mClusters.begin());
   return nPhotons == sumPhotonsOverClusters(mClusters);  // Shouldn't change
 }
 
@@ -347,7 +347,8 @@ Double_t StFmsEventClusterer::photonEnergyInTower(
 }
 
 /* 1-photon fitting function */
-Float_t StFmsEventClusterer::fitOnePhoton(StFmsTowerCluster* towerCluster) {
+Float_t StFmsEventClusterer::fit1PhotonCluster(
+    StFmsTowerCluster* towerCluster) {
   OnePhotonFitParameters parameters(mTowerWidthXY, towerCluster->cluster());
   PhotonList photons;
   double chiSquare = mFitter->fit(parameters.start, std::vector<double>(),
@@ -364,10 +365,54 @@ Float_t StFmsEventClusterer::fitOnePhoton(StFmsTowerCluster* towerCluster) {
   return towerCluster->chiSquare();
 }
 
+/* 2-photon fitting function */
+Float_t StFmsEventClusterer::fit2PhotonCluster(ClusterIter towerCluster) {
+  TwoPhotonFitParameters parameters(mTowerWidthXY, towerCluster->get());
+  PhotonList photons;
+  double chiSquare =
+    mFitter->fit2PhotonCluster(parameters.start, parameters.steps,
+                               parameters.lower, parameters.upper, &photons);
+  if (photons.size() == 2) {
+    (*towerCluster)->photons()[0] = photons.front();
+    (*towerCluster)->photons()[1] = photons.back();
+  } else {
+    LOG_WARN << "2-photon Minuit fit found " << photons.size() << " photons"
+      << endm;
+  }  // if
+  (*towerCluster)->cluster()->setNPhotons(photons.size());
+  chiSquare = fitGlobalClusters(2, 1, towerCluster);
+  const int nDegreesOfFreedom = std::max(1,
+    int((*towerCluster)->towers().size() - 6));
+  (*towerCluster)->setChiSquare(chiSquare / nDegreesOfFreedom);
+  return (*towerCluster)->chiSquare();
+}
+
+/* Distinguish an ambiguous cluster as either 1- or 2-photon */
+Int_t StFmsEventClusterer::fitAmbiguousCluster(ClusterIter towerCluster) {
+  const double chiSquare1Photon = fit1PhotonCluster(towerCluster->get());
+  const StFmsFittedPhoton photon = (*towerCluster)->photons()[0];  // Cache
+  // Decide if this 1-photon fit is good enough, if not try 2-photon fit
+  int category = k1PhotonCluster;
+  if (chiSquare1Photon >= 5.) {
+    if (fit2PhotonCluster(towerCluster) <= chiSquare1Photon &&
+        validate2ndPhoton(towerCluster)) {
+      category = k2PhotonCluster;
+    }  // if
+  }  // if
+  if (category == k2PhotonCluster) {  // 2-photon fit is better
+    (*towerCluster)->cluster()->setNPhotons(2);
+  } else {  // 1-photon fit was better, restore it's properties
+    (*towerCluster)->setChiSquare(chiSquare1Photon);
+    (*towerCluster)->photons()[0] = photon;
+    (*towerCluster)->cluster()->setNPhotons(1);
+  }  // if
+  return category;
+}
+
 /* Global fitting function, fitting photons across all clusters */
-Float_t StFmsEventClusterer::globalFit(unsigned nPhotons,
-                                       const unsigned nClusters,
-                                       ClusterIter first) {
+Float_t StFmsEventClusterer::fitGlobalClusters(unsigned nPhotons,
+                                               const unsigned nClusters,
+                                               ClusterIter first) {
   ClusterIter end = first;
   std::advance(end, nClusters);  // Marks end point for cluster iteration
   const unsigned totalPhotons = sumPhotonsOverClusters(first, end);
@@ -398,50 +443,6 @@ Float_t StFmsEventClusterer::globalFit(unsigned nPhotons,
       " photons but expected " << nPhotons << endm;
   }  // if
   return chiSquare;
-}
-
-/* 2-photon fitting function */
-Float_t StFmsEventClusterer::fit2PhotonClust(ClusterIter towerCluster) {
-  TwoPhotonFitParameters parameters(mTowerWidthXY, towerCluster->get());
-  PhotonList photons;
-  double chiSquare =
-    mFitter->fit2PhotonCluster(parameters.start, parameters.steps,
-                               parameters.lower, parameters.upper, &photons);
-  if (photons.size() == 2) {
-    (*towerCluster)->photons()[0] = photons.front();
-    (*towerCluster)->photons()[1] = photons.back();
-  } else {
-    LOG_WARN << "2-photon Minuit fit found " << photons.size() << " photons"
-      << endm;
-  }  // if
-  (*towerCluster)->cluster()->setNPhotons(photons.size());
-  chiSquare = globalFit(2, 1, towerCluster);
-  const int nDegreesOfFreedom = std::max(1,
-    int((*towerCluster)->towers().size() - 6));
-  (*towerCluster)->setChiSquare(chiSquare / nDegreesOfFreedom);
-  return (*towerCluster)->chiSquare();
-}
-
-/* Distinguish an ambiguous cluster as either 1- or 2-photon */
-Int_t StFmsEventClusterer::fitAmbiguousCluster(ClusterIter towerCluster) {
-  const double chiSquare1Photon = fitOnePhoton(towerCluster->get());
-  const StFmsFittedPhoton photon = (*towerCluster)->photons()[0];  // Cache
-  // Decide if this 1-photon fit is good enough, if not try 2-photon fit
-  int category = k1PhotonCluster;
-  if (chiSquare1Photon >= 5.) {
-    if (fit2PhotonClust(towerCluster) <= chiSquare1Photon &&
-        validate2ndPhoton(towerCluster)) {
-      category = k2PhotonCluster;
-    }  // if
-  }  // if
-  if (category == k2PhotonCluster) {  // 2-photon fit is better
-    (*towerCluster)->cluster()->setNPhotons(2);
-  } else {  // 1-photon fit was better, restore it's properties
-    (*towerCluster)->setChiSquare(chiSquare1Photon);
-    (*towerCluster)->photons()[0] = photon;
-    (*towerCluster)->cluster()->setNPhotons(1);
-  }  // if
-  return category;
 }
 
 /*
