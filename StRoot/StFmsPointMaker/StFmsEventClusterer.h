@@ -35,7 +35,8 @@ class StFmsEventClusterer: public TObject {
    Constructor.
 
    Clustering is done per sub-detector, so initialize with the detector ID and
-   FMS geometry information.
+   FMS geometry information. The geometry object is not owned by
+   StFmsEventClusterer.
 
    See FMSCluster::StFmsDetectorId for valid detector IDs.
    */
