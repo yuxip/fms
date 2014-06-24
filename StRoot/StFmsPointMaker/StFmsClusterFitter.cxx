@@ -123,9 +123,8 @@ Double_t StFmsClusterFitter::fit(const std::vector<double>& para,
       mMinuit.GetParameter(i, param.at(i), error.at(i));
     }  // for
     for (unsigned i(1); i < para.size(); i += 3) {
-      photons->push_back(  // x, y, E, error x, error y, error E
-        StFmsFittedPhoton(param.at(i), param.at(i + 1), param.at(i + 2),
-                          error.at(i), error.at(i + 1), error.at(i + 2)));
+      photons->emplace_back(param.at(i), param.at(i + 1), param.at(i + 2),
+                            error.at(i), error.at(i + 1), error.at(i + 2));
     }  // for
     // Evaluate chi-square (*not* chi-square per degree of freedom)
     Int_t iflag = 1;  // Don't calculate 1st derivatives, 2nd argument unneeded
@@ -226,7 +225,7 @@ Int_t StFmsClusterFitter::fit2PhotonCluster(const std::vector<double>& para,
       (1 - param[5]) / 2 - sin(param[4]) * param[3] * error[5] / 2.0;
     double E = param[6] * (1 + param[5]) / 2.0;
     double EErr = error[6] * (1 + param[5]) / 2.0 + param[6] * error[5] / 2.0;
-    photons->push_back(StFmsFittedPhoton(x, y, E, xErr, yErr, EErr));
+    photons->emplace_back(x, y, E, xErr, yErr, EErr);
     // Second photon
     x = param[1] - cos(param[4]) * param[3] * (1 + param[5]) / 2.0;
     xErr = error[1] +
@@ -238,7 +237,7 @@ Int_t StFmsClusterFitter::fit2PhotonCluster(const std::vector<double>& para,
            (1 + param[5]) / 2 - sin(param[4]) * param[3] * error[5] / 2.0;
     E = param[6] * (1 - param[5]) / 2.0;
     EErr = error[6] * (1 - param[5]) / 2.0 - param[6] * error[5] / 2.0;
-    photons->push_back(StFmsFittedPhoton(x, y, E, xErr, yErr, EErr));
+    photons->emplace_back(x, y, E, xErr, yErr, EErr);
     // Evaluate the chi-square function
     Int_t iflag = 1;  // Don't calculate 1st derivatives, 2nd argument unneeded
     mMinuit.Eval(7, nullptr, chiSq, param.data(), iflag);
