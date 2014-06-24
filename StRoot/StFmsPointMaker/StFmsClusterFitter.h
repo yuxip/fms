@@ -139,6 +139,15 @@ class StFmsClusterFitter : public TObject {
   /** Disallow assignment. */
   StFmsClusterFitter& operator=(const StFmsClusterFitter&);
   /**
+   Run Minuit MIGRAD function minimization.
+
+   Frees any previously fixed parameters after minimization finishes.
+   Returns the Minuit mnexcm() error flag.
+   0 indicates success; for other values see
+   http://root.cern.ch/root/htmldoc/TMinuit.html#TMinuit:mnexcm
+   */
+  int runMinuitMinimization();
+  /**
    Shower shape helper function.
 
    Evaluates F(x,y) as defined here:

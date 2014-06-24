@@ -111,10 +111,7 @@ Double_t StFmsClusterFitter::fit(const std::vector<double>& para,
     setMinuitParameter(j++, Form("y%d", i + 1), para, step, low, up);
     setMinuitParameter(j++, Form("E%d", i + 1), para, step, low, up);
   }  // if
-  std::vector<double> arglist = {1000., 1.};
-  // Perform the minimization
-  int ierflg = 0;
-  mMinuit.mnexcm("MIGRAD", arglist.data(), arglist.size(), ierflg);
+  runMinuitMinimization();
   // Populate the list of photons from the fit results
   if (0 == mMinuit.GetStatus() && photons) {
     // Get the fit results and errors
@@ -200,11 +197,7 @@ Int_t StFmsClusterFitter::fit2PhotonCluster(const std::vector<double>& para,
   // Fix E_total and theta, we don't want these to be free parameters
   mMinuit.FixParameter(6);
   mMinuit.FixParameter(4);
-  std::vector<double> arglist = {1000., 1.};
-  // Perform the minimization
-  int ierflg = 0;
-  mMinuit.mnexcm("MIGRAD", arglist.data(), arglist.size(), ierflg);
-  mMinuit.mnfree(0);  // Free fixed parameters before next use of mMinuit
+  runMinuitMinimization();
   if (0 == mMinuit.GetStatus() && photons) {
     // Get the fit results for starting positions and errors
     // 3 * nPhotons + 1 parameters = 7 for 2 photons
@@ -269,6 +262,18 @@ Double_t StFmsClusterFitter::energyDepositionInTower(Double_t* xy,
 
 int StFmsClusterFitter::maxNFittedPhotons() {
   return kMaxNPhotons;
+}
+
+int StFmsClusterFitter::runMinuitMinimization() {
+  std::vector<double> arguments = {1000., 1.};  // Max calls and tolerance
+  int errorFlag = -1;
+  mMinuit.mnexcm("MIGRAD", arguments.data(), arguments.size(), errorFlag);
+  // Free fixed parameters before next use of mMinuit. Wrap in if() to avoid
+  // noisy warning messages in case of no fixed parameters.
+  if (mMinuit.GetNumFixedPars() > 0) {
+    mMinuit.mnfree(0);
+  }  // if
+  return errorFlag;
 }
 
 // Calculate fractional photon energy deposition in a tower based on its (x, y)
