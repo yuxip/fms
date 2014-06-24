@@ -317,17 +317,12 @@ Bool_t StFmsEventClusterer::refitClusters() {
   if (mClusters.size() < 2) {
     return true;
   }  // if
-  const int nPhotons = sumPhotonsOverClusters(mClusters);
-  if (nPhotons > StFmsClusterFitter::maxNFittedPhotons()) {
-    LOG_WARN << "Can not fit " << nPhotons << " (more than " <<
-      StFmsClusterFitter::maxNFittedPhotons() << ") photons!" << endm;
-    return false;
-  }  // if
   Towers towers;
   for (auto i = mClusters.begin(); i != mClusters.end(); ++i) {
     towers.insert(towers.end(), (*i)->towers().begin(), (*i)->towers().end());
   }  // for
   mFitter->setTowers(&towers);
+  const int nPhotons = sumPhotonsOverClusters(mClusters);
   globalFit(nPhotons, mClusters.size(), mClusters.begin());
   const int newNPhotons = sumPhotonsOverClusters(mClusters);
   if (newNPhotons != nPhotons) {
