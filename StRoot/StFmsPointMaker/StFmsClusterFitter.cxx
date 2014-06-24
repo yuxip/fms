@@ -12,8 +12,8 @@
  */
 #include "StFmsPointMaker/StFmsClusterFitter.h"
 
+#include <algorithm>  // For std::max()
 #include <cmath>
-#include <functional>
 #include <numeric>
 #include <vector>
 
