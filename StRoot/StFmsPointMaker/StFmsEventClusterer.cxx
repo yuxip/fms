@@ -33,13 +33,15 @@
 #include "StFmsPointMaker/StFmsTowerCluster.h"
 
 namespace {
-using FMSCluster::ClusterList;
+namespace fms = FMSCluster;
 // We use the tower list defined in StFmsTowerCluster throughout this file.
 // Define some typedefs for convenience.
-typedef FMSCluster::StFmsTowerCluster::Towers Towers;
+typedef fms::StFmsTowerCluster::Towers Towers;
+typedef fms::ClusterList::iterator ClusterIter;
 
 /* Helper function to add numbers of photons using std::accumulate */
-int accumulatePhotons(int nPhotons, const ClusterList::value_type& cluster) {
+int accumulatePhotons(int nPhotons,
+                      const fms::ClusterList::value_type& cluster) {
   return nPhotons + cluster->cluster()->nPhotons();
 }
 
@@ -60,7 +62,7 @@ struct IsBadCluster {
   // Set minimum allowed cluster energy and maximum number of towers
   IsBadCluster(double minEnergy, unsigned maxTowers)
       : energy(minEnergy), towers(maxTowers) { }
-  bool operator()(const ClusterList::value_type& cluster) const {
+  bool operator()(const fms::ClusterList::value_type& cluster) const {
     return cluster->cluster()->energy() <= energy ||
            cluster->towers().size() > towers;
   }
@@ -74,9 +76,9 @@ struct IsBadCluster {
  Assumes the cluster is either 1- or 2-photon
  Returns nullptr if there is no photon in the cluster
  */
-const FMSCluster::StFmsFittedPhoton* findLowestEnergyPhoton(
-    const FMSCluster::StFmsTowerCluster* cluster) {
-  const FMSCluster::StFmsFittedPhoton* photon = nullptr;
+const fms::StFmsFittedPhoton* findLowestEnergyPhoton(
+    const fms::StFmsTowerCluster* cluster) {
+  const fms::StFmsFittedPhoton* photon = nullptr;
   switch (cluster->cluster()->nPhotons()) {
     case 1:
       photon = &(cluster->photons()[0]);
@@ -97,7 +99,7 @@ const FMSCluster::StFmsFittedPhoton* findLowestEnergyPhoton(
 struct HasRowColumn {
   int row, column;
   HasRowColumn(int r, int c) : row(r), column(c) { }
-  bool operator()(const FMSCluster::StFmsTower* tower) const {
+  bool operator()(const fms::StFmsTower* tower) const {
     return tower->row() == row && tower->column() == column;
   }
 };
@@ -107,8 +109,8 @@ struct HasRowColumn {
 
  Return a pointer to the matching tower if one is found, nullptr otherwise.
  */
-const FMSCluster::StFmsTower* searchClusterTowers(
-    int row, int column, const FMSCluster::StFmsTowerCluster& cluster) {
+const fms::StFmsTower* searchClusterTowers(
+    int row, int column, const fms::StFmsTowerCluster& cluster) {
   auto found = std::find_if(cluster.towers().begin(), cluster.towers().end(),
                             HasRowColumn(row, column));
   if (found != cluster.towers().end()) {
@@ -155,7 +157,7 @@ struct OnePhotonFitParameters {
 struct TwoPhotonFitParameters {
   std::vector<double> start, steps, lower, upper;
   TwoPhotonFitParameters(const std::vector<float>& xyWidth,
-                         const FMSCluster::StFmsTowerCluster* towerCluster) {
+                         const fms::StFmsTowerCluster* towerCluster) {
     const double x = xyWidth.at(0);
     const double y = xyWidth.at(1);
     const auto cluster = towerCluster->cluster();
@@ -197,7 +199,6 @@ struct TwoPhotonFitParameters {
   }
 };
 
-typedef ClusterList::iterator ClusterIter;
 /* Gives fit parameters for global photon fit */
 struct GlobalPhotonFitParameters {
   std::vector<double> start, lower, upper;
@@ -205,7 +206,7 @@ struct GlobalPhotonFitParameters {
                             ClusterIter first, ClusterIter end)
     // Initialise N-photons parameters as the first element
     : start(1, nPhotons), lower(1, 0.5),
-      upper(1, FMSCluster::StFmsClusterFitter::maxNFittedPhotons() + 0.5) {
+      upper(1, fms::StFmsClusterFitter::maxNFittedPhotons() + 0.5) {
     // Append (x, y, E) fit parameters for each photon
     for (auto cluster = first; cluster != end; ++cluster) {
       for (int i = 0; i < (*cluster)->cluster()->nPhotons(); i++) {
