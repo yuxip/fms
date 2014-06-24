@@ -318,26 +318,22 @@ Bool_t StFmsEventClusterer::refitClusters() {
       StFmsClusterFitter::maxNFittedPhotons() << ") photons!" << endm;
     return false;
   }  // if
-  // For global fit, add all towers from all clusters
-  Towers allTow;
-  for (auto cluster = mClusters.begin(); cluster != mClusters.end();
-       ++cluster) {
-    allTow.insert(allTow.end(), (*cluster)->towers().begin(),
-                  (*cluster)->towers().end());
+  Towers towers;
+  for (auto i = mClusters.begin(); i != mClusters.end(); ++i) {
+    towers.insert(towers.end(), (*i)->towers().begin(), (*i)->towers().end());
   }  // for
-  mFitter->setTowers(&allTow);
-  // Only do global fit for 2 or more clusters (2-photon fit for one cluster
-  // already has global fit)
+  mFitter->setTowers(&towers);
+  // Only do a global fit for 2 or more clusters (2-photon fit for one cluster
+  // already performs a global fit as part of its normal procedure)
   if (mClusters.size() > 1) {
     globalFit(nPhotons, mClusters.size(), mClusters.begin());
-    // Check for errors in the global fit - the number of photons returned by
-    // the global fit should equal the sum of photons in the fitted clusters
-    const int iph = sumPhotonsOverClusters(mClusters);
-    if (iph != nPhotons) {
-      LOG_ERROR << "total nPhotons = " << nPhotons << " iPh = " << iph << endm;
-    }  // if
-  }  // if (mClusters.size() > 1)
-  return true;
+  }  // if
+  const int newNPhotons = sumPhotonsOverClusters(mClusters);
+  if (newNPhotons != nPhotons) {
+    LOG_ERROR << "Global refit yielded " << newNPhotons << " from input of " <<
+      nPhotons << " << photons" << endm;
+  }  // if
+  return newNPhotons == nPhotons;
 }
 
 Double_t StFmsEventClusterer::photonEnergyInCluster(
