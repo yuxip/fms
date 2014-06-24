@@ -347,8 +347,8 @@ Float_t StFmsEventClusterer::fit1PhotonCluster(
     StFmsTowerCluster* towerCluster) {
   OnePhotonFitParameters parameters(mTowerWidthXY, towerCluster->cluster());
   PhotonList photons;
-  double chiSquare = mFitter->fit(parameters.start, std::vector<double>(),
-                                  parameters.lower, parameters.upper, &photons);
+  double chiSquare = mFitter->fit(parameters.start, parameters.lower,
+                                  parameters.upper, &photons);
   if (photons.empty()) {  // check return status in case of a bad fit
     LOG_ERROR << "1-photon Minuit fit found no photons" << endm;
   } else {
@@ -423,9 +423,8 @@ Float_t StFmsEventClusterer::fitGlobalClusters(unsigned nPhotons,
   }  // if
   GlobalPhotonFitParameters parameters(nPhotons, first, end);
   PhotonList photons;
-  Double_t chiSquare = mFitter->fit(parameters.start, std::vector<double>(),
-                                    parameters.lower, parameters.upper,
-                                    &photons);
+  Double_t chiSquare = mFitter->fit(parameters.start, parameters.lower,
+                                    parameters.upper, &photons);
   if (photons.size() == nPhotons) {
     // Put the fit result back in the clusters
     PhotonList::const_iterator photon = photons.begin();

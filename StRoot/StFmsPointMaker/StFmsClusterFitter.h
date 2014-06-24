@@ -86,7 +86,11 @@ class StFmsClusterFitter : public TObject {
 
    Returns the &chi;<sup>2</sup> of the fit.
    */
-  Double_t fit(const std::vector<double>& par, std::vector<double> step,
+  Double_t fit(const std::vector<double>& par, const std::vector<double>& step,
+               const std::vector<double>& low, const std::vector<double>& up,
+               PhotonList* photons);
+  /** Calls fit() with default step sizes */
+  Double_t fit(const std::vector<double>& par,
                const std::vector<double>& low, const std::vector<double>& up,
                PhotonList* photons);
   /**
