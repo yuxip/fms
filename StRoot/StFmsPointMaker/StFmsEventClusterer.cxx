@@ -312,6 +312,11 @@ Bool_t StFmsEventClusterer::fitClusters() {
 }
 
 Bool_t StFmsEventClusterer::refitClusters() {
+  // Only do a global fit for 2 or more clusters (2-photon fit for one cluster
+  // already performs a global fit as part of its normal procedure)
+  if (mClusters.size() < 2) {
+    return true;
+  }  // if
   const int nPhotons = sumPhotonsOverClusters(mClusters);
   if (nPhotons > StFmsClusterFitter::maxNFittedPhotons()) {
     LOG_WARN << "Can not fit " << nPhotons << " (more than " <<
@@ -323,11 +328,7 @@ Bool_t StFmsEventClusterer::refitClusters() {
     towers.insert(towers.end(), (*i)->towers().begin(), (*i)->towers().end());
   }  // for
   mFitter->setTowers(&towers);
-  // Only do a global fit for 2 or more clusters (2-photon fit for one cluster
-  // already performs a global fit as part of its normal procedure)
-  if (mClusters.size() > 1) {
-    globalFit(nPhotons, mClusters.size(), mClusters.begin());
-  }  // if
+  globalFit(nPhotons, mClusters.size(), mClusters.begin());
   const int newNPhotons = sumPhotonsOverClusters(mClusters);
   if (newNPhotons != nPhotons) {
     LOG_ERROR << "Global refit yielded " << newNPhotons << " from input of " <<
