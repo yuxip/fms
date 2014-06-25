@@ -178,13 +178,6 @@ Int_t StFmsClusterFitter::fit2Photon(const std::vector<double>& parameters,
     return chiSquare;
   }  // if
   mMinuit.SetFCN(minimizationFunction2Photon);
-  int nPhotons = parameters.size() / 3;
-  if (nPhotons != 2) {
-    LOG_ERROR << "number of photons must be 2 for special 2-photon cluster "
-      << "fitter \"Int_t StFmsClusterFitter::fit2Photon(...)\"!"
-      << " Set it to be 2!" << endm;
-    nPhotons = 2;
-  }  // if
   mMinuit.mncler();  // Clear old parameters so we can define the new parameters
   const std::vector<TString> names = {
     "nph", "xPi", "yPi", "d_gg", "theta", "z_gg", "E_gg"
