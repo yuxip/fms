@@ -82,49 +82,50 @@ TF2* StFmsClusterFitter::showerShapeFunction() {
   return &showerShapeFitFunction;
 }
 
-Double_t StFmsClusterFitter::fit(const std::vector<double>& para,
-                                 const std::vector<double>& step,
-                                 const std::vector<double>& low,
-                                 const std::vector<double>& up,
+Double_t StFmsClusterFitter::fit(const std::vector<double>& parameters,
+                                 const std::vector<double>& steps,
+                                 const std::vector<double>& lower,
+                                 const std::vector<double>& upper,
                                  PhotonList* photons) {
-  Double_t chiSq(-1.);  // Return value
+  Double_t chiSquare(-1.);  // Return value
   // Check that there is a pointer to TObjArray of towers
   if (!StFmsClusterFitter::mTowers) {
     LOG_ERROR << "no tower data available! return -1!" << endm;
-    return chiSq;
+    return chiSquare;
   }  // if
   mMinuit.SetFCN(minimizationFunctionNPhoton);
-  int nPh = para.size() / 3;
-  if (nPh < 1 || nPh > kMaxNPhotons) {
-    LOG_ERROR << "nPh = " << nPh << "! Number of photons must be between 1 and "
-      << kMaxNPhotons << "! Set it to be 1!" << endm;
-    nPh = 1;
+  int nPhotons = parameters.size() / 3;
+  if (nPhotons < 1 || nPhotons > kMaxNPhotons) {
+    LOG_ERROR << "Number of photons must be between 1 and " << kMaxNPhotons <<
+      "not " << nPhotons << " for fit. Setting it to be 1..." << endm;
+    nPhotons = 1;
   }  // if
   mMinuit.mncler();  // Clear old parameters so we can define the new parameters
   // The first parameter tells Minuit how many photons to fit!
   // It should be a fixed parameter, and between 1 and the max number of photons
-  setMinuitParameter(0, "nph", para, step, low, up);
+  setMinuitParameter(0, "nph", parameters, steps, lower, upper);
   // Set the rest of parameters: 3 parameters per photon
-  for (Int_t i = 0; i < nPh; i++) {
+  for (Int_t i = 0; i < nPhotons; i++) {
     Int_t j = 3 * i + 1;  // Need to set 3 parameters per photon
-    setMinuitParameter(j++, Form("x%d", i + 1), para, step, low, up);
-    setMinuitParameter(j++, Form("y%d", i + 1), para, step, low, up);
-    setMinuitParameter(j++, Form("E%d", i + 1), para, step, low, up);
+    setMinuitParameter(j++, Form("x%d", i), parameters, steps, lower, upper);
+    setMinuitParameter(j++, Form("y%d", i), parameters, steps, lower, upper);
+    setMinuitParameter(j++, Form("E%d", i), parameters, steps, lower, upper);
   }  // if
   runMinuitMinimization();
   // Populate the list of photons from the fit results
-  if (0 == mMinuit.GetStatus()) {
+  if (mMinuit.GetStatus() == 0) {
     // Get the fit results and errors
-    std::vector<double> param(para.size(), 0.), error(para.size(), 0.);
-    readMinuitParameters(param, error);
-    for (unsigned i(1); i < para.size(); i += 3) {
-      photons->emplace_back(param.at(i), param.at(i + 1), param.at(i + 2),
-                            error.at(i), error.at(i + 1), error.at(i + 2));
+    std::vector<double> params(parameters.size(), 0.);
+    std::vector<double> errors(parameters.size(), 0.);
+    readMinuitParameters(params, errors);
+    for (unsigned i(1); i < parameters.size(); i += 3) {
+      photons->emplace_back(params.at(i), params.at(i + 1), params.at(i + 2),
+                            errors.at(i), errors.at(i + 1), errors.at(i + 2));
     }  // for
     // Evaluate chi-square (*not* chi-square per degree of freedom)
-    mMinuit.Eval(photons->size(), nullptr, chiSq, param.data(), 1);
+    mMinuit.Eval(photons->size(), nullptr, chiSquare, params.data(), 1);
   }  // for
-  return chiSq;
+  return chiSquare;
 }
 
 Double_t StFmsClusterFitter::fit(const std::vector<double>& parameters,
