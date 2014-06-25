@@ -122,8 +122,7 @@ Double_t StFmsClusterFitter::fit(const std::vector<double>& para,
                             error.at(i), error.at(i + 1), error.at(i + 2));
     }  // for
     // Evaluate chi-square (*not* chi-square per degree of freedom)
-    Int_t iflag = 1;  // Don't calculate 1st derivatives, 2nd argument unneeded
-    mMinuit.Eval(photons->size(), nullptr, chiSq, param.data(), iflag);
+    mMinuit.Eval(photons->size(), nullptr, chiSq, param.data(), 1);
   }  // for
   return chiSq;
 }
@@ -228,8 +227,7 @@ Int_t StFmsClusterFitter::fit2PhotonCluster(const std::vector<double>& para,
     EErr = error[6] * (1 - param[5]) / 2.0 - param[6] * error[5] / 2.0;
     photons->emplace_back(x, y, E, xErr, yErr, EErr);
     // Evaluate the chi-square function
-    Int_t iflag = 1;  // Don't calculate 1st derivatives, 2nd argument unneeded
-    mMinuit.Eval(7, nullptr, chiSq, param.data(), iflag);
+    mMinuit.Eval(7, nullptr, chiSq, param.data(), 1);
   }  // if
   return chiSq;
 }
@@ -293,7 +291,7 @@ void StFmsClusterFitter::minimizationFunctionNPhoton(Int_t& npara,
                                                      Double_t* grad,
                                                      Double_t& fval,
                                                      Double_t* para,
-                                                     Int_t iflag) {
+                                                     Int_t /* not used */) {
   const double energySum = std::accumulate(mTowers->begin(), mTowers->end(),
                                            0., addTowerEnergy);
   fval = 0;  // Stores sum of chi2 over each tower
@@ -331,7 +329,7 @@ void StFmsClusterFitter::minimizationFunction2Photon(Int_t& nparam,
                                                      Double_t* grad,
                                                      Double_t& fval,
                                                      Double_t* param,
-                                                     Int_t iflag) {
+                                                     Int_t /* not used */) {
   // Only need to translate into the old parameterization
   const float dd = param[3];
   Double_t oldParam[7] = {
@@ -344,7 +342,7 @@ void StFmsClusterFitter::minimizationFunction2Photon(Int_t& nparam,
     param[6] * (1 - param[5]) / 2.0  // Energy 2
   };
   // Now call the regular minimization function with the translated parameters
-  minimizationFunctionNPhoton(nparam, grad, fval, oldParam, iflag);
+  minimizationFunctionNPhoton(nparam, grad, fval, oldParam, 0);
 }
 
 int StFmsClusterFitter::setMinuitParameter(int index, const TString& name,
