@@ -167,40 +167,40 @@ Double_t StFmsClusterFitter::fitNPhoton(const std::vector<double>& parameters,
   d_gg:        a lower bound is given by r = sqrt(sigmaX^2 + sigmaY^2). 
                d_gg > Max(2.5 * (r - 0.6), 0.5)
  */
-Int_t StFmsClusterFitter::fit2Photon(const std::vector<double>& para,
-                                     const std::vector<double>& step,
-                                     const std::vector<double>& low,
-                                     const std::vector<double>& up,
+Int_t StFmsClusterFitter::fit2Photon(const std::vector<double>& parameters,
+                                     const std::vector<double>& steps,
+                                     const std::vector<double>& lower,
+                                     const std::vector<double>& upper,
                                      PhotonList* photons) {
-  Double_t chiSq(-1.);  // Return value
+  Double_t chiSquare(-1.);  // Return value
   if (!StFmsClusterFitter::mTowers) {
     LOG_ERROR << "no tower data available! return -1!" << endm;
-    return chiSq;
+    return chiSquare;
   }  // if
   mMinuit.SetFCN(minimizationFunction2Photon);
-  int nPh = para.size() / 3;
-  if (nPh != 2) {
+  int nPhotons = parameters.size() / 3;
+  if (nPhotons != 2) {
     LOG_ERROR << "number of photons must be 2 for special 2-photon cluster "
       << "fitter \"Int_t StFmsClusterFitter::fit2Photon(...)\"!"
       << " Set it to be 2!" << endm;
-    nPh = 2;
+    nPhotons = 2;
   }  // if
   mMinuit.mncler();  // Clear old parameters so we can define the new parameters
-  // The first parameter tells Minuit how many photons to fit, in this case 2
   const std::vector<TString> names = {
     "nph", "xPi", "yPi", "d_gg", "theta", "z_gg", "E_gg"
   };
   for (unsigned i = 0; i < names.size(); ++i) {
-    setMinuitParameter(i, names.at(i), para, step, low, up);
+    setMinuitParameter(i, names.at(i), parameters, steps, lower, upper);
   }  // for
   // Fix E_total and theta, we don't want these to be free parameters
-  mMinuit.FixParameter(6);
   mMinuit.FixParameter(4);
+  mMinuit.FixParameter(6);
   runMinuitMinimization();
-  if (0 == mMinuit.GetStatus()) {
+  if (mMinuit.GetStatus() == 0) {
     // Get the fit results for starting positions and errors
     // 3 * nPhotons + 1 parameters = 7 for 2 photons
-    std::vector<double> param(para.size(), 0.), error(para.size(), 0.);
+    std::vector<double> param(parameters.size(), 0.);
+    std::vector<double> error(parameters.size(), 0.);
     readMinuitParameters(param, error);
     // Put the fit result back in "clust". Need to translate the special
     // parameters for 2-photon fit into x, y, E, which looks a bit complicated!
@@ -229,9 +229,9 @@ Int_t StFmsClusterFitter::fit2Photon(const std::vector<double>& para,
     EErr = error[6] * (1 - param[5]) / 2.0 - param[6] * error[5] / 2.0;
     photons->emplace_back(x, y, E, xErr, yErr, EErr);
     // Evaluate the chi-square function
-    mMinuit.Eval(7, nullptr, chiSq, param.data(), 1);
+    mMinuit.Eval(7, nullptr, chiSquare, param.data(), 1);
   }  // if
-  return chiSq;
+  return chiSquare;
 }
 
 // xy array contains (x, y) position of the photon relative to the tower center
