@@ -14,6 +14,7 @@
 #define STROOT_STFMSPOINTMAKER_STFMSCLUSTERFITTER_H_
 
 #include <list>
+#include <vector>
 
 #include "TMinuit.h"
 #include "TObject.h"
@@ -189,6 +190,16 @@ class StFmsClusterFitter : public TObject {
                          const std::vector<double>& step,
                          const std::vector<double>& low,
                          const std::vector<double>& up);
+  /**
+   Reads Minuit parameters and errors.
+
+   The number of parameters read is determined by the size() of the parameters
+   array.
+
+   Returns the number of parameters read.
+   */
+  int readMinuitParameters(std::vector<double>& parameters,
+                           std::vector<double>& errors);
   TMinuit mMinuit;  ///< Minuit fitting interface
   static StFmsTowerCluster::Towers* mTowers;  ///< List of towers to fit
   ClassDef(StFmsClusterFitter, 0)

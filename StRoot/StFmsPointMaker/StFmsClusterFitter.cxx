@@ -116,9 +116,7 @@ Double_t StFmsClusterFitter::fit(const std::vector<double>& para,
   if (0 == mMinuit.GetStatus()) {
     // Get the fit results and errors
     std::vector<double> param(para.size(), 0.), error(para.size(), 0.);
-    for (unsigned i(0); i < para.size(); ++i) {
-      mMinuit.GetParameter(i, param.at(i), error.at(i));
-    }  // for
+    readMinuitParameters(param, error);
     for (unsigned i(1); i < para.size(); i += 3) {
       photons->emplace_back(param.at(i), param.at(i + 1), param.at(i + 2),
                             error.at(i), error.at(i + 1), error.at(i + 2));
@@ -201,10 +199,8 @@ Int_t StFmsClusterFitter::fit2PhotonCluster(const std::vector<double>& para,
   if (0 == mMinuit.GetStatus()) {
     // Get the fit results for starting positions and errors
     // 3 * nPhotons + 1 parameters = 7 for 2 photons
-    std::vector<double> param(7, 0.), error(7, 0.);
-    for (unsigned i = 0; i < param.size(); ++i) {
-      mMinuit.GetParameter(i, param.at(i), error.at(i));
-    }  // for
+    std::vector<double> param(para.size(), 0.), error(para.size(), 0.);
+    readMinuitParameters(param, error);
     // Put the fit result back in "clust". Need to translate the special
     // parameters for 2-photon fit into x, y, E, which looks a bit complicated!
     // First photon
@@ -360,5 +356,14 @@ int StFmsClusterFitter::setMinuitParameter(int index, const TString& name,
   mMinuit.mnparm(index, name, par.at(index), step.at(index),
                  low.at(index), up.at(index), error);
   return error;
+}
+
+int StFmsClusterFitter::readMinuitParameters(std::vector<double>& parameters,
+                                             std::vector<double>& errors) {
+  errors.resize(parameters.size(), 0.);
+  for (int i = 0, size = parameters.size(); i != size; ++i) {
+    mMinuit.GetParameter(i, parameters.at(i), errors.at(i));
+  }  // for
+  return parameters.size();
 }
 }  // namespace FMSCluster
