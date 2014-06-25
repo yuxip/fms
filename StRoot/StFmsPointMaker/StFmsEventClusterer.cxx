@@ -13,6 +13,7 @@
 #include "StFmsPointMaker/StFmsEventClusterer.h"
 
 #include <algorithm>
+#include <array>
 #include <functional>
 #include <iterator>
 #include <list>
@@ -155,13 +156,13 @@ struct OnePhotonFitParameters {
  See SFmsClusterFitter::fit2Photon() for parameter meanings
  */
 struct TwoPhotonFitParameters {
-  std::vector<double> start, steps, lower, upper;
+  std::array<double, 7> start, steps, lower, upper;
   TwoPhotonFitParameters(const std::vector<float>& xyWidth,
                          const fms::StFmsTowerCluster* towerCluster) {
     const double x = xyWidth.at(0);
     const double y = xyWidth.at(1);
     const auto cluster = towerCluster->cluster();
-    start = {
+    start = std::array<double, 7>{ {
       2,
       x * cluster->x(),
       y * cluster->y(),
@@ -169,12 +170,12 @@ struct TwoPhotonFitParameters {
       towerCluster->thetaAxis(),
       gRandom->Uniform(-0.1, 0.1),
       cluster->energy(),
-    };
-    steps = {0, 0.02, 0.02, 0.01, 0.01, 0.01, 0.1};
+    } };
+    steps = std::array<double, 7>{ {0, 0.02, 0.02, 0.01, 0.01, 0.01, 0.1} };
     const double sigmaMaxE = cluster->sigmaMax() * cluster->energy();
     double maxTheta = cluster->sigmaMin() / cluster->sigmaMax() / 2.8;
     maxTheta = std::min(maxTheta, TMath::PiOver2());
-    lower = {
+    lower = std::array<double, 7>{ {
       1.5,
       start.at(1) - 0.2 * x,
       start.at(2) - 0.2 * y,
@@ -182,8 +183,8 @@ struct TwoPhotonFitParameters {
       start.at(4) - maxTheta,
       -1.,
       start.at(6) * 0.95
-    };
-    upper = {
+    } };
+    upper = std::array<double, 7>{ {
       2.5,
       start.at(1) + 0.2 * x,
       start.at(2) + 0.2 * y,
@@ -191,7 +192,7 @@ struct TwoPhotonFitParameters {
       start.at(4) + maxTheta,
       1.,
       start.at(6) * 1.05
-    };
+    } };
     // With the above approach the limits on parameter 3 can sometimes go beyond
     // sensible values, so limit them.
     lower.at(3) = std::min(lower.at(3), start.at(3) * 0.9);

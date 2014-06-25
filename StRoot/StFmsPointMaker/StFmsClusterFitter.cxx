@@ -167,10 +167,10 @@ Double_t StFmsClusterFitter::fitNPhoton(const std::vector<double>& parameters,
   d_gg:        a lower bound is given by r = sqrt(sigmaX^2 + sigmaY^2). 
                d_gg > Max(2.5 * (r - 0.6), 0.5)
  */
-Int_t StFmsClusterFitter::fit2Photon(const std::vector<double>& parameters,
-                                     const std::vector<double>& steps,
-                                     const std::vector<double>& lower,
-                                     const std::vector<double>& upper,
+Int_t StFmsClusterFitter::fit2Photon(const std::array<double, 7>& parameters,
+                                     const std::array<double, 7>& steps,
+                                     const std::array<double, 7>& lower,
+                                     const std::array<double, 7>& upper,
                                      PhotonList* photons) {
   Double_t chiSquare(-1.);  // Return value
   if (!StFmsClusterFitter::mTowers) {
@@ -339,11 +339,12 @@ void StFmsClusterFitter::minimizationFunction2Photon(Int_t& nparam,
   minimizationFunctionNPhoton(nparam, grad, fval, oldParam, 0);
 }
 
+template<class Container>
 int StFmsClusterFitter::setMinuitParameter(int index, const TString& name,
-                                           const std::vector<double>& params,
-                                           const std::vector<double>& steps,
-                                           const std::vector<double>& lower,
-                                           const std::vector<double>& upper) {
+                                           const Container& params,
+                                           const Container& steps,
+                                           const Container& lower,
+                                           const Container& upper) {
   int error = 0;
   mMinuit.mnparm(index, name, params.at(index), steps.at(index),
                  lower.at(index), upper.at(index), error);

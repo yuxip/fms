@@ -13,6 +13,9 @@
 #ifndef STROOT_STFMSPOINTMAKER_STFMSCLUSTERFITTER_H_
 #define STROOT_STFMSPOINTMAKER_STFMSCLUSTERFITTER_H_
 
+#ifndef __CINT__  // Hide std::array from CINT, as CINT cannot parse C++11
+#include <array>
+#endif  // __CINT__
 #include <list>
 #include <vector>
 
@@ -99,8 +102,8 @@ class StFmsClusterFitter : public TObject {
                       PhotonList* photons);
   /**
    Specialized fit function for exactly 2-photon fit.
-   
-   Argument arrays are as for fitNPhoton().
+
+   Argument meanings are as for fitNPhoton().
    However as this is for 2-photon fits only, the input arrays should always
    have 7 (3 * 2 photons + 1) elements. Additionally each element has a
    different meaning here:
@@ -114,11 +117,13 @@ class StFmsClusterFitter : public TObject {
 
    Returns the &chi;<sup>2</sup> of the fit.
    */
-  Int_t fit2Photon(const std::vector<double>& parameters,
-                   const std::vector<double>& steps,
-                   const std::vector<double>& lower,
-                   const std::vector<double>& upper,
+#ifndef __CINT__  // Hide std::array from CINT, as CINT cannot parse C++11
+  Int_t fit2Photon(const std::array<double, 7>& parameters,
+                   const std::array<double, 7>& steps,
+                   const std::array<double, 7>& lower,
+                   const std::array<double, 7>& upper,
                    PhotonList* photons);
+#endif  // __CINT__
   /**
    Energy-deposition shower-shape function, for use with a TF2.
 
@@ -186,13 +191,16 @@ class StFmsClusterFitter : public TObject {
    Sets the nth Minuit fit parameter.
 
    See fitNPhoton() for the meaning of the vector arguments.
+   The Container type must support an at() method to access elements (e.g. STL
+   vector, deque, array).
    Returns the Minuit error flag.
    */
+  template<class Container>
   int setMinuitParameter(int index, const TString& name,
-                         const std::vector<double>& parameters,
-                         const std::vector<double>& steps,
-                         const std::vector<double>& lower,
-                         const std::vector<double>& upper);
+                         const Container& parameters,
+                         const Container& steps,
+                         const Container& lower,
+                         const Container& upper);
   /**
    Reads Minuit parameters and errors.
 
