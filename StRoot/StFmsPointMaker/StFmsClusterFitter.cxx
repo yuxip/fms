@@ -234,24 +234,25 @@ Int_t StFmsClusterFitter::fit2PhotonCluster(const std::vector<double>& para,
 
 // xy array contains (x, y) position of the photon relative to the tower center
 Double_t StFmsClusterFitter::energyDepositionInTower(Double_t* xy,
-                                                     Double_t* para) {
-  Double_t gg(0);
-  // Calculate the energy deposited in a tower
-  // Evaluate energyDepositionDistribution at x+/-d/2 and y+/-d/2, for tower
+                                                     Double_t* parameters) {
+  // Calculate the energy deposited in a tower by evaluating
+  // energyDepositionDistribution() at x+/-d/2 and y+/-d/2, for tower
   // width d. The double-loop below is equivalent to
   // F(x+d/2, y+d/2) + F(x-d/2, y-d/2) - F(x-d/2, y+d/2) - F(x+d/2, y-d/2)
-  for (Int_t ix = 0; ix < 2; ix++) {
-    for (Int_t iy = 0; iy < 2; iy++) {
-      Double_t signX = pow(-1.0, ix);  // 1 or -1
-      Double_t signY = pow(-1.0, iy);  // 1 or -1
-      // para[0] is the cell width
-      // para[7] and para[8] are offsets that are normally zero
-      Double_t s[2] = {xy[0] - para[7] + signX * para[0] / 2.0,   // x +/- d/2
-                       xy[1] - para[8] + signY * para[0] / 2.0};  // y +/- d/2
-      gg += signX * signY * energyDepositionDistribution(s, para);
+  const double width = parameters[0];
+  const double xOffset = parameters[7];
+  const double yOffset = parameters[8];
+  double energy(0);
+  for (int ix = 0; ix < 2; ++ix) {
+    for (int iy = 0; iy < 2; ++iy) {
+      double signX = std::pow(-1., ix);  // 1 or -1
+      double signY = std::pow(-1., iy);  // 1 or -1
+      double s[2] = {xy[0] - xOffset + signX * width / 2.,   // x +/- d/2
+                     xy[1] - yOffset + signY * width / 2.};  // y +/- d/2
+      energy += signX * signY * energyDepositionDistribution(s, parameters);
     }  // for
   }  // for
-  return gg * para[9];
+  return energy * parameters[9];
 }
 
 int StFmsClusterFitter::maxNFittedPhotons() {
