@@ -189,10 +189,10 @@ class StFmsClusterFitter : public TObject {
    Returns the Minuit error flag.
    */
   int setMinuitParameter(int index, const TString& name,
-                         const std::vector<double>& par,
-                         const std::vector<double>& step,
-                         const std::vector<double>& low,
-                         const std::vector<double>& up);
+                         const std::vector<double>& parameters,
+                         const std::vector<double>& steps,
+                         const std::vector<double>& lower,
+                         const std::vector<double>& upper);
   /**
    Reads Minuit parameters and errors.
 

@@ -340,13 +340,13 @@ void StFmsClusterFitter::minimizationFunction2Photon(Int_t& nparam,
 }
 
 int StFmsClusterFitter::setMinuitParameter(int index, const TString& name,
-                                           const std::vector<double>& par,
-                                           const std::vector<double>& step,
-                                           const std::vector<double>& low,
-                                           const std::vector<double>& up) {
+                                           const std::vector<double>& params,
+                                           const std::vector<double>& steps,
+                                           const std::vector<double>& lower,
+                                           const std::vector<double>& upper) {
   int error = 0;
-  mMinuit.mnparm(index, name, par.at(index), step.at(index),
-                 low.at(index), up.at(index), error);
+  mMinuit.mnparm(index, name, params.at(index), steps.at(index),
+                 lower.at(index), upper.at(index), error);
   return error;
 }
 
