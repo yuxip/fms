@@ -113,7 +113,7 @@ Double_t StFmsClusterFitter::fit(const std::vector<double>& para,
   }  // if
   runMinuitMinimization();
   // Populate the list of photons from the fit results
-  if (0 == mMinuit.GetStatus() && photons) {
+  if (0 == mMinuit.GetStatus()) {
     // Get the fit results and errors
     std::vector<double> param(para.size(), 0.), error(para.size(), 0.);
     for (unsigned i(0); i < para.size(); ++i) {
@@ -198,7 +198,7 @@ Int_t StFmsClusterFitter::fit2PhotonCluster(const std::vector<double>& para,
   mMinuit.FixParameter(6);
   mMinuit.FixParameter(4);
   runMinuitMinimization();
-  if (0 == mMinuit.GetStatus() && photons) {
+  if (0 == mMinuit.GetStatus()) {
     // Get the fit results for starting positions and errors
     // 3 * nPhotons + 1 parameters = 7 for 2 photons
     std::vector<double> param(7, 0.), error(7, 0.);
