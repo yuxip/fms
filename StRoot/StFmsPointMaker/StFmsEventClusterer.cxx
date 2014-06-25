@@ -122,7 +122,7 @@ const fms::StFmsTower* searchClusterTowers(
 /*
  Gives fit parameter start points and limits for 1-photon fit.
 
- See SFmsClusterFitter::fit() for parameter meanings
+ See SFmsClusterFitter::fitNPhoton() for parameter meanings
  */
 struct OnePhotonFitParameters {
   std::vector<double> start, lower, upper;
@@ -152,7 +152,7 @@ struct OnePhotonFitParameters {
 /*
  Gives fit parameter start points and limits for 2-photon fit.
 
- See SFmsClusterFitter::fit2PhotonCluster() for parameter meanings
+ See SFmsClusterFitter::fit2Photon() for parameter meanings
  */
 struct TwoPhotonFitParameters {
   std::vector<double> start, steps, lower, upper;
@@ -347,8 +347,8 @@ Float_t StFmsEventClusterer::fit1PhotonCluster(
     StFmsTowerCluster* towerCluster) {
   OnePhotonFitParameters parameters(mTowerWidthXY, towerCluster->cluster());
   PhotonList photons;
-  double chiSquare = mFitter->fit(parameters.start, parameters.lower,
-                                  parameters.upper, &photons);
+  double chiSquare = mFitter->fitNPhoton(parameters.start, parameters.lower,
+                                         parameters.upper, &photons);
   if (photons.empty()) {  // check return status in case of a bad fit
     LOG_ERROR << "1-photon Minuit fit found no photons" << endm;
   } else {
@@ -366,8 +366,8 @@ Float_t StFmsEventClusterer::fit2PhotonCluster(ClusterIter towerCluster) {
   TwoPhotonFitParameters parameters(mTowerWidthXY, towerCluster->get());
   PhotonList photons;
   double chiSquare =
-    mFitter->fit2PhotonCluster(parameters.start, parameters.steps,
-                               parameters.lower, parameters.upper, &photons);
+    mFitter->fit2Photon(parameters.start, parameters.steps,
+                        parameters.lower, parameters.upper, &photons);
   if (photons.size() == 2) {
     (*towerCluster)->photons()[0] = photons.front();
     (*towerCluster)->photons()[1] = photons.back();
@@ -423,8 +423,8 @@ Float_t StFmsEventClusterer::fitGlobalClusters(unsigned nPhotons,
   }  // if
   GlobalPhotonFitParameters parameters(nPhotons, first, end);
   PhotonList photons;
-  Double_t chiSquare = mFitter->fit(parameters.start, parameters.lower,
-                                    parameters.upper, &photons);
+  Double_t chiSquare = mFitter->fitNPhoton(parameters.start, parameters.lower,
+                                           parameters.upper, &photons);
   if (photons.size() == nPhotons) {
     // Put the fit result back in the clusters
     PhotonList::const_iterator photon = photons.begin();

@@ -82,11 +82,11 @@ TF2* StFmsClusterFitter::showerShapeFunction() {
   return &showerShapeFitFunction;
 }
 
-Double_t StFmsClusterFitter::fit(const std::vector<double>& parameters,
-                                 const std::vector<double>& steps,
-                                 const std::vector<double>& lower,
-                                 const std::vector<double>& upper,
-                                 PhotonList* photons) {
+Double_t StFmsClusterFitter::fitNPhoton(const std::vector<double>& parameters,
+                                        const std::vector<double>& steps,
+                                        const std::vector<double>& lower,
+                                        const std::vector<double>& upper,
+                                        PhotonList* photons) {
   Double_t chiSquare(-1.);  // Return value
   // Check that there is a pointer to TObjArray of towers
   if (!StFmsClusterFitter::mTowers) {
@@ -128,11 +128,12 @@ Double_t StFmsClusterFitter::fit(const std::vector<double>& parameters,
   return chiSquare;
 }
 
-Double_t StFmsClusterFitter::fit(const std::vector<double>& parameters,
-                                 const std::vector<double>& lower,
-                                 const std::vector<double>& upper,
-                                 PhotonList* photons) {
-  return fit(parameters, defaultMinuitStepSizes(), lower, upper, photons);
+Double_t StFmsClusterFitter::fitNPhoton(const std::vector<double>& parameters,
+                                        const std::vector<double>& lower,
+                                        const std::vector<double>& upper,
+                                        PhotonList* photons) {
+  return fitNPhoton(parameters, defaultMinuitStepSizes(),
+                    lower, upper, photons);
 }
 
 /*
@@ -144,7 +145,7 @@ Double_t StFmsClusterFitter::fit(const std::vector<double>& parameters,
   4: theta, angle of displacement vector from photon 2 to photon 1
   5: z_gg, can go from -1 to +1, so we do not set E1 > E2
   6: E_gg, total energy of two photons
- Thus, in the more conventional fit() parameterization: x1, y1, E1, x2, y2, E2:
+ Thus, in the more conventional fitNPhoton() parameterization:
   E1 = E_gg * (1 + z_gg) / 2
   E2 = E_gg * (1 - z_gg) / 2
   x1 = xPi + cos(theta) * d_gg * (1 - z_gg) / 2
@@ -166,11 +167,11 @@ Double_t StFmsClusterFitter::fit(const std::vector<double>& parameters,
   d_gg:        a lower bound is given by r = sqrt(sigmaX^2 + sigmaY^2). 
                d_gg > Max(2.5 * (r - 0.6), 0.5)
  */
-Int_t StFmsClusterFitter::fit2PhotonCluster(const std::vector<double>& para,
-                                            const std::vector<double>& step,
-                                            const std::vector<double>& low,
-                                            const std::vector<double>& up,
-                                            PhotonList* photons) {
+Int_t StFmsClusterFitter::fit2Photon(const std::vector<double>& para,
+                                     const std::vector<double>& step,
+                                     const std::vector<double>& low,
+                                     const std::vector<double>& up,
+                                     PhotonList* photons) {
   Double_t chiSq(-1.);  // Return value
   if (!StFmsClusterFitter::mTowers) {
     LOG_ERROR << "no tower data available! return -1!" << endm;
@@ -180,7 +181,7 @@ Int_t StFmsClusterFitter::fit2PhotonCluster(const std::vector<double>& para,
   int nPh = para.size() / 3;
   if (nPh != 2) {
     LOG_ERROR << "number of photons must be 2 for special 2-photon cluster "
-      << "fitter \"Int_t StFmsClusterFitter::fit2PhotonCluster(...)\"!"
+      << "fitter \"Int_t StFmsClusterFitter::fit2Photon(...)\"!"
       << " Set it to be 2!" << endm;
     nPh = 2;
   }  // if

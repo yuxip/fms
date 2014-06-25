@@ -68,7 +68,7 @@ class StFmsClusterFitter : public TObject {
    tower as a function of the distance of the photon from the tower center.
    */
   TF2* showerShapeFunction();
-  /** Set the tower list to fit when calling fit() or fit2PhotonCluster() */
+  /** Set the tower list to fit when calling fitNPhoton() or fit2Photon() */
   void setTowers(StFmsTowerCluster::Towers* towers) { mTowers = towers; }
   /**
    Fit photons to the list of towers.
@@ -87,17 +87,20 @@ class StFmsClusterFitter : public TObject {
 
    Returns the &chi;<sup>2</sup> of the fit.
    */
-  Double_t fit(const std::vector<double>& par, const std::vector<double>& step,
-               const std::vector<double>& low, const std::vector<double>& up,
-               PhotonList* photons);
-  /** Calls fit() with default step sizes */
-  Double_t fit(const std::vector<double>& par,
-               const std::vector<double>& low, const std::vector<double>& up,
-               PhotonList* photons);
+  Double_t fitNPhoton(const std::vector<double>& parameteres,
+                      const std::vector<double>& steps,
+                      const std::vector<double>& lower,
+                      const std::vector<double>& up,
+                      PhotonList* photons);
+  /** Calls fitNPhoton() with default step sizes */
+  Double_t fitNPhoton(const std::vector<double>& parameters,
+                      const std::vector<double>& lower,
+                      const std::vector<double>& up,
+                      PhotonList* photons);
   /**
    Specialized fit function for exactly 2-photon fit.
    
-   Argument arrays are as for fit().
+   Argument arrays are as for fitNPhoton().
    However as this is for 2-photon fits only, the input arrays should always
    have 7 (3 * 2 photons + 1) elements. Additionally each element has a
    different meaning here:
@@ -111,11 +114,11 @@ class StFmsClusterFitter : public TObject {
 
    Returns the &chi;<sup>2</sup> of the fit.
    */
-  Int_t fit2PhotonCluster(const std::vector<double>& para,
-                          const std::vector<double>& step,
-                          const std::vector<double>& low,
-                          const std::vector<double>& up,
-                          PhotonList* photons);
+  Int_t fit2Photon(const std::vector<double>& parameters,
+                   const std::vector<double>& steps,
+                   const std::vector<double>& lower,
+                   const std::vector<double>& upper,
+                   PhotonList* photons);
   /**
    Energy-deposition shower-shape function, for use with a TF2.
 
@@ -160,7 +163,7 @@ class StFmsClusterFitter : public TObject {
    */
   static Double_t energyDepositionDistribution(Double_t* x, Double_t* par);
   /**
-   Minuit minimization function for fit() routine.
+   Minuit minimization function for fitNPhoton() routine.
    
    For the purpose of this function and a description of its arguments see
    https://wwwasdoc.web.cern.ch/wwwasdoc/minuit/node14.html
@@ -172,7 +175,7 @@ class StFmsClusterFitter : public TObject {
                                           Double_t& fval, Double_t* par,
                                           Int_t iflag);
   /**
-   Minuit minimization function for fit2PhotonCluster() routine
+   Minuit minimization function for fit2Photon() routine
    
    Also see comments for minimizationFunction().
    */
@@ -182,7 +185,7 @@ class StFmsClusterFitter : public TObject {
   /**
    Sets the nth Minuit fit parameter.
 
-   See fit() for the meaning of the vector arguments.
+   See fitNPhoton() for the meaning of the vector arguments.
    Returns the Minuit error flag.
    */
   int setMinuitParameter(int index, const TString& name,
