@@ -29,7 +29,7 @@
 
 namespace {
 const Int_t kMaxNPhotons = 7;  // Maximum number of photons that can be fitted
-const Int_t kNFitParameters = 10;  // Parameters for shower-shape function
+const Int_t kNFitParameters = 7;  // Parameters for shower-shape function
 TF2 showerShapeFitFunction("showerShapeFitFunction",
                        &FMSCluster::StFmsClusterFitter::energyDepositionInTower,
                       -25.0, 25.0, -25.0, 25.0, kNFitParameters);
@@ -70,8 +70,8 @@ StFmsClusterFitter::StFmsClusterFitter(const StFmsGeometry* geometry,
   // Set tower (x, y) widths for this detector
   towerWidths = geometry->towerWidths(detectorId);
   double parameters[kNFitParameters] = {towerWidths.at(0), 1.070804, 0.167773,
-                                        -0.238578, 0.535845, 0.850233, 2.382637,
-                                        0.0, 0.0, 1.0};
+                                        -0.238578, 0.535845, 0.850233,
+                                        2.382637};
   showerShapeFitFunction.SetParameters(parameters);
   mMinuit.SetPrintLevel(-1);  // Quiet, including suppression of warnings
 }
@@ -240,19 +240,17 @@ Double_t StFmsClusterFitter::energyDepositionInTower(Double_t* xy,
   // width d. The double-loop below is equivalent to
   // F(x+d/2, y+d/2) + F(x-d/2, y-d/2) - F(x-d/2, y+d/2) - F(x+d/2, y-d/2)
   const double width = parameters[0];
-  const double xOffset = parameters[7];
-  const double yOffset = parameters[8];
   double energy(0);
   for (int ix = 0; ix < 2; ++ix) {
     for (int iy = 0; iy < 2; ++iy) {
       double signX = std::pow(-1., ix);  // 1 or -1
       double signY = std::pow(-1., iy);  // 1 or -1
-      double s[2] = {xy[0] - xOffset + signX * width / 2.,   // x +/- d/2
-                     xy[1] - yOffset + signY * width / 2.};  // y +/- d/2
+      double s[2] = {xy[0] + signX * width / 2.,   // x +/- d/2
+                     xy[1] + signY * width / 2.};  // y +/- d/2
       energy += signX * signY * energyDepositionDistribution(s, parameters);
     }  // for
   }  // for
-  return energy * parameters[9];
+  return energy;
 }
 
 int StFmsClusterFitter::maxNFittedPhotons() {
