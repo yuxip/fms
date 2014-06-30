@@ -34,9 +34,6 @@ StFmsTowerCluster::~StFmsTowerCluster() {
 void StFmsTowerCluster::Clear(const char* /* option */) {
   mSigmaX = mSigmaY = mSigmaXY = mChiSquare = -1.;
   mThetaAxis = -10;
-  for (Int_t i(0); i < kMaxPhotonsPerCluster; ++i) {
-    mPhotons[i].Clear();
-  }  // for
   mTowers.clear();
 }
 

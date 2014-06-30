@@ -28,8 +28,6 @@ struct StFmsFittedPhoton {
   // Use default copy constructor and assignment operator
   /** Destructor */
   ~StFmsFittedPhoton() { }
-  /** Reset all values to defaults. */
-  void Clear();
   Float_t energy;  ///< Fitted energy
   Float_t xPos;  ///< Fitted (relative) x-position
   Float_t yPos;  ///< Fitted (relative) y-position

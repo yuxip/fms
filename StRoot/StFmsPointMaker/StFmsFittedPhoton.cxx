@@ -18,9 +18,4 @@ StFmsFittedPhoton::StFmsFittedPhoton(const Float_t x, const Float_t y,
                                      const Float_t e)
     : energy(e), xPos(x), yPos(y) {
 }
-
-void StFmsFittedPhoton::Clear() {
-  energy = 0;
-  xPos = yPos = -1;
-}
 }  // namespace FMSCluster
