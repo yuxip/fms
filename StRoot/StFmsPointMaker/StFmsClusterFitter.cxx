@@ -119,8 +119,7 @@ Double_t StFmsClusterFitter::fitNPhoton(const std::vector<double>& parameters,
     std::vector<double> errors(parameters.size(), 0.);
     readMinuitParameters(params, errors);
     for (unsigned i(1); i < parameters.size(); i += 3) {
-      photons->emplace_back(params.at(i), params.at(i + 1), params.at(i + 2),
-                            errors.at(i), errors.at(i + 1), errors.at(i + 2));
+      photons->emplace_back(params.at(i), params.at(i + 1), params.at(i + 2));
     }  // for
     // Evaluate chi-square (*not* chi-square per degree of freedom)
     mMinuit.Eval(photons->size(), nullptr, chiSquare, params.data(), 1);
@@ -199,28 +198,14 @@ Int_t StFmsClusterFitter::fit2Photon(const std::array<double, 7>& parameters,
     // parameters for 2-photon fit into x, y, E, which looks a bit complicated!
     // First photon
     double x = param[1] + cos(param[4]) * param[3] * (1 - param[5]) / 2.0;
-    double xErr = error[1] +
-      (cos(param[4]) * error[3] - error[4] * sin(param[4]) * param[3]) *
-      (1 - param[5]) / 2 - cos(param[4]) * param[3] * error[5] / 2.0;
     double y = param[2] + sin(param[4]) * param[3] * (1 - param[5]) / 2.0;
-    double yErr = error[2] +
-      (sin(param[4]) * error[3] + error[4] * cos(param[4]) * param[3]) *
-      (1 - param[5]) / 2 - sin(param[4]) * param[3] * error[5] / 2.0;
     double E = param[6] * (1 + param[5]) / 2.0;
-    double EErr = error[6] * (1 + param[5]) / 2.0 + param[6] * error[5] / 2.0;
-    photons->emplace_back(x, y, E, xErr, yErr, EErr);
+    photons->emplace_back(x, y, E);
     // Second photon
     x = param[1] - cos(param[4]) * param[3] * (1 + param[5]) / 2.0;
-    xErr = error[1] +
-           (-cos(param[4]) * error[3] + error[4] * sin(param[4]) * param[3]) *
-           (1 + param[5]) / 2 - cos(param[4]) * param[3] * error[5] / 2.0;
     y = param[2] - sin(param[4]) * param[3] * (1 + param[5]) / 2.0;
-    yErr = error[2] +
-           (sin(param[4]) * error[3] - error[4] * cos(param[4]) * param[3]) *
-           (1 + param[5]) / 2 - sin(param[4]) * param[3] * error[5] / 2.0;
     E = param[6] * (1 - param[5]) / 2.0;
-    EErr = error[6] * (1 - param[5]) / 2.0 - param[6] * error[5] / 2.0;
-    photons->emplace_back(x, y, E, xErr, yErr, EErr);
+    photons->emplace_back(x, y, E);
     // Evaluate the chi-square function
     mMinuit.Eval(7, nullptr, chiSquare, param.data(), 1);
   }  // if
