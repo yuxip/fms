@@ -211,10 +211,10 @@ struct GlobalPhotonFitParameters {
     // Append (x, y, E) fit parameters for each photon
     for (auto cluster = first; cluster != end; ++cluster) {
       for (int i = 0; i < (*cluster)->cluster()->nPhotons(); i++) {
-        start.push_back((*cluster)->photons()[i].xPos);
+        start.push_back((*cluster)->photons()[i].x);
         lower.push_back(start.back() - 1.25);
         upper.push_back(start.back() + 1.25);
-        start.push_back((*cluster)->photons()[i].yPos);
+        start.push_back((*cluster)->photons()[i].y);
         lower.push_back(start.back() - 1.25);
         upper.push_back(start.back() + 1.25);
         start.push_back((*cluster)->photons()[i].energy);
@@ -338,8 +338,8 @@ Double_t StFmsEventClusterer::photonEnergyInCluster(
 Double_t StFmsEventClusterer::photonEnergyInTower(
     const StFmsTower* tower,
     const StFmsFittedPhoton* photon) const {
-  double x = (tower->column() - 0.5) * mTowerWidthXY.at(0) - photon->xPos;
-  double y = (tower->row() - 0.5) * mTowerWidthXY.at(1) - photon->yPos;
+  double x = (tower->column() - 0.5) * mTowerWidthXY.at(0) - photon->x;
+  double y = (tower->row() - 0.5) * mTowerWidthXY.at(1) - photon->y;
   return photon->energy * mFitter->showerShapeFunction()->Eval(x, y);
 }
 
@@ -455,8 +455,8 @@ Float_t StFmsEventClusterer::fitGlobalClusters(unsigned nPhotons,
 bool StFmsEventClusterer::validate2ndPhoton(ClusterConstIter cluster) const {
   // Find the tower hit by the lowest energy photon in a cluster
   const StFmsFittedPhoton* photon = findLowestEnergyPhoton(cluster->get());
-  int column = 1 + int(photon->xPos / mTowerWidthXY.at(0));
-  int row = 1 + int(photon->yPos / mTowerWidthXY.at(1));
+  int column = 1 + int(photon->x / mTowerWidthXY.at(0));
+  int row = 1 + int(photon->y / mTowerWidthXY.at(1));
   const StFmsTower* tower = searchClusterTowers(row, column, **cluster);
   // If tower is nullptr, the photon doesn't hit in a tower in this cluster.
   if (!tower) {

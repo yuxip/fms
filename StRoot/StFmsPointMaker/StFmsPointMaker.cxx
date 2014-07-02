@@ -196,7 +196,7 @@ StFmsPoint* StFmsPointMaker::makeFmsPoint(
   // StFmsFittedPhoton position is in detector-local (x, y) cm coordinates
   // Convert to global STAR coordinates for StFmsPoint
   TVector3 xyz = mGeometry.localToGlobalCoordinates(
-    photon.xPos, photon.yPos, detectorId);
+    photon.x, photon.y, detectorId);
   point->setX(xyz.x());
   point->setY(xyz.y());
   point->setFourMomentum(compute4Momentum(xyz, point->energy()));
