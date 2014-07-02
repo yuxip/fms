@@ -17,6 +17,7 @@
 
 #include <list>
 #include <memory>  // For unique_ptr
+#include <vector>
 
 #include "StFmsPointMaker/StFmsFittedPhoton.h"
 
@@ -38,6 +39,7 @@ class StFmsTower;
 class StFmsTowerCluster {
  public:
   typedef std::list<StFmsTower*> Towers;  ///< Shorthand for tower collection
+  typedef std::vector<StFmsFittedPhoton> Photons;
   /**
    Constructor.
    
@@ -90,9 +92,9 @@ class StFmsTowerCluster {
   /** \overload */
   const Towers& towers() const { return mTowers; }
   /** Return the array of photons creating this cluster. */
-  StFmsFittedPhoton* photons() { return mPhotons; }
+  Photons& photons() { return mPhotons; }
   /** \overload */
-  const StFmsFittedPhoton* photons() const { return mPhotons; }
+  const Photons& photons() const { return mPhotons; }
   /** Return the StEvent cluster structure. */
   StFmsCluster* cluster() { return mCluster.get(); }
   /** \overload */
@@ -119,7 +121,7 @@ class StFmsTowerCluster {
 #ifndef __CINT__  // CINT won't parse unique_ptr so hide it
   std::unique_ptr<StFmsCluster> mCluster;  //!< Pointer to StEvent cluster
 #endif  // __CINT__
-  StFmsFittedPhoton mPhotons[kMaxPhotonsPerCluster];  ///< Photons in cluster
+  Photons mPhotons;  ///< Photons in cluster
 
  private:
   /**

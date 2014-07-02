@@ -80,15 +80,16 @@ struct IsBadCluster {
 const fms::StFmsFittedPhoton* findLowestEnergyPhoton(
     const fms::StFmsTowerCluster* cluster) {
   const fms::StFmsFittedPhoton* photon = nullptr;
-  switch (cluster->cluster()->nPhotons()) {
+  const auto& photons = cluster->photons();
+  switch (photons.size()) {
     case 1:
-      photon = &(cluster->photons()[0]);
+      photon = &(photons.front());
       break;
     case 2:
-      if (cluster->photons()[0].energy < cluster->photons()[1].energy) {
-        photon = &(cluster->photons()[0]);
+      if (photons.front().energy < photons.back().energy) {
+        photon = &(photons.front());
       } else {
-        photon = &(cluster->photons()[1]);
+        photon = &(photons.back());
       }  // if
     default:
       break;  // photon remains nullptr
@@ -210,14 +211,15 @@ struct GlobalPhotonFitParameters {
       upper(1, fms::StFmsClusterFitter::maxNFittedPhotons() + 0.5) {
     // Append (x, y, E) fit parameters for each photon
     for (auto cluster = first; cluster != end; ++cluster) {
-      for (int i = 0; i < (*cluster)->cluster()->nPhotons(); i++) {
-        start.push_back((*cluster)->photons()[i].x);
+      const auto& photons = (*cluster)->photons();
+      for (auto p = photons.begin(); p != photons.end(); ++p) {
+        start.push_back(p->x);
         lower.push_back(start.back() - 1.25);
         upper.push_back(start.back() + 1.25);
-        start.push_back((*cluster)->photons()[i].y);
+        start.push_back(p->y);
         lower.push_back(start.back() - 1.25);
         upper.push_back(start.back() + 1.25);
-        start.push_back((*cluster)->photons()[i].energy);
+        start.push_back(p->energy);
         lower.push_back(start.back() * (1 - 0.3));  // Limit to +/- 30% energy
         upper.push_back(start.back() * (1 + 0.3));
       }  // for
@@ -353,7 +355,7 @@ Float_t StFmsEventClusterer::fit1PhotonCluster(
   if (photons.empty()) {  // check return status in case of a bad fit
     LOG_ERROR << "1-photon Minuit fit found no photons" << endm;
   } else {
-    towerCluster->photons()[0] = photons.back();
+    towerCluster->photons().assign(photons.begin(), photons.end());
   }  // if
   towerCluster->cluster()->setNPhotons(photons.size());
   const int nDegreesOfFreedom =
@@ -370,8 +372,7 @@ Float_t StFmsEventClusterer::fit2PhotonCluster(ClusterIter towerCluster) {
     mFitter->fit2Photon(parameters.start, parameters.steps,
                         parameters.lower, parameters.upper, &photons);
   if (photons.size() == 2) {
-    (*towerCluster)->photons()[0] = photons.front();
-    (*towerCluster)->photons()[1] = photons.back();
+    (*towerCluster)->photons().assign(photons.begin(), photons.end());
   } else {
     LOG_WARN << "2-photon Minuit fit found " << photons.size() << " photons"
       << endm;
@@ -387,7 +388,7 @@ Float_t StFmsEventClusterer::fit2PhotonCluster(ClusterIter towerCluster) {
 /* Distinguish an ambiguous cluster as either 1- or 2-photon */
 Int_t StFmsEventClusterer::fitAmbiguousCluster(ClusterIter towerCluster) {
   const double chiSquare1Photon = fit1PhotonCluster(towerCluster->get());
-  const StFmsFittedPhoton photon = (*towerCluster)->photons()[0];  // Cache
+  const StFmsFittedPhoton photon = (*towerCluster)->photons().front();  // Cache
   // Decide if this 1-photon fit is good enough, if not try 2-photon fit
   int category = k1PhotonCluster;
   if (chiSquare1Photon >= 5.) {
@@ -400,7 +401,7 @@ Int_t StFmsEventClusterer::fitAmbiguousCluster(ClusterIter towerCluster) {
     (*towerCluster)->cluster()->setNPhotons(2);
   } else {  // 1-photon fit was better, restore it's properties
     (*towerCluster)->setChiSquare(chiSquare1Photon);
-    (*towerCluster)->photons()[0] = photon;
+    (*towerCluster)->photons().assign(1, photon);
     (*towerCluster)->cluster()->setNPhotons(1);
   }  // if
   return category;
@@ -428,11 +429,12 @@ Float_t StFmsEventClusterer::fitGlobalClusters(unsigned nPhotons,
                                            parameters.upper, &photons);
   if (photons.size() == nPhotons) {
     // Put the fit result back in the clusters
-    PhotonList::const_iterator photon = photons.begin();
+    auto photon = photons.begin();
     for (ClusterIter cluster = first; cluster != end; ++cluster) {
-      for (int i = 0; i < (*cluster)->cluster()->nPhotons(); ++i, ++photon) {
-        (*cluster)->photons()[i] = *photon;
-      }  // for loop over photons
+      auto& ph = (*cluster)->photons();
+      for (auto p = ph.begin(); p != ph.end(); ++p, ++photon) {
+        *p = *photon;
+      }  // for
     }  // for loop over clusters
   } else {
     LOG_WARN << "Global Minuit fit found " << photons.size() <<
