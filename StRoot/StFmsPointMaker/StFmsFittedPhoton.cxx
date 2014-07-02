@@ -12,10 +12,3 @@
  \copyright Brookhaven National Lab
  */
 #include "StFmsPointMaker/StFmsFittedPhoton.h"
-
-namespace FMSCluster {
-StFmsFittedPhoton::StFmsFittedPhoton(const Float_t x, const Float_t y,
-                                     const Float_t e)
-    : energy(e), xPos(x), yPos(y) {
-}
-}  // namespace FMSCluster

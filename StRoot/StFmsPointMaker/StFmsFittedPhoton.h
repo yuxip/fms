@@ -24,7 +24,8 @@ namespace FMSCluster {  // $NMSPC
  */
 struct StFmsFittedPhoton {
   /** Constructor with optional position and energy. */
-  StFmsFittedPhoton(Float_t x = -1., Float_t y = -1., Float_t e = 0.);
+  StFmsFittedPhoton(Float_t x = -1., Float_t y = -1., Float_t e = 0.)
+      : energy(e), xPos(x), yPos(y) { }
   // Use default copy constructor and assignment operator
   /** Destructor */
   ~StFmsFittedPhoton() { }
