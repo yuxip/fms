@@ -13,8 +13,6 @@
 #ifndef STROOT_STFMSPOINTMAKER_STFMSFITTEDPHOTON_H_
 #define STROOT_STFMSPOINTMAKER_STFMSFITTEDPHOTON_H_
 
-#include "Rtypes.h"  // For ClassDef macro
-
 namespace FMSCluster {  // $NMSPC
 /**
  Definition of a photon hit (SMD position info and reconstructed energy).
@@ -32,7 +30,6 @@ struct StFmsFittedPhoton {
   double energy;  ///< Fitted energy
   double x;  ///< Fitted (relative) x-position
   double y;  ///< Fitted (relative) y-position
-  ClassDef(StFmsFittedPhoton, 0)
 };  // class StFmsFittedPhoton
 }  // namespace FMSCluster
 
