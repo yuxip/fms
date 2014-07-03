@@ -103,7 +103,6 @@ class StFmsTowerCluster {
   StFmsCluster* release() { return mCluster.release(); }
 
  protected:
-  static const int kMaxPhotonsPerCluster = 2;  ///< Support 2-photon clusters
   /** Determine cluster axis. */
   void findClusterAxis();
   /** Calculate sigma w.r.t the axis going through the "center" and of an angle
