@@ -43,7 +43,7 @@ typedef fms::ClusterList::iterator ClusterIter;
 /* Helper function to add numbers of photons using std::accumulate */
 int accumulatePhotons(int nPhotons,
                       const fms::ClusterList::value_type& cluster) {
-  return nPhotons + cluster->cluster()->nPhotons();
+  return nPhotons + cluster->photons().size();
 }
 
 /* Sum the total number of photons in a list of clusters */
