@@ -52,7 +52,7 @@ class StFmsCluster : public StObject {
   /** Number of towers forming this cluster. */
   Int_t nTowers() const { return mNTowers; }
   /** Number of points (photons etc) forming this cluster. */
-  Int_t nPhotons() const { return mNPhotons; }
+  Int_t nPhotons() const { return mPhotons.size(); }
   /** Total cluster energy (sum over all hits in the cluster). */
   Float_t energy() const { return mEnergy; }
   /** Mean x ("center of gravity") in local grid coordinate (1st moment). */

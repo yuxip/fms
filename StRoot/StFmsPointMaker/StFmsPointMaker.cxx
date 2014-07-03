@@ -163,12 +163,12 @@ bool StFmsPointMaker::processTowerCluster(
     cluster->x(), cluster->y(), detectorId);
   cluster->setFourMomentum(compute4Momentum(xyz, cluster->energy()));
   // Save photons reconstructed from this cluster
-  for (Int_t np = 0; np < cluster->nPhotons(); np++) {
+  for (Int_t np = 0; np < towerCluster->photons().size(); np++) {
     StFmsPoint* point = makeFmsPoint(towerCluster->photons()[np], detectorId);
     point->setDetectorId(detectorId);
     point->setId(305 + 20 * detectorId + fmsCollection->numberOfPoints());
     point->setParentClusterId(cluster->id());
-    point->setNParentClusterPhotons(cluster->nPhotons());
+    point->setNParentClusterPhotons(towerCluster->photons().size());
     point->setCluster(cluster);
     // Add it to both the StFmsCollection and StFmsCluster
     // StFmsCollection owns the pointer, the cluster merely references it
