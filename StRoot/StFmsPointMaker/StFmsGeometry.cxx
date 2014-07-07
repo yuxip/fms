@@ -77,9 +77,6 @@ Double_t StFmsGeometry::z(Int_t detectorId) const {
 }
 
 std::vector<Double_t> StFmsGeometry::towerWidths(Int_t detectorId) const {
-  // I don't like this implementation, returning a pointer to access two floats
-  // It relies on the data being aligned OK and seems dangerous. We should add
-  // a more robust solution e.g. return a pair or 2-element vector.
   const fmsDetectorPosition_st* geometry = find(detectorId);
   std::vector<Double_t> widths(2, 0.);
   if (geometry) {
