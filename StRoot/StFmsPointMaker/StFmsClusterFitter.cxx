@@ -311,7 +311,7 @@ void StFmsClusterFitter::minimizationFunction2Photon(Int_t& nparam,
                                                      Int_t /* not used */) {
   // Only need to translate into the old parameterization
   const float dd = param[3];
-  Double_t oldParam[7] = {
+  std::array<double, 7> oldParam{ {
     param[0],  // Number of photons, unchanged
     param[1] + cos(param[4]) * dd * (1 - param[5]) / 2.0,  // x 1
     param[2] + sin(param[4]) * dd * (1 - param[5]) / 2.0,  // y 1
@@ -319,9 +319,9 @@ void StFmsClusterFitter::minimizationFunction2Photon(Int_t& nparam,
     param[1] - cos(param[4]) * dd * (1 + param[5]) / 2.0,  // x 2
     param[2] - sin(param[4]) * dd * (1 + param[5]) / 2.0,  // y 2
     param[6] * (1 - param[5]) / 2.0  // Energy 2
-  };
+  } };
   // Now call the regular minimization function with the translated parameters
-  minimizationFunctionNPhoton(nparam, grad, fval, oldParam, 0);
+  minimizationFunctionNPhoton(nparam, grad, fval, oldParam.data(), 0);
 }
 
 template<class Container>
