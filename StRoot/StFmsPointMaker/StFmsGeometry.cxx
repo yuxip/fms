@@ -52,7 +52,7 @@ Bool_t StFmsGeometry::initialize(StFmsDbMaker* fmsDbMaker) {
   return false;
 }
 
-Float_t StFmsGeometry::xOffset(Int_t detectorId) const {
+Double_t StFmsGeometry::xOffset(Int_t detectorId) const {
   const fmsDetectorPosition_st* geometry = find(detectorId);
   if (geometry) {
     return geometry->xoffset;
@@ -60,7 +60,7 @@ Float_t StFmsGeometry::xOffset(Int_t detectorId) const {
   return 0.;
 }
 
-Float_t StFmsGeometry::yOffset(Int_t detectorId) const {
+Double_t StFmsGeometry::yOffset(Int_t detectorId) const {
   const fmsDetectorPosition_st* geometry = find(detectorId);
   if (geometry) {
     return geometry->yoffset;
@@ -68,7 +68,7 @@ Float_t StFmsGeometry::yOffset(Int_t detectorId) const {
   return 0.;
 }
 
-Float_t StFmsGeometry::z(Int_t detectorId) const {
+Double_t StFmsGeometry::z(Int_t detectorId) const {
   const fmsDetectorPosition_st* geometry = find(detectorId);
   if (geometry) {
     return geometry->zoffset;
@@ -76,12 +76,12 @@ Float_t StFmsGeometry::z(Int_t detectorId) const {
   return 0.;
 }
 
-std::vector<Float_t> StFmsGeometry::towerWidths(Int_t detectorId) const {
+std::vector<Double_t> StFmsGeometry::towerWidths(Int_t detectorId) const {
   // I don't like this implementation, returning a pointer to access two floats
   // It relies on the data being aligned OK and seems dangerous. We should add
   // a more robust solution e.g. return a pair or 2-element vector.
   const fmsDetectorPosition_st* geometry = find(detectorId);
-  std::vector<Float_t> widths(2, 0.);
+  std::vector<Double_t> widths(2, 0.);
   if (geometry) {
     widths.at(0) = geometry->xwidth;
     widths.at(1) = geometry->ywidth;

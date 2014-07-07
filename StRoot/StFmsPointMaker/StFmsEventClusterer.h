@@ -185,7 +185,7 @@ class StFmsEventClusterer: public TObject {
   const StFmsGeometry* mGeometry;   ///< FMS geometry for current run
   Int_t mDetectorId;   ///< ID of this FMS sub-detector
   std::vector<FMSCluster::StFmsTower>* mTowers;   ///< Towers to cluster
-  std::vector<Float_t> mTowerWidthXY;   ///< Geometry for this sub-detector (cm)
+  std::vector<Double_t> mTowerWidthXY;   ///< Geometry for this sub-detector (cm)
   ClassDef(StFmsEventClusterer, 0)
 };
 }  // namespace FMSCluster

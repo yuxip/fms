@@ -128,7 +128,7 @@ const fms::StFmsTower* searchClusterTowers(
  */
 struct OnePhotonFitParameters {
   std::vector<double> start, lower, upper;
-  OnePhotonFitParameters(const std::vector<float>& xyWidth,
+  OnePhotonFitParameters(const std::vector<double>& xyWidth,
                          const StFmsCluster* cluster) {
     const double x = xyWidth.at(0);
     const double y = xyWidth.at(1);
@@ -158,7 +158,7 @@ struct OnePhotonFitParameters {
  */
 struct TwoPhotonFitParameters {
   std::array<double, 7> start, steps, lower, upper;
-  TwoPhotonFitParameters(const std::vector<float>& xyWidth,
+  TwoPhotonFitParameters(const std::vector<double>& xyWidth,
                          const fms::StFmsTowerCluster* towerCluster) {
     const double x = xyWidth.at(0);
     const double y = xyWidth.at(1);

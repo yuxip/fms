@@ -48,7 +48,7 @@ std::vector<double> defaultMinuitStepSizes() {
   }  // for
   return steps;
 }
-std::vector<float> towerWidths;  // Tower (x, y) width in cm
+std::vector<double> towerWidths;  // Tower (x, y) width in cm
 
 // Helper function for accumulating tower energies
 double addTowerEnergy(double energy, const FMSCluster::StFmsTower* tower) {

@@ -79,7 +79,7 @@ class StFmsGeometry : public TObject {
    Returns 0 if the argument is an invalid detector ID or the geometry is
    uninitialized.
   */
-  Float_t xOffset(Int_t detectorId) const;
+  Double_t xOffset(Int_t detectorId) const;
   /**
    Return the y coordinate offset of a detector in cm.
 
@@ -88,7 +88,7 @@ class StFmsGeometry : public TObject {
    Returns 0 if the argument is an invalid detector ID or the geometry is
    uninitialized.
   */
-  Float_t yOffset(Int_t detectorId) const;
+  Double_t yOffset(Int_t detectorId) const;
   /**
    Return the z position of a detector in cm.
 
@@ -97,7 +97,7 @@ class StFmsGeometry : public TObject {
    Returns 0 if the argument is an invalid detector ID or the geometry is
    uninitialized.
    */
-  Float_t z(Int_t detectorId) const;
+  Double_t z(Int_t detectorId) const;
   /**
    Return tower (x, y) widths in cm.
 
@@ -106,7 +106,7 @@ class StFmsGeometry : public TObject {
    Returns (0, 0) if the argument is an invalid detector ID or the geometry is
    uninitialized.
    */
-  std::vector<Float_t> towerWidths(Int_t detectorId) const;
+  std::vector<Double_t> towerWidths(Int_t detectorId) const;
   /**
    Return the position information of a detector.
 
