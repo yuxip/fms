@@ -13,10 +13,8 @@
 
 #include "St_base/StMessMgr.h"
 
-#define MAX_PHOTON_PER_CLUSTER 2
-
 StFmsCluster::StFmsCluster()
-    : StObject(), mCategory(0), mNTowers(0), mNPhotons(0), mEnergy(0.), mX(0.),
+    : StObject(), mCategory(0), mNTowers(0), mEnergy(0.), mX(0.),
       mY(0.), mSigmaMin(0.), mSigmaMax(0.), mChi2Ndf1Photon(-1.),
       mChi2Ndf2Photon(-1.), mId(0) { }
 
@@ -36,13 +34,4 @@ void StFmsCluster::Print(Option_t* /* not used */) const {
            << "\n\tchi2NdfPh2:\t" << chi2Ndf2Photon()
            << "\n\tid:\t" << id()
            << "\n\tPhoton List:  \n" << endm;
-}
-
-Bool_t StFmsCluster::setNPhotons(Int_t nPhoton) {
-  if (nPhoton <= 0 || nPhoton > MAX_PHOTON_PER_CLUSTER) {
-    LOG_ERROR << "StFmsCluster::setNPhotons() illegal nPhoton" << endm;
-    return false;
-  }  // if
-  mNPhotons = nPhoton;
-  return true;
 }

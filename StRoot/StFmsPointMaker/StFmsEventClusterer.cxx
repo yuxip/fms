@@ -357,7 +357,6 @@ Float_t StFmsEventClusterer::fit1PhotonCluster(
   } else {
     towerCluster->photons().assign(photons.begin(), photons.end());
   }  // if
-  towerCluster->cluster()->setNPhotons(photons.size());
   const int nDegreesOfFreedom =
     std::max(int(towerCluster->towers().size()) - 3, 1);
   towerCluster->setChiSquare(chiSquare / nDegreesOfFreedom);
@@ -377,7 +376,6 @@ Float_t StFmsEventClusterer::fit2PhotonCluster(ClusterIter towerCluster) {
     LOG_WARN << "2-photon Minuit fit found " << photons.size() << " photons"
       << endm;
   }  // if
-  (*towerCluster)->cluster()->setNPhotons(photons.size());
   chiSquare = fitGlobalClusters(2, 1, towerCluster);
   const int nDegreesOfFreedom = std::max(1,
     int((*towerCluster)->towers().size() - 6));
@@ -397,12 +395,11 @@ Int_t StFmsEventClusterer::fitAmbiguousCluster(ClusterIter towerCluster) {
       category = k2PhotonCluster;
     }  // if
   }  // if
-  if (category == k2PhotonCluster) {  // 2-photon fit is better
-    (*towerCluster)->cluster()->setNPhotons(2);
-  } else {  // 1-photon fit was better, restore it's properties
+  // The 2-photon fit updated the cluster, so if the 1-photon fit turns out to
+  // have been better, restore its properties
+  if (category == k1PhotonCluster) {
     (*towerCluster)->setChiSquare(chiSquare1Photon);
     (*towerCluster)->photons().assign(1, photon);
-    (*towerCluster)->cluster()->setNPhotons(1);
   }  // if
   return category;
 }

@@ -77,8 +77,6 @@ class StFmsCluster : public StObject {
   void setCategory(Int_t catag) { mCategory = catag; }
   /** Set number of towers in this cluster. */
   void setNTowers(Int_t numbTower) { mNTowers = numbTower; }
-  /** Set number of points/photons forming this cluster. */
-  Bool_t setNPhotons(Int_t nPhoton);
   /** Set total cluster energy. */
   void setEnergy(Float_t energy) { mEnergy = energy; }
   /** Set cluster mean x in local grid coordinates. */
@@ -110,7 +108,6 @@ class StFmsCluster : public StObject {
   UShort_t mDetectorId;  ///< Detector starts from 1
   Int_t mCategory;  ///< Category of cluster (see EFmsClusterCategory)
   Int_t mNTowers;  ///< Number of non-zero-energy tower hits in the cluster
-  Int_t mNPhotons;  ///< Number of photons forming this cluster
   Float_t mEnergy;  ///< Total energy contained in this cluster (0th moment)
   Float_t mX;  ///< Mean x ("center of gravity") in local grid coordinate
                ///< (1st moment)

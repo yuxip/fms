@@ -238,7 +238,6 @@ void StMuFmsUtil::fillFmsClusters(StFmsCollection* fmscol,
     cluster->setDetectorId(muCluster->detectorId());
     cluster->setCategory(muCluster->category());
     cluster->setNTowers(muCluster->hits()->GetEntries());
-    cluster->setNPhotons(muCluster->photons()->GetEntries());
     cluster->setEnergy(muCluster->energy());
     cluster->setX(muCluster->x());
     cluster->setY(muCluster->y());
