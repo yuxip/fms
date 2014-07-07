@@ -214,7 +214,6 @@ void bfc(Int_t First, Int_t Last,
   //
   // <---- Add FMS makers here
   //
-  gSystem->Load("StFmsPointMaker");
   gSystem->Load("StFmsQAHistoMaker");
   StFmsQAHistoMaker* fmsQa = new StFmsQAHistoMaker;
   fmsQa->SetOutputFile(userFile);
