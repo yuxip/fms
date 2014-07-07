@@ -13,6 +13,7 @@
 #include "StFmsPointMaker/StFmsClusterFitter.h"
 
 #include <algorithm>  // For std::max()
+#include <array>
 #include <cmath>
 #include <numeric>
 #include <vector>
@@ -29,10 +30,11 @@
 
 namespace {
 const Int_t kMaxNPhotons = 7;  // Maximum number of photons that can be fitted
-const Int_t kNFitParameters = 7;  // Parameters for shower-shape function
+std::array<double, 7> fitParameters = {0., 1.070804, 0.167773, -0.238578,
+                                       0.535845, 0.850233, 2.382637};
 TF2 showerShapeFitFunction("showerShapeFitFunction",
                        &FMSCluster::StFmsClusterFitter::energyDepositionInTower,
-                      -25.0, 25.0, -25.0, 25.0, kNFitParameters);
+                      -25.0, 25.0, -25.0, 25.0, fitParameters.size());
 /*
  Compose Minuit step size in each fit variable.
  The first value is for the number of photons.
@@ -69,10 +71,8 @@ StFmsClusterFitter::StFmsClusterFitter(const StFmsGeometry* geometry,
     : mMinuit(3 * kMaxNPhotons + 1) {
   // Set tower (x, y) widths for this detector
   towerWidths = geometry->towerWidths(detectorId);
-  double parameters[kNFitParameters] = {towerWidths.at(0), 1.070804, 0.167773,
-                                        -0.238578, 0.535845, 0.850233,
-                                        2.382637};
-  showerShapeFitFunction.SetParameters(parameters);
+  fitParameters.front() = towerWidths.at(0);
+  showerShapeFitFunction.SetParameters(fitParameters.data());
   mMinuit.SetPrintLevel(-1);  // Quiet, including suppression of warnings
 }
 
