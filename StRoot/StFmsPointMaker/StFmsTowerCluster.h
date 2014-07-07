@@ -59,13 +59,13 @@ class StFmsTowerCluster {
    
    Ignore towers below the energy cutoff.
    */
-  void calculateClusterMoments(Float_t energyCutoff);
+  void calculateClusterMoments(Double_t energyCutoff);
   /**
    Determine cluster axis.
 
    Also sets energy cutoff for cluster moments.
    */
-  void findClusterAxis(Float_t Ecoff) {
+  void findClusterAxis(Double_t Ecoff) {
     mEnergyCutoff = Ecoff;
     findClusterAxis();
   }
@@ -74,19 +74,19 @@ class StFmsTowerCluster {
   /** Sets the index of this cluster in the event. */
   void setIndex(Int_t index) { mIndex = index; }
   /** 2nd moment in x. */
-  float sigmaX() const { return mSigmaX; }
+  double sigmaX() const { return mSigmaX; }
   /** 2nd moment in y. */
-  float sigmaY() const { return mSigmaY; }
+  double sigmaY() const { return mSigmaY; }
   /** 2nd moment in x-y. */
-  float sigmaXY() const { return mSigmaXY; }
+  double sigmaXY() const { return mSigmaXY; }
   /** Angle in x-y plane that defines the direction of least-2nd-sigma axis. */
-  Float_t thetaAxis() const { return mThetaAxis; }
+  Double_t thetaAxis() const { return mThetaAxis; }
   /** Return the &chi;<sup>2</sup> of the photon fit for this cluster. */
-  Float_t chiSquare() const { return mChiSquare; }
+  Double_t chiSquare() const { return mChiSquare; }
   /** Set the &chi;<sup>2</sup> of the photon fit for this cluster. */
-  void setChiSquare(Float_t chi2) { mChiSquare = chi2; }
+  void setChiSquare(Double_t chi2) { mChiSquare = chi2; }
   /** Cutoff on towers to use in moment calculations. */
-  float energyCutoff() const { return mEnergyCutoff; }
+  double energyCutoff() const { return mEnergyCutoff; }
   /** Return the list of towers in this cluster. */
   Towers& towers() { return mTowers; }
   /** \overload */
@@ -109,13 +109,13 @@ class StFmsTowerCluster {
       "theta" in x-y plane. */
   Double_t getSigma(Double_t theta) const;
   Int_t mIndex;  ///< cluster number in an event, counts from 0
-  Float_t mSigmaX;  ///< 2nd moment in x
-  Float_t mSigmaY;  ///< 2nd moment in y
-  Float_t mSigmaXY;  ///< 2nd moment in x-y
-  Float_t mThetaAxis;  ///< theta angle in x-y plane that define the direction
+  Double_t mSigmaX;  ///< 2nd moment in x
+  Double_t mSigmaY;  ///< 2nd moment in y
+  Double_t mSigmaXY;  ///< 2nd moment in x-y
+  Double_t mThetaAxis;  ///< theta angle in x-y plane that define the direction
                        ///< of least-2nd-sigma axis
-  Float_t mChiSquare;  ///< Chi-square of the fitting
-  Float_t mEnergyCutoff;  //!< Cutoff on towers to use in moment calculations
+  Double_t mChiSquare;  ///< Chi-square of the fitting
+  Double_t mEnergyCutoff;  //!< Cutoff on towers to use in moment calculations
   Towers mTowers;  //!< Towers that make the cluster
 #ifndef __CINT__  // CINT won't parse unique_ptr so hide it
   std::unique_ptr<StFmsCluster> mCluster;  //!< Pointer to StEvent cluster

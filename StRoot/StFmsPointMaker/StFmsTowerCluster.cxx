@@ -37,13 +37,13 @@ void StFmsTowerCluster::Clear(const char* /* option */) {
   mTowers.clear();
 }
 
-void StFmsTowerCluster::calculateClusterMoments(Float_t Ecoff) {
+void StFmsTowerCluster::calculateClusterMoments(Double_t Ecoff) {
   mEnergyCutoff = Ecoff;
-  Float_t w0, w1, mtmp, mx, my, sigx, sigy, sigXY;
+  Double_t w0, w1, mtmp, mx, my, sigx, sigy, sigXY;
   w0 = w1 = mtmp = mx = my = sigx = sigy = sigXY = 0;
   for (Towers::const_iterator i = mTowers.begin(); i != mTowers.end(); ++i) {
     const StFmsTower* tower = *i;
-    Float_t xxx, yyy;
+    Double_t xxx, yyy;
     xxx = tower->column() - 0.5;
     yyy = tower->row() - 0.5;
     mtmp = log(tower->hit()->energy() + 1. - Ecoff) > 0 ?
@@ -100,7 +100,7 @@ Double_t StFmsTowerCluster::getSigma(Double_t theta) const {
   // 2-d vector vaxis define the axis
   TVector2 vaxis(cos(theta), sin(theta));
   // loop over all towers pointer in cluster
-  float wnew =0;
+  double wnew =0;
   for (Towers::const_iterator i = mTowers.begin(); i != mTowers.end(); ++i) {
     const StFmsTower* tower = *i;
     // the 2-d vector from the "center" of cluster to tower
@@ -111,8 +111,8 @@ Double_t StFmsTowerCluster::getSigma(Double_t theta) const {
     // "v1" that is norm to "vaxis"
     Double_t dis = (v1.Norm(vaxis)).Mod();
     // contribution to sigma
-    float wtmp = log(tower->hit()->energy() + 1. - mEnergyCutoff) > 0 ?
-                 log(tower->hit()->energy() + 1. - mEnergyCutoff) : 0;
+    double wtmp = log(tower->hit()->energy() + 1. - mEnergyCutoff) > 0 ?
+                  log(tower->hit()->energy() + 1. - mEnergyCutoff) : 0;
     wnew += wtmp;
     sigma += wtmp * dis * dis;
   }  // for
