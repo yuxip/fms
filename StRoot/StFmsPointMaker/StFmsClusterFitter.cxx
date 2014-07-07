@@ -225,9 +225,10 @@ Double_t StFmsClusterFitter::energyDepositionInTower(Double_t* xy,
     for (int iy = 0; iy < 2; ++iy) {
       double signX = std::pow(-1., ix);  // 1 or -1
       double signY = std::pow(-1., iy);  // 1 or -1
-      double s[2] = {xy[0] + signX * width / 2.,   // x +/- d/2
-                     xy[1] + signY * width / 2.};  // y +/- d/2
-      energy += signX * signY * energyDepositionDistribution(s, parameters);
+      std::array<double, 2> s{ {xy[0] + signX * width / 2.,    // x +/- d/2
+                                xy[1] + signY * width / 2.} }; // y +/- d/2
+      energy += signX * signY * energyDepositionDistribution(s.data(),
+                                                             parameters);
     }  // for
   }  // for
   return energy;
