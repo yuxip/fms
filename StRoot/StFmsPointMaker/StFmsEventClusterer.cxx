@@ -346,7 +346,7 @@ Double_t StFmsEventClusterer::photonEnergyInTower(
 }
 
 /* 1-photon fitting function */
-Float_t StFmsEventClusterer::fit1PhotonCluster(
+Double_t StFmsEventClusterer::fit1PhotonCluster(
     StFmsTowerCluster* towerCluster) {
   OnePhotonFitParameters parameters(mTowerWidthXY, towerCluster->cluster());
   PhotonList photons;
@@ -364,7 +364,7 @@ Float_t StFmsEventClusterer::fit1PhotonCluster(
 }
 
 /* 2-photon fitting function */
-Float_t StFmsEventClusterer::fit2PhotonCluster(ClusterIter towerCluster) {
+Double_t StFmsEventClusterer::fit2PhotonCluster(ClusterIter towerCluster) {
   TwoPhotonFitParameters parameters(mTowerWidthXY, towerCluster->get());
   PhotonList photons;
   double chiSquare =
@@ -405,7 +405,7 @@ Int_t StFmsEventClusterer::fitAmbiguousCluster(ClusterIter towerCluster) {
 }
 
 /* Global fitting function, fitting photons across all clusters */
-Float_t StFmsEventClusterer::fitGlobalClusters(unsigned nPhotons,
+Double_t StFmsEventClusterer::fitGlobalClusters(unsigned nPhotons,
                                                const unsigned nClusters,
                                                ClusterIter first) {
   ClusterIter end = first;

@@ -128,7 +128,7 @@ class StFmsEventClusterer: public TObject {
 
    Returns the &chi;<sup>2</sup> of the fit.
    */
-  Float_t fit1PhotonCluster(StFmsTowerCluster* cluster);
+  Double_t fit1PhotonCluster(StFmsTowerCluster* cluster);
 #ifndef __CINT__  // Hide Cluster(Const)Iter from CINT as it uses C++11
   /*
    Special 2-photon fit for a single cluster.
@@ -137,7 +137,7 @@ class StFmsEventClusterer: public TObject {
 
    Returns the &chi;<sup>2</sup> of the fit.
    */
-  Float_t fit2PhotonCluster(ClusterIter cluster);
+  Double_t fit2PhotonCluster(ClusterIter cluster);
   /*
    Fit an ambiguous cluster (one that isn't obviously 1- or 2-photon).
 
@@ -164,7 +164,7 @@ class StFmsEventClusterer: public TObject {
 
    Returns the &chi;<sup>2</sup> of the fit.
    */
-  Float_t fitGlobalClusters(unsigned nPhotons, unsigned nClusters,
+  Double_t fitGlobalClusters(unsigned nPhotons, unsigned nClusters,
                             ClusterIter first);
   /*
    Run tests on the lower-energy photon in a 2-photon cluster.
