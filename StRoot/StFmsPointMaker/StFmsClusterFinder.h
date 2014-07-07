@@ -61,7 +61,7 @@ class StFmsClusterFinder {
    */
   int categorise(StFmsTowerCluster* cluster);
   /** Return energy cutoff on towers used when calculating cluster moments */
-  float momentEnergyCutoff() const { return mEnergyCutoff; }
+  double momentEnergyCutoff() const { return mEnergyCutoff; }
 #ifndef __CINT__  // Hide ClusterList from CINT
   /**
    Find clusters from a collection of input towers.
