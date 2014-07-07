@@ -128,7 +128,7 @@ int StFmsPointMaker::clusterDetector(TowerList* towers, const int detectorId,
 bool StFmsPointMaker::validateTowerEnergySum(const TowerList& towers) const {
   // Attempt to get center-of-mass energy from StRunInfo.
   // If it can't be accessed assume 500 GeV running.
-  float centerOfMassEnergy(500.);
+  double centerOfMassEnergy(500.);
   const StEvent* event = static_cast<const StEvent*>(GetInputDS("StEvent"));
   if (event) {
     if (event->runInfo()) {
@@ -136,7 +136,7 @@ bool StFmsPointMaker::validateTowerEnergySum(const TowerList& towers) const {
     }  // if
   }  // if
   // Sum tower energies and test validity of the sum
-  float Esum = 0.f;
+  double Esum = 0.f;
   typedef TowerList::const_iterator TowerIter;
   for (TowerIter i = towers.begin(); i != towers.end(); ++i) {
     Esum += i->hit()->energy();
