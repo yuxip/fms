@@ -31,6 +31,7 @@ void load(Bool_t personal=true) {
     gSystem->Load("libMinuit.so");
     gSystem->Load("StFmsDbMaker");
     gSystem->Load("StFmsHitMaker");
+    gSystem->Load("StFmsUtil");
     gSystem->Load("StFmsPointMaker");
     gSystem->Load("StFmsQAHistoMaker");
 	}  // if
