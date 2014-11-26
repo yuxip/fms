@@ -16,7 +16,7 @@
 #include <vector>
 
 #include "StRoot/StChain/StMaker.h"
-#include "StRoot/StFmsPointMaker/StFmsGeometry.h"
+#include "StRoot/StFmsUtil/StFmsGeometry.h"
 
 class StFmsCollection;
 class StFmsDbMaker;
@@ -85,8 +85,7 @@ class StFmsPointMaker : public StMaker {
 
    Returns standard STAR error codes (kStOk, kStWarn, kStErr).
    */
-  int clusterDetector(TowerList* towers, int detectorId,
-                      StFmsCollection* fmsCollection);
+  int clusterDetector(TowerList* towers, int detectorId);
   /**
    Verify that the sum of tower energies is sensible.
 
@@ -106,7 +105,7 @@ class StFmsPointMaker : public StMaker {
    cannot be accessed for some reason, assumes 500 GeV collisions.
    */
   bool processTowerCluster(FMSCluster::StFmsTowerCluster* towerCluster,
-                           int detectorId, StFmsCollection* fmsCollection);
+                           int detectorId);
   /** Creates a new StFmsPoint from an StFmsFittedPhoton. */
   StFmsPoint* makeFmsPoint(const FMSCluster::StFmsFittedPhoton& photon,
                            int detectorId);
@@ -122,6 +121,7 @@ class StFmsPointMaker : public StMaker {
   bool isValidChannel(int detector, int row, int col);
   StFmsDbMaker* mFmsDbMaker;  //!< Access to FMS database information
   FMSCluster::StFmsGeometry mGeometry;  //!< Access to current FMS geometry
+  StFmsCollection* mFmsCollection; //!< StFmsCollection as retrieved from StEvent
   TowerMap mTowers;  //!< One for each sub-detector, keyed by detector ID
   int mObjectCount;  //!< Object count in event for use with TRef
   ClassDef(StFmsPointMaker, 0)

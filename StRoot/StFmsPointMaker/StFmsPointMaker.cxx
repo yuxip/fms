@@ -23,11 +23,11 @@
 #include "StRoot/StEvent/StRunInfo.h"
 #include "StRoot/StFmsDbMaker/StFmsDbMaker.h"
 
-#include "StRoot/StFmsPointMaker/StFmsEventClusterer.h"
-#include "StRoot/StFmsPointMaker/StFmsFittedPhoton.h"
-#include "StRoot/StFmsPointMaker/StFmsTower.h"
-#include "StRoot/StFmsPointMaker/StFmsTowerCluster.h"
-
+#include "StRoot/StFmsUtil/StFmsEventClusterer.h"
+#include "StRoot/StFmsUtil/StFmsFittedPhoton.h"
+#include "StRoot/StFmsUtil/StFmsTower.h"
+#include "StRoot/StFmsUtil/StFmsTowerCluster.h"
+#include "StRoot/StFmsUtil/StFmsConstant.h"
 namespace {
 // Calculate a 4 momentum from a direction/momentum vector and energy
 // assuming zero mass i.e. E = p
@@ -64,14 +64,13 @@ Int_t StFmsPointMaker::Make() {
       with the MuDST coordinator. It should work OK as I don't think any other
       STAR makers use TRef. */
   mObjectCount = TProcessID::GetObjectCount();
-  if (!populateTowerLists()) {
+  if (!populateTowerLists()) { //this also assigns mFmsCollection
     LOG_ERROR << "StFmsPointMaker::Make() - failed to initialise tower " <<
       "lists for the event" << endm;
+  	return kStErr;
   }  // if
-  if (clusterEvent() == kStOk) {
-     return StMaker::Make();
-  }  // if
-  return kStErr;
+  clusterEvent();
+  return StMaker::Make();
 }
 
 void StFmsPointMaker::Clear(Option_t* option) {
@@ -96,22 +95,20 @@ StFmsCollection* StFmsPointMaker::getFmsCollection() {
 }
 
 int StFmsPointMaker::clusterEvent() {
-  StFmsCollection* fmsCollection = getFmsCollection();
-  if (!fmsCollection) {
+  if (!mFmsCollection) {
     return kStErr;
   }  // if
   for (auto i = mTowers.begin(); i != mTowers.end(); ++i) {
     if (!validateTowerEnergySum(i->second)) {
       continue;  // To remove LED trails
     }  // if
-    clusterDetector(&i->second, i->first, fmsCollection);
+    clusterDetector(&i->second, i->first);
   }  // for
   return kStOk;
 }
 
 /* Perform photon reconstruction on a single sub-detector */
-int StFmsPointMaker::clusterDetector(TowerList* towers, const int detectorId,
-                                     StFmsCollection* fmsCollection) {
+int StFmsPointMaker::clusterDetector(TowerList* towers, const int detectorId) {
   FMSCluster::StFmsEventClusterer clustering(&mGeometry, detectorId);
   // Perform tower clustering, skip this subdetector if an error occurs
   if (!clustering.cluster(towers)) {  // Cluster tower list
@@ -120,7 +117,7 @@ int StFmsPointMaker::clusterDetector(TowerList* towers, const int detectorId,
   // Saved cluster info into StFmsCluster
   auto& clusters = clustering.clusters();
   for (auto cluster = clusters.begin(); cluster != clusters.end(); ++cluster) {
-    processTowerCluster(cluster->get(), detectorId, fmsCollection);
+    processTowerCluster(cluster->get(), detectorId);
   }  // for
   return kStOk;
 }
@@ -146,8 +143,7 @@ bool StFmsPointMaker::validateTowerEnergySum(const TowerList& towers) const {
 
 bool StFmsPointMaker::processTowerCluster(
     FMSCluster::StFmsTowerCluster* towerCluster,
-    const int detectorId,
-    StFmsCollection* fmsCollection) {
+    const int detectorId) {
   // Update the StFmsCluster object we want to store in StEvent with information
   // not automatically propagated via StFmsTowerCluster
   StFmsCluster* cluster = towerCluster->cluster();
@@ -157,7 +153,7 @@ bool StFmsPointMaker::processTowerCluster(
   }  // if
   cluster->setDetectorId(detectorId);
   // Cluster id is id of the 1st photon, not necessarily the highest-E photon
-  cluster->setId(305 + 20 * detectorId + fmsCollection->numberOfPoints());
+  cluster->setId(CLUSTER_BASE + CLUSTER_ID_FACTOR_DET * detectorId + mFmsCollection->numberOfPoints());
   // Cluster locations are in column-row coordinates so convert to cm
   TVector3 xyz = mGeometry.columnRowToGlobalCoordinates(
     cluster->x(), cluster->y(), detectorId);
@@ -166,13 +162,13 @@ bool StFmsPointMaker::processTowerCluster(
   for (Int_t np = 0; np < towerCluster->photons().size(); np++) {
     StFmsPoint* point = makeFmsPoint(towerCluster->photons()[np], detectorId);
     point->setDetectorId(detectorId);
-    point->setId(305 + 20 * detectorId + fmsCollection->numberOfPoints());
+    point->setId(CLUSTER_BASE + CLUSTER_ID_FACTOR_DET * detectorId + mFmsCollection->numberOfPoints());
     point->setParentClusterId(cluster->id());
     point->setNParentClusterPhotons(towerCluster->photons().size());
     point->setCluster(cluster);
     // Add it to both the StFmsCollection and StFmsCluster
     // StFmsCollection owns the pointer, the cluster merely references it
-    fmsCollection->points().push_back(point);
+    mFmsCollection->points().push_back(point);
     cluster->points().push_back(point);
   }  // for
   // Save the tower hit info.
@@ -184,7 +180,7 @@ bool StFmsPointMaker::processTowerCluster(
   }  // for
   // Release StFmsCluster held by towerCluster to pass ownership to
   // StFmsCollection (and hence StEvent).
-  fmsCollection->addCluster(towerCluster->release());
+  mFmsCollection->addCluster(towerCluster->release());
   return true;
 }
 
@@ -204,11 +200,11 @@ StFmsPoint* StFmsPointMaker::makeFmsPoint(
 }
 
 bool StFmsPointMaker::populateTowerLists() {
-  StFmsCollection* fmsCollection = getFmsCollection();
-  if (!fmsCollection) {
+  mFmsCollection = getFmsCollection();
+  if (!mFmsCollection) {
       return false;
   }  // if
-  auto& hits = fmsCollection->hits();
+  auto& hits = mFmsCollection->hits();
   for (auto i = hits.begin(); i != hits.end(); ++i) {
     StFmsHit* hit = *i;
     const int detector = hit->detectorId();
@@ -236,26 +232,27 @@ bool StFmsPointMaker::populateTowerLists() {
 }
 
 /* Test channel validity by detector and row, column in the range [1, N] */
+/* the constants are defined in StFmsUtil/StFmsConstant.h*/
 bool StFmsPointMaker::isValidChannel(int detector, int row, int column) {
   // Simplest check first, test lower bounds are valid
-  if (row < 1 || column < 1) {
+  if (row < ROW_LOW_LIMIT || column < COL_LOW_LIMIT) {
     return false;
   }  // if
   // Omit gaps in the detector
   switch (detector) {
     case FMSCluster::kFmsNorthLarge:  // Deliberate fall-through
     case FMSCluster::kFmsSouthLarge:  // Large-cell FMS sub-detector
-      if (fabs(row - 17.5) < 8 && column < 9) {  // Central hole
+      if (fabs(row - CEN_ROW_LRG) < CEN_ROW_WIDTH_LRG && column < CEN_UPPER_COL_LRG) {  // Central hole
         return false;
       }  // if
       // This cuts off a 7x7 triangle from the corners
-      if (fabs(17.5 - row) + column > 27.) {
+      if (fabs(CORNER_ROW - row) + column > CORNER_LOW_COL) {
         return false;
       }  // if
       break;
     case FMSCluster::kFmsNorthSmall:  // Deliberate fall-through
     case FMSCluster::kFmsSouthSmall:  // Small-cell FMS sub-detector
-      if (fabs(row - 12.5) < 5 && column < 6) {  // Central hole
+      if (fabs(row - CEN_ROW_SML) < CEN_ROW_WIDTH_SML && column < CEN_UPPER_COL_SML) {  // Central hole
         return false;
       }  // if
       break;
@@ -266,15 +263,13 @@ bool StFmsPointMaker::isValidChannel(int detector, int row, int column) {
   // this detector. Leave this to last to avoid database calls when possible.
   // Also serves as a double-check on detector, as the database will
   // return -1 for both numbers in case of an invalid detector number.
-  if (mFmsDbMaker) {
-    const int nRows = mFmsDbMaker->nRow(detector);
-    if (nRows < 0 || row > nRows) {
-      return false;
-    }  // if
-    const int nColumns = mFmsDbMaker->nColumn(detector);
-    if (nColumns < 0 || column > nColumns) {
-      return false;
-    }  // if
+  const int nRows = mFmsDbMaker->nRow(detector);
+  if (nRows < 0 || row > nRows) {
+    return false;
+  }  // if
+  const int nColumns = mFmsDbMaker->nColumn(detector);
+  if (nColumns < 0 || column > nColumns) {
+    return false;
   }  // if
   return true;
 }
