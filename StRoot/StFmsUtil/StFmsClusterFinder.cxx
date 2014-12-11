@@ -296,18 +296,18 @@ void StFmsClusterFinder::calculateClusterMoments(
 
 int StFmsClusterFinder::categorise(StFmsTowerCluster* towerCluster) {
   StFmsCluster* cluster = towerCluster->cluster();
-  if (cluster->nTowers() < 5) {
+  if (cluster->nTowers() < CAT_NTOWERS_PH1) {
     cluster->setCategory(k1PhotonCluster);
   } else {  // Categorise cluster based on empirical criteria
     const double sigmaMaxE = cluster->sigmaMax() * cluster->energy();
-    if (cluster->energy() < 2.1 * (sigmaMaxE - 7.)) {
-      if (sigmaMaxE > 35.) {
+    if (cluster->energy() < CAT_EP1_PH2 * (sigmaMaxE - CAT_EP0_PH2)) {
+      if (sigmaMaxE > CAT_SIGMAMAX_MIN_PH2) {
         cluster->setCategory(k2PhotonCluster);
       } else {
         cluster->setCategory(kAmbiguousCluster);
       }  // if
-    } else if (cluster->energy() > 2.1 * (sigmaMaxE - 2.)) {
-      if (sigmaMaxE < 10.) {
+    } else if (cluster->energy() > CAT_EP1_PH1 * (sigmaMaxE - CAT_EP0_PH1)) {
+      if (sigmaMaxE < CAT_SIGMAMAX_MAX_PH1) {
         cluster->setCategory(k1PhotonCluster);
       } else {
         cluster->setCategory(kAmbiguousCluster);
@@ -442,7 +442,7 @@ unsigned StFmsClusterFinder::associateTowersWithClusters(
       associated.push_back(*tower);
     }  // if
   }  // loop over TObjArray "neighbor"
-  // Remove associated neighbors from the neighbor list
+  // Remove associated neighbors from the neighbor list.
   for (auto i = associated.begin(); i != associated.end(); ++i) {
     neighbors->remove(*i);
   }  // for
@@ -461,7 +461,6 @@ unsigned StFmsClusterFinder::associateValleyTowersWithClusters(
     if (cluster) {
       // Move the tower to the appropriate cluster
       association->tower()->setCluster(cluster->index());
-      neighbors->remove(association->tower());
       cluster->towers().push_back(association->tower());
     } else {
       LOG_INFO << "Something is wrong! The following \"Valley\" tower does "

@@ -134,16 +134,16 @@ struct OnePhotonFitParameters {
     const double x = xyWidth.at(0);
     const double y = xyWidth.at(1);
     start = {
-      1.0,
+      PH1_START_NPH,
       x * cluster->x(),
       y * cluster->y(),
       cluster->energy()
     };
     const std::vector<double> delta = {
-      0.5,
-      x * 0.5,
-      y * 0.5,
-      cluster->energy() * 0.15
+      PH1_DELTA_N,
+      x * PH1_DELTA_X,
+      y * PH1_DELTA_Y,
+      cluster->energy() * PH1_DELTA_E
     };
     for (unsigned i(0); i < start.size(); ++i) {
       lower.push_back(start.at(i) - delta.at(i));
@@ -165,40 +165,40 @@ struct TwoPhotonFitParameters {
     const double y = xyWidth.at(1);
     const auto cluster = towerCluster->cluster();
     start = std::array<double, 7>{ {
-      2,
+      PH2_START_NPH,
       x * cluster->x(),
       y * cluster->y(),
-      2.2 * x * cluster->sigmaMax(),
+      PH2_START_FSIGMAMAX * x * cluster->sigmaMax(),
       towerCluster->thetaAxis(),
-      gRandom->Uniform(-0.1, 0.1),
+      gRandom->Uniform(PH2_RAN_LOW, PH2_RAN_HIGH),
       cluster->energy(),
     } };
-    steps = std::array<double, 7>{ {0, 0.02, 0.02, 0.01, 0.01, 0.01, 0.1} };
+    steps = std::array<double, 7>{ {PH2_STEP_0, PH2_STEP_1, PH2_STEP_2, PH2_STEP_3, PH2_STEP_4, PH2_STEP_5, PH2_STEP_6} };
     const double sigmaMaxE = cluster->sigmaMax() * cluster->energy();
-    double maxTheta = cluster->sigmaMin() / cluster->sigmaMax() / 2.8;
+    double maxTheta = cluster->sigmaMin() / cluster->sigmaMax() / PH2_MAXTHETA_F;
     maxTheta = std::min(maxTheta, TMath::PiOver2());
     lower = std::array<double, 7>{ {
-      1.5,
-      start.at(1) - 0.2 * x,
-      start.at(2) - 0.2 * y,
-      std::max(18. / pow(sigmaMaxE, 0.8), 0.5) * x,
+      PH2_LOWER_NPH,
+      start.at(1) - PH2_LOWER_XF * x,
+      start.at(2) - PH2_LOWER_YF * y,
+      std::max(PH2_LOWER_XMAX_F / pow(sigmaMaxE, PH2_LOWER_XMAX_POW), PH2_LOWER_XMAX_LIMIT) * x,
       start.at(4) - maxTheta,
-      -1.,
-      start.at(6) * 0.95
+      PH2_LOWER_5_F,
+      start.at(6) * PH2_LOWER_6_F
     } };
     upper = std::array<double, 7>{ {
-      2.5,
-      start.at(1) + 0.2 * x,
-      start.at(2) + 0.2 * y,
-      std::min(0.085 * (60. - sigmaMaxE), 3.5) * x,
+      PH2_UPPER_NPH,
+      start.at(1) + PH2_UPPER_XF * x,
+      start.at(2) + PH2_UPPER_YF * y,
+      std::min(PH2_UPPER_XMIN_F * (PH2_UPPER_XMIN_P0 - sigmaMaxE), PH2_UPPER_XMIN_LIMIT) * x,
       start.at(4) + maxTheta,
-      1.,
-      start.at(6) * 1.05
+      PH2_UPPER_5_F,
+      start.at(6) * PH2_UPPER_6_F
     } };
     // With the above approach the limits on parameter 3 can sometimes go beyond
     // sensible values, so limit them.
-    lower.at(3) = std::min(lower.at(3), start.at(3) * 0.9);
-    upper.at(3) = std::max(upper.at(3), start.at(3) * 1.1);
+    lower.at(3) = std::min(lower.at(3), start.at(3) * PH2_3_LIMIT_LOWER);
+    upper.at(3) = std::max(upper.at(3), start.at(3) * PH2_3_LIMIT_UPPER);
   }
 };
 
@@ -208,21 +208,21 @@ struct GlobalPhotonFitParameters {
   GlobalPhotonFitParameters(unsigned nPhotons,
                             ClusterIter first, ClusterIter end)
     // Initialise N-photons parameters as the first element
-    : start(1, nPhotons), lower(1, 0.5),
-      upper(1, fms::StFmsClusterFitter::maxNFittedPhotons() + 0.5) {
+    : start(1, nPhotons), lower(1, GL_LOWER_1),
+      upper(1, fms::StFmsClusterFitter::maxNFittedPhotons() + GL_UPPER_DELTA_MAXN) {
     // Append (x, y, E) fit parameters for each photon
     for (auto cluster = first; cluster != end; ++cluster) {
       const auto& photons = (*cluster)->photons();
       for (auto p = photons.begin(); p != photons.end(); ++p) {
         start.push_back(p->x);
-        lower.push_back(start.back() - 1.25);
-        upper.push_back(start.back() + 1.25);
+        lower.push_back(start.back() - GL_0_DLOWER);
+        upper.push_back(start.back() + GL_0_DUPPER);
         start.push_back(p->y);
-        lower.push_back(start.back() - 1.25);
-        upper.push_back(start.back() + 1.25);
+        lower.push_back(start.back() - GL_1_DLOWER);
+        upper.push_back(start.back() + GL_1_DUPPER);
         start.push_back(p->energy);
-        lower.push_back(start.back() * (1 - 0.3));  // Limit to +/- 30% energy
-        upper.push_back(start.back() * (1 + 0.3));
+        lower.push_back(start.back() * (1 - GL_2_DLOWER));  // Limit to +/- 30% energy
+        upper.push_back(start.back() * (1 + GL_2_DUPPER));
       }  // for
     }  // for
   }
@@ -466,7 +466,7 @@ bool StFmsEventClusterer::validate2ndPhoton(ClusterConstIter cluster) const {
   if (tower->hit()->energy() < VALID_FT * photon->energy) {
     return false;
   }  // if
-  // Check if the 2nd photon's "high-hower" enery is too large compared to its
+  // Check if the 2nd photon's "high-hower" energy is too large compared to its
   // fitted energy. If so, it is probably splitting one photon into two
   if (tower->hit()->energy() > VALID_2ND_FT * photonEnergyInTower(tower, photon)) {
     return false;

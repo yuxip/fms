@@ -45,3 +45,63 @@
 #define SS_B1 0.535845
 #define SS_B2 0.850233
 #define SS_B3 2.382637
+
+//empirical cuts used by StFmsClusterFinder::categorise()
+#define CAT_NTOWERS_PH1 5
+#define CAT_EP1_PH2 2.1
+#define CAT_EP0_PH2 7.0
+#define CAT_SIGMAMAX_MIN_PH2 35.0
+#define CAT_EP1_PH1 2.1
+#define CAT_EP0_PH1 2.0
+#define CAT_SIGMAMAX_MAX_PH1 10.0
+
+
+//the following numbers are used by StFmsEventClusterer::OnePhotonFitParameters
+#define PH1_START_NPH 1.0
+#define PH1_DELTA_N 0.5
+#define PH1_DELTA_X 0.5
+#define PH1_DELTA_Y 0.5
+#define PH1_DELTA_E 0.15
+
+//these are used by StFmsEventClusterer::TwoPhotonFitParameters
+#define PH2_START_NPH 2
+#define PH2_START_FSIGMAMAX 2.2
+#define PH2_RAN_LOW -0.1
+#define PH2_RAN_HIGH 0.1
+#define PH2_STEP_0 0
+#define PH2_STEP_1 0.02
+#define PH2_STEP_2 0.02
+#define PH2_STEP_3 0.01
+#define PH2_STEP_4 0.01
+#define PH2_STEP_5 0.01
+#define PH2_STEP_6 0.1
+#define PH2_MAXTHETA_F 2.8
+#define PH2_LOWER_NPH 1.5
+#define PH2_LOWER_XF 0.2
+#define PH2_LOWER_YF 0.2
+#define PH2_LOWER_XMAX_F 18.0
+#define PH2_LOWER_XMAX_POW 0.8
+#define PH2_LOWER_XMAX_LIMIT 0.5
+#define PH2_LOWER_5_F -1.0
+#define PH2_LOWER_6_F 0.95
+#define PH2_UPPER_NPH 2.5
+#define PH2_UPPER_XF 0.2
+#define PH2_UPPER_YF 0.2
+#define PH2_UPPER_XMIN_F 0.085
+#define PH2_UPPER_XMIN_P0 60.0
+#define PH2_UPPER_XMIN_LIMIT 3.5
+#define PH2_UPPER_5_F 1.0
+#define PH2_UPPER_6_F 1.05
+#define PH2_3_LIMIT_LOWER 0.9
+#define PH2_3_LIMIT_UPPER 1.1
+
+//StFmsEventClusterer::GlobalPhotonFitParameters
+#define GL_LOWER_1 0.5
+#define GL_UPPER_DELTA_MAXN 0.5
+#define GL_0_DLOWER 1.25
+#define GL_0_DUPPER 1.25
+#define GL_1_DLOWER 1.25
+#define GL_1_DUPPER 1.25
+#define GL_2_DLOWER 0.3
+#define GL_2_DUPPER 0.3
+

@@ -17,7 +17,6 @@
 #include <memory>  // For std::unique_ptr
 
 #include "Rtypes.h"  // Provides ROOT ClassDef macro
-
 class TObjArray;
 
 namespace FMSCluster {  // $NMSPC
