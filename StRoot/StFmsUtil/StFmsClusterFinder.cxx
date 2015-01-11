@@ -11,7 +11,9 @@
  \date      2014
  \copyright Brookhaven National Lab
  */
-#include "StFmsUtil/StFmsClusterFinder.h"
+#include "StFmsClusterFinder.h"
+#include "StRoot/StFmsDbMaker/StFmsDbMaker.h"
+#include "StFmsDbConfig.h"
 
 #include <algorithm>
 #include <cmath>
@@ -21,8 +23,8 @@
 #include "TObjArray.h"
 
 #include "St_base/StMessMgr.h"
-#include "StEvent/StFmsCluster.h"
-#include "StEvent/StFmsHit.h"
+#include "StRoot/StEvent/StFmsCluster.h"
+#include "StRoot/StEvent/StFmsHit.h"
 
 #include "StFmsUtil/StFmsTower.h"
 #include "StFmsUtil/StFmsConstant.h"

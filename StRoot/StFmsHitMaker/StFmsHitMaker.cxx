@@ -178,7 +178,7 @@ int StFmsHitMaker::Make(){
     }
   }
 
-  		LOG_INFO<<"StFmsHitMaker::Make got "<<mFmsCollection->numberOfHits()<<" hits in StFmsCollection"<<endm;
+ 	LOG_INFO<<"StFmsHitMaker::Make(): flag = "<<flag<<", got "<<mFmsCollection->numberOfHits()<<" hits in StFmsCollection"<<endm;
 	
 
 						
@@ -206,9 +206,10 @@ int StFmsHitMaker::Make(){
 */
 	if(stEvent) {
 		//Adding StFmsCollection to StEvent
-		LOG_DEBUG<<"StFmsHitMaker::Make Adding StFmsCollection as FMSCOLLECTION"<<endm;
+		LOG_INFO<<"StFmsHitMaker::Make Adding StFmsCollection to StEvent"<<endm;
 		stEvent->setFmsCollection(mFmsCollection);
 	}
+	else LOG_INFO << "StEvent is empty" << endm;
 
 	return kStOk;
 }

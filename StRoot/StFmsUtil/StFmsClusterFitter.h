@@ -22,8 +22,8 @@
 #include "TMinuit.h"
 #include "TObject.h"
 
-#include "StFmsUtil/StFmsFittedPhoton.h"
-#include "StFmsUtil/StFmsTowerCluster.h"
+#include "StFmsFittedPhoton.h"
+#include "StFmsTowerCluster.h"
 
 class TF2;
 class TString;

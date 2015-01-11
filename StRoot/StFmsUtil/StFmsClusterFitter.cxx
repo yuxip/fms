@@ -10,7 +10,8 @@
  \date      2014
  \copyright Brookhaven National Lab
  */
-#include "StFmsUtil/StFmsClusterFitter.h"
+#include "StFmsClusterFitter.h"
+#include "StRoot/StFmsDbMaker/StFmsDbMaker.h"
 
 #include <algorithm>  // For std::max()
 #include <array>
@@ -23,11 +24,11 @@
 #include "TString.h"
 
 #include "StRoot/St_base/StMessMgr.h"
-#include "StEvent/StFmsHit.h"
+#include "StRoot/StEvent/StFmsHit.h"
 
-#include "StFmsUtil/StFmsGeometry.h"
-#include "StFmsUtil/StFmsTower.h"
-#include "StFmsUtil/StFmsConstant.h"
+#include "StFmsGeometry.h"
+#include "StFmsTower.h"
+#include "StFmsConstant.h"
 
 namespace {
 const Int_t kMaxNPhotons = 7;  // Maximum number of photons that can be fitted

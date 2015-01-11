@@ -28,11 +28,11 @@ void load(Bool_t personal=true) {
 	gSystem->Load("StRandomSelector");
 	gSystem->Load("StTriggerFilterMaker");
 	if (personal) {  // Load our shared libraries here
-    gSystem->Load("libMinuit.so");
-    gSystem->Load("StFmsDbMaker");
-    gSystem->Load("StFmsHitMaker");
-    gSystem->Load("StFmsUtil");
-    gSystem->Load("StFmsPointMaker");
-    gSystem->Load("StFmsQAHistoMaker");
+	    gSystem->Load("libMinuit.so");
+	    gSystem->Load("StFmsUtil");
+	    gSystem->Load("StFmsDbMaker");
+	    gSystem->Load("StFmsHitMaker");
+	    gSystem->Load("StFmsPointMaker");
+	    gSystem->Load("StFmsQAHistoMaker");
 	}  // if
 }

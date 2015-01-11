@@ -104,7 +104,7 @@ class StFmsCluster : public StObject {
   /** \overload */
   const StPtrVecFmsPoint& points() const { return mPhotons; }
 
- protected:
+ private:
   UShort_t mDetectorId;  ///< Detector starts from 1
   Int_t mCategory;  ///< Category of cluster (see EFmsClusterCategory)
   Int_t mNTowers;  ///< Number of non-zero-energy tower hits in the cluster
@@ -119,8 +119,8 @@ class StFmsCluster : public StObject {
   Float_t mChi2Ndf2Photon;  ///< &chi;<sup>2</sup> / ndf for 2-photon fit
   Int_t mId;  ///< Eventwise cluster ID
   TLorentzVector mFourMomentum;  ///< Cluster four momentum
-  StPtrVecFmsPoint mPhotons;  ///< Tower hits of the current cluster
-  StPtrVecFmsHit mHits;  ///< Fitted points (photons) in the cluster
+  StPtrVecFmsPoint mPhotons; ///< Fitted points (photons) in the cluster
+  StPtrVecFmsHit mHits;  ///< Tower hits of the current cluster
   ClassDef(StFmsCluster, 1)
 };
 #endif  // STROOT_STEVENT_STFMSCLUSTER_H_

@@ -1,0 +1,10 @@
+#!/bin/tcsh
+
+stardev
+#root4star -b -q table_reupload.C'("'Geometry_fms'","'fmsChannelGeometry'","'ofl'","'2014-02-22 00:00:00'","'2014-12-20 00:00:00'")'
+#root4star -b -q table_reupload.C'("'Geometry_fms'","'fmsDetectorPosition'","'ofl'","'2014-02-22 00:00:00'","'2014-12-20 00:00:00'")'
+#root4star -b -q table_reupload.C'("'Calibrations_fms'","'fmsGain'","'ofl'","'2013-02-22 00:00:00'","'2014-12-20 00:00:00'")'
+#root4star -b -q table_reupload.C'("'Calibrations_fms'","'fmsGainCorrection'","'ofl'","'2013-02-22 00:00:00'","'2014-12-20 00:00:00'")'
+#root4star -b -q table_reupload.C'("'Calibrations_fms'","'fmsPatchPanelMap'","'ofl'","'2014-02-22 00:00:00'","'2014-12-20 00:00:00'")'
+#root4star -b -q table_reupload.C'("'Calibrations_fms'","'fmsQTMap'","'ofl'","'2014-02-22 00:00:00'","'2014-12-20 00:00:00'")'
+#root4star -b -q table_reupload.C'("'Calibrations_fms'","'fmsRec'","'ofl'","'2014-02-22 00:00:00'","'2014-12-20 00:00:00'")'

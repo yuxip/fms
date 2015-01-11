@@ -10,7 +10,8 @@
  \date      2014
  \copyright Brookhaven National Lab
  */
-#include "StFmsUtil/StFmsEventClusterer.h"
+#include "StFmsEventClusterer.h"
+#include "StRoot/StFmsDbMaker/StFmsDbMaker.h"
 
 #include <algorithm>
 #include <array>
@@ -24,15 +25,15 @@
 #include "TRandom.h"  // For ROOT global random generator, gRandom
 
 #include "StRoot/St_base/StMessMgr.h"
-#include "StEvent/StFmsCluster.h"
-#include "StEvent/StFmsHit.h"
+#include "StRoot/StEvent/StFmsCluster.h"
+#include "StRoot/StEvent/StFmsHit.h"
 
-#include "StFmsUtil/StFmsClusterFitter.h"
-#include "StFmsUtil/StFmsFittedPhoton.h"
-#include "StFmsUtil/StFmsGeometry.h"
-#include "StFmsUtil/StFmsTower.h"
-#include "StFmsUtil/StFmsTowerCluster.h"
-#include "StFmsUtil/StFmsConstant.h"
+#include "StFmsClusterFitter.h"
+#include "StFmsFittedPhoton.h"
+#include "StFmsGeometry.h"
+#include "StFmsTower.h"
+#include "StFmsTowerCluster.h"
+#include "StFmsConstant.h"
 
 namespace {
 namespace fms = FMSCluster;

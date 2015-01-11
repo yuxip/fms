@@ -18,12 +18,13 @@
 
 #include "TObject.h"
 
-#include "StFmsUtil/StFmsClusterFinder.h"
+#include "StFmsClusterFinder.h"
 
 namespace FMSCluster {  // $NMSPC
 class StFmsClusterFitter;
 class StFmsFittedPhoton;
 class StFmsGeometry;
+
 /**
  Performs clustering and photon-fitting for a single detector and event.
 

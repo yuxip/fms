@@ -69,7 +69,7 @@ class StFmsPoint : public StObject {
   /** Set the 4-momentum of the point (px, py, pz, E). */
   void setFourMomentum(const TLorentzVector& p4) { mFourMomentum = p4; }
 
- protected:
+ private:
   UShort_t mDetectorId;  ///< Detector starts from 1
   Float_t mEnergy;  ///< Fitted energy
   Float_t mX;  ///< Fitted x-position

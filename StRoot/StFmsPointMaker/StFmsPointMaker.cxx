@@ -9,7 +9,7 @@
  \date      2014
  \copyright Brookhaven National Lab
  */
-#include "StRoot/StFmsPointMaker/StFmsPointMaker.h"
+#include "StFmsPointMaker.h"
 
 #include <TLorentzVector.h>
 #include <TProcessID.h>
@@ -44,6 +44,7 @@ StFmsPointMaker::~StFmsPointMaker() { }
 
 Int_t StFmsPointMaker::InitRun(Int_t runNumber) {
   // Ensure we can access database information
+  LOG_INFO << "StFmsPointMaker initializing run" << endm;
   mFmsDbMaker = static_cast<StFmsDbMaker*>(GetMaker("fmsDb"));
   if (!mFmsDbMaker) {
     return kStErr;
@@ -63,6 +64,7 @@ Int_t StFmsPointMaker::Make() {
       however we do it in StFmsPointMaker for now until we can verify changes
       with the MuDST coordinator. It should work OK as I don't think any other
       STAR makers use TRef. */
+  LOG_INFO << "StFmsPointMaker making" << endm;
   mObjectCount = TProcessID::GetObjectCount();
   if (!populateTowerLists()) { //this also assigns mFmsCollection
     LOG_ERROR << "StFmsPointMaker::Make() - failed to initialise tower " <<
@@ -202,9 +204,11 @@ StFmsPoint* StFmsPointMaker::makeFmsPoint(
 bool StFmsPointMaker::populateTowerLists() {
   mFmsCollection = getFmsCollection();
   if (!mFmsCollection) {
+      LOG_INFO << "mFmsCollection is null" << endm;
       return false;
   }  // if
   auto& hits = mFmsCollection->hits();
+  LOG_INFO << "nhits = " << hits.size() << endm;
   for (auto i = hits.begin(); i != hits.end(); ++i) {
     StFmsHit* hit = *i;
     const int detector = hit->detectorId();
@@ -235,6 +239,7 @@ bool StFmsPointMaker::populateTowerLists() {
 /* the constants are defined in StFmsUtil/StFmsConstant.h*/
 bool StFmsPointMaker::isValidChannel(int detector, int row, int column) {
   // Simplest check first, test lower bounds are valid
+
   if (row < ROW_LOW_LIMIT || column < COL_LOW_LIMIT) {
     return false;
   }  // if

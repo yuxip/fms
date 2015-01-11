@@ -1,107 +1,89 @@
-//stores all the detector/reconstruction related constants
+#ifndef STROOT_STFMSUTIL_STFMSCONSTANT_H_
+#define STROOT_STFMSUTIL_STFMSCONSTANT_H_
 
-//the following numbers are used by StFmsPointMaker::isValidChannel()
-//to define detector boundaries
-//row/column lower limit
-#define ROW_LOW_LIMIT 1
-#define COL_LOW_LIMIT 1
-//central hole in large cells
-#define CEN_ROW_LRG 17.5
-#define CEN_ROW_WIDTH_LRG 8
-#define CEN_UPPER_COL_LRG 9
-//central hole in small cells
-#define CEN_ROW_SML 12.5
-#define CEN_ROW_WIDTH_SML 5
-#define CEN_UPPER_COL_SML 6
-//cuts off 7x7 triangle from the corners
-#define CORNER_ROW 17.5
-#define CORNER_LOW_COL 27.0
+#include "StRoot/StFmsUtil/StFmsDbConfig.h"
+#define GetPar(name,dtype) \
+((StFmsDbConfig::Instance()).getParameter<dtype>(name))
 
-//the following are used for cluster/point id encodings
-//in case the parent cluster of a point cannot be accessed
-//by TRef
-#define CLUSTER_BASE 305
-#define CLUSTER_ID_FACTOR_DET 20
+#define ROW_LOW_LIMIT GetPar("ROW_LOW_LIMIT",int)
+#define COL_LOW_LIMIT GetPar("COL_LOW_LIMIT",int)
+#define CEN_ROW_LRG GetPar("CEN_ROW_LRG",float)
+#define CEN_ROW_WIDTH_LRG GetPar("CEN_ROW_WIDTH_LRG",int)
+#define CEN_UPPER_COL_LRG GetPar("CEN_UPPER_COL_LRG",int)
+#define CEN_ROW_SML GetPar("CEN_ROW_SML",float)
+#define CEN_ROW_WIDTH_SML GetPar("CEN_ROW_WIDTH_SML",int)
+#define CEN_UPPER_COL_SML GetPar("CEN_UPPER_COL_SML",int)
+#define CORNER_ROW GetPar("CORNER_ROW",float)
+#define CORNER_LOW_COL GetPar("CORNER_LOW_COL",float)
+#define CLUSTER_BASE GetPar("CLUSTER_BASE",int)
+#define CLUSTER_ID_FACTOR_DET GetPar("CLUSTER_ID_FACTOR_DET",int)
+#define TOTAL_TOWERS GetPar("TOTAL_TOWERS",int)
+#define PEAK_TOWER_FACTOR GetPar("PEAK_TOWER_FACTOR",float)
+#define TOWER_E_THRESHOLD GetPar("TOWER_E_THRESHOLD",float)
+#define BAD_2PH_CHI2 GetPar("BAD_2PH_CHI2",float)
+#define BAD_MIN_E_LRG GetPar("BAD_MIN_E_LRG",float)
+#define BAD_MAX_TOW_LRG GetPar("BAD_MAX_TOW_LRG",float)
+#define BAD_MIN_E_SML GetPar("BAD_MIN_E_SML",float)
+#define BAD_MAX_TOW_SML GetPar("BAD_MAX_TOW_SML",float)
+#define VALID_FT GetPar("VALID_FT",float)
+#define VALID_2ND_FT GetPar("VALID_2ND_FT",float)
+#define VALID_E_OWN GetPar("VALID_E_OWN",float)
+#define SS_C GetPar("SS_C",float)
+#define SS_A1 GetPar("SS_A1",float)
+#define SS_A2 GetPar("SS_A2",float)
+#define SS_A3 GetPar("SS_A3",float)
+#define SS_B1 GetPar("SS_B1",float)
+#define SS_B2 GetPar("SS_B2",float)
+#define SS_B3 GetPar("SS_B3",float)
+#define CAT_NTOWERS_PH1 GetPar("CAT_NTOWERS_PH1",int)
+#define CAT_EP1_PH2 GetPar("CAT_EP1_PH2",float)
+#define CAT_EP0_PH2 GetPar("CAT_EP0_PH2",float)
+#define CAT_SIGMAMAX_MIN_PH2 GetPar("CAT_SIGMAMAX_MIN_PH2",float)
+#define CAT_EP1_PH1 GetPar("CAT_EP1_PH1",float)
+#define CAT_EP0_PH1 GetPar("CAT_EP0_PH1",float)
+#define CAT_SIGMAMAX_MAX_PH1 GetPar("CAT_SIGMAMAX_MAX_PH1",float)
+#define PH1_START_NPH GetPar("PH1_START_NPH",float)
+#define PH1_DELTA_N GetPar("PH1_DELTA_N",float)
+#define PH1_DELTA_X GetPar("PH1_DELTA_X",float)
+#define PH1_DELTA_Y GetPar("PH1_DELTA_Y",float)
+#define PH1_DELTA_E GetPar("PH1_DELTA_E",float)
+#define PH2_START_NPH GetPar("PH2_START_NPH",double)
+#define PH2_START_FSIGMAMAX GetPar("PH2_START_FSIGMAMAX",float)
+#define PH2_RAN_LOW GetPar("PH2_RAN_LOW",float)
+#define PH2_RAN_HIGH GetPar("PH2_RAN_HIGH",float)
+#define PH2_STEP_0 GetPar("PH2_STEP_0",float)
+#define PH2_STEP_1 GetPar("PH2_STEP_1",float)
+#define PH2_STEP_2 GetPar("PH2_STEP_2",float)
+#define PH2_STEP_3 GetPar("PH2_STEP_3",float)
+#define PH2_STEP_4 GetPar("PH2_STEP_4",float)
+#define PH2_STEP_5 GetPar("PH2_STEP_5",float)
+#define PH2_STEP_6 GetPar("PH2_STEP_6",float)
+#define PH2_MAXTHETA_F GetPar("PH2_MAXTHETA_F",float)
+#define PH2_LOWER_NPH GetPar("PH2_LOWER_NPH",float)
+#define PH2_LOWER_XF GetPar("PH2_LOWER_XF",float)
+#define PH2_LOWER_YF GetPar("PH2_LOWER_YF",float)
+#define PH2_LOWER_XMAX_F GetPar("PH2_LOWER_XMAX_F",float)
+#define PH2_LOWER_XMAX_POW GetPar("PH2_LOWER_XMAX_POW",float)
+#define PH2_LOWER_XMAX_LIMIT GetPar("PH2_LOWER_XMAX_LIMIT",double)
+#define PH2_LOWER_5_F GetPar("PH2_LOWER_5_F",float)
+#define PH2_LOWER_6_F GetPar("PH2_LOWER_6_F",float)
+#define PH2_UPPER_NPH GetPar("PH2_UPPER_NPH",float)
+#define PH2_UPPER_XF GetPar("PH2_UPPER_XF",float)
+#define PH2_UPPER_YF GetPar("PH2_UPPER_YF",float)
+#define PH2_UPPER_XMIN_F GetPar("PH2_UPPER_XMIN_F",float)
+#define PH2_UPPER_XMIN_P0 GetPar("PH2_UPPER_XMIN_P0",float)
+#define PH2_UPPER_XMIN_LIMIT GetPar("PH2_UPPER_XMIN_LIMIT",double)
+#define PH2_UPPER_5_F GetPar("PH2_UPPER_5_F",float)
+#define PH2_UPPER_6_F GetPar("PH2_UPPER_6_F",float)
+#define PH2_3_LIMIT_LOWER GetPar("PH2_3_LIMIT_LOWER",float)
+#define PH2_3_LIMIT_UPPER GetPar("PH2_3_LIMIT_UPPER",float)
+#define GL_LOWER_1 GetPar("GL_LOWER_1",float)
+#define GL_UPPER_DELTA_MAXN GetPar("GL_UPPER_DELTA_MAXN",float)
+#define GL_0_DLOWER GetPar("GL_0_DLOWER",float)
+#define GL_0_DUPPER GetPar("GL_0_DUPPER",float)
+#define GL_1_DLOWER GetPar("GL_1_DLOWER",float)
+#define GL_1_DUPPER GetPar("GL_1_DUPPER",float)
+#define GL_2_DLOWER GetPar("GL_2_DLOWER",float)
+#define GL_2_DUPPER GetPar("GL_2_DUPPER",float)
 
-//the following are used by StFmsEventClusterer
-#define TOTAL_TOWERS 578
-#define PEAK_TOWER_FACTOR 1.6
-#define TOWER_E_THRESHOLD 0.01
-#define BAD_2PH_CHI2 10.0
-#define BAD_MIN_E_LRG  0.75
-#define BAD_MAX_TOW_LRG 25
-#define BAD_MIN_E_SML  2.0
-#define BAD_MAX_TOW_SML 49
-#define VALID_FT 0.25
-#define VALID_2ND_FT 1.5
-#define VALID_E_OWN 0.2
-
-
-//these are parameters of the shower shape
-#define SS_C 0.0
-#define SS_A1 1.070804
-#define SS_A2 0.167773
-#define SS_A3 -0.238578
-#define SS_B1 0.535845
-#define SS_B2 0.850233
-#define SS_B3 2.382637
-
-//empirical cuts used by StFmsClusterFinder::categorise()
-#define CAT_NTOWERS_PH1 5
-#define CAT_EP1_PH2 2.1
-#define CAT_EP0_PH2 7.0
-#define CAT_SIGMAMAX_MIN_PH2 35.0
-#define CAT_EP1_PH1 2.1
-#define CAT_EP0_PH1 2.0
-#define CAT_SIGMAMAX_MAX_PH1 10.0
-
-
-//the following numbers are used by StFmsEventClusterer::OnePhotonFitParameters
-#define PH1_START_NPH 1.0
-#define PH1_DELTA_N 0.5
-#define PH1_DELTA_X 0.5
-#define PH1_DELTA_Y 0.5
-#define PH1_DELTA_E 0.15
-
-//these are used by StFmsEventClusterer::TwoPhotonFitParameters
-#define PH2_START_NPH 2
-#define PH2_START_FSIGMAMAX 2.2
-#define PH2_RAN_LOW -0.1
-#define PH2_RAN_HIGH 0.1
-#define PH2_STEP_0 0
-#define PH2_STEP_1 0.02
-#define PH2_STEP_2 0.02
-#define PH2_STEP_3 0.01
-#define PH2_STEP_4 0.01
-#define PH2_STEP_5 0.01
-#define PH2_STEP_6 0.1
-#define PH2_MAXTHETA_F 2.8
-#define PH2_LOWER_NPH 1.5
-#define PH2_LOWER_XF 0.2
-#define PH2_LOWER_YF 0.2
-#define PH2_LOWER_XMAX_F 18.0
-#define PH2_LOWER_XMAX_POW 0.8
-#define PH2_LOWER_XMAX_LIMIT 0.5
-#define PH2_LOWER_5_F -1.0
-#define PH2_LOWER_6_F 0.95
-#define PH2_UPPER_NPH 2.5
-#define PH2_UPPER_XF 0.2
-#define PH2_UPPER_YF 0.2
-#define PH2_UPPER_XMIN_F 0.085
-#define PH2_UPPER_XMIN_P0 60.0
-#define PH2_UPPER_XMIN_LIMIT 3.5
-#define PH2_UPPER_5_F 1.0
-#define PH2_UPPER_6_F 1.05
-#define PH2_3_LIMIT_LOWER 0.9
-#define PH2_3_LIMIT_UPPER 1.1
-
-//StFmsEventClusterer::GlobalPhotonFitParameters
-#define GL_LOWER_1 0.5
-#define GL_UPPER_DELTA_MAXN 0.5
-#define GL_0_DLOWER 1.25
-#define GL_0_DUPPER 1.25
-#define GL_1_DLOWER 1.25
-#define GL_1_DUPPER 1.25
-#define GL_2_DLOWER 0.3
-#define GL_2_DUPPER 0.3
-
+#endif

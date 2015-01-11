@@ -1,5 +1,5 @@
 /** Macro to test FMS code on MuDST input. */
-void testFms_stfms(Int_t ibegin = 1, Int_t iend = 100,
+void testFms_stfms(Int_t ibegin = 1, Int_t iend = 10,
                    const char* file = "fms7.list",
                    const char* qafile = "stfmsQAhisto.root",
                    Bool_t qa = true,
@@ -26,9 +26,10 @@ void testFms_stfms(Int_t ibegin = 1, Int_t iend = 100,
   // Database makers: basic, FMS and endcap
   St_db_Maker* dbMk = new St_db_Maker("db","MySQL:StarDb","$STAR/StarDb");
   dbMk->SetDEBUG(0);
-  dbMk->SetDateTime(20110601, 0);
+  dbMk->SetDateTime(20130222, 0);
+//  dbMk->SetDateTime(20110601, 0);
   StFmsDbMaker* fmsdb = new StFmsDbMaker("fmsDb");
-  fmsdb->setDebug(0);
+  fmsdb->setDebug(1);
   StEEmcDbMaker* eemcDb = new StEEmcDbMaker;
   // Barrel ADC to energy maker
   StEmcADCtoEMaker* adc = new StEmcADCtoEMaker;

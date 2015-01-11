@@ -30,14 +30,20 @@
 #include "tables/St_fmsQTMap_Table.h"
 #include "tables/St_fmsGain_Table.h"
 #include "tables/St_fmsGainCorrection_Table.h"
+#include "tables/St_fmsRec_Table.h"
 StFmsDbMaker* gStFmsDbMaker=NULL; 
 
 ClassImp(StFmsDbMaker)
 
-StFmsDbMaker::StFmsDbMaker(const Char_t *name) : StMaker(name), mDebug(0),mChannelGeometry(0),mDetectorPosition(0),mMap(0),mmMap(0),mPatchPanelMap(0),
-						 mQTMap(0),mGain(0),mmGain(0),mGainCorrection(0),mmGainCorrection(0){gStFmsDbMaker = this;}
+StFmsDbMaker::StFmsDbMaker(const Char_t *name) : StMaker(name), mDebug(0),mChannelGeometry(0),mDetectorPosition(0),mMap(0),mmMap(0),mPatchPanelMap(0),mQTMap(0),mGain(0),mmGain(0),mGainCorrection(0),mmGainCorrection(0),mRecPar(0),mRecConfig(StFmsDbConfig::Instance()){
+	gStFmsDbMaker = this;
+//	mRecConfig = StFmsDbConfig::Instance();
+}
 StFmsDbMaker::~StFmsDbMaker() {deleteArrays(); gStFmsDbMaker = 0;}
-Int_t StFmsDbMaker::Init(){LOG_DEBUG<<"StFmsDbMaker Init Start"<<endm; return StMaker::Init();}
+Int_t StFmsDbMaker::Init(){
+	LOG_DEBUG<<"StFmsDbMaker Init Start"<<endm; 
+	return StMaker::Init();
+}
 Int_t StFmsDbMaker::Make(){LOG_DEBUG<<"StFmsDbMaker Make"<<endm; return kStOK;}
 void StFmsDbMaker::Clear(const Char_t*){LOG_DEBUG<<"StFmsDbMaker Clear"<<endm; StMaker::Clear();}
 Int_t StFmsDbMaker::Finish(){LOG_DEBUG<<"StFmsDbMaker Finish"<<endm; return kStOK;}
@@ -47,10 +53,10 @@ Int_t StFmsDbMaker::InitRun(Int_t runNumber) {
   deleteArrays();
 
   //! Accessing DBs
-  if(mDebug>0) {
+//  if(mDebug>0) {
     St_db_Maker* dbmaker = (St_db_Maker*)GetMaker("db");
     LOG_INFO << "StFmsDbMaker::InitRun - Date&time from St_db_Maker="<<dbmaker->GetDate()<<","<< dbmaker->GetTime() << endm;
-    }
+//    }
 
   TDataSet *DBgeom = 0;
   TDataSet *DBmapping = 0;
@@ -70,6 +76,7 @@ Int_t StFmsDbMaker::InitRun(Int_t runNumber) {
   St_fmsQTMap           *dbQTMap           = 0;
   St_fmsGain            *dbGain            = 0;
   St_fmsGainCorrection  *dbGainCorrection  = 0;
+  St_fmsRec		*dbRec		   = 0;
   dbChannelGeometry = (St_fmsChannelGeometry*) DBgeom->Find("fmsChannelGeometry");
   dbDetectorPosition = (St_fmsDetectorPosition*) DBgeom->Find("fmsDetectorPosition");
   dbMap             = (St_fmsMap*)             DBmapping->Find("fmsMap");
@@ -77,6 +84,7 @@ Int_t StFmsDbMaker::InitRun(Int_t runNumber) {
   dbQTMap           = (St_fmsQTMap*)           DBmapping->Find("fmsQTMap");
   dbGain            = (St_fmsGain*)            DBcalibration->Find("fmsGain");
   dbGainCorrection  = (St_fmsGainCorrection*)  DBcalibration->Find("fmsGainCorrection");
+  dbRec		    = (St_fmsRec*)	       DBcalibration->Find("fmsRec");
   if(!dbChannelGeometry){LOG_ERROR << "StFmsDbMaker::InitRun - No Geometry/fms/fmsChannelGeometry"         <<endm; return kStFatal;}
   if(!dbDetectorPosition){LOG_ERROR << "StFmsDbMaker::InitRun - No Geometry/fms/fmsDetectorPosition"         <<endm; return kStFatal;}
   if(!dbMap)            {LOG_ERROR << "StFmsDbMaker::InitRun - No Calibration/fms/mapping/fmsMap"          <<endm; return kStFatal;}
@@ -84,6 +92,7 @@ Int_t StFmsDbMaker::InitRun(Int_t runNumber) {
   if(!dbQTMap)          {LOG_ERROR << "StFmsDbMaker::InitRun - No Calibration/fms/mapping/fmsQTMap"        <<endm; return kStFatal;}
   if(!dbGain)           {LOG_ERROR << "StFmsDbMaker::InitRun - No Calibration/fms/fmsGain"                 <<endm; return kStFatal;}
   if(!dbGainCorrection) {LOG_ERROR << "StFmsDbMaker::InitRun - No Calibration/fms/fmsGainCorrection"       <<endm; return kStFatal;}
+  if(!dbRec) 		{LOG_ERROR << "StFmsDbMaker::InitRun - No Calibration/fms/fmsRec"	           <<endm; return kStFatal;}
 
   //!fmsChannelGeometry
   fmsChannelGeometry_st *tChannelGeometry = 0;
@@ -210,6 +219,11 @@ Int_t StFmsDbMaker::InitRun(Int_t runNumber) {
   }
   LOG_DEBUG << "StFmsDbMaker::InitRun - Got Geometry/fms/fmsGainCorrection with mMaxGainCorrection = "<<mMaxGainCorrection<< endm;
   
+  //!fmsRec
+  mMaxRecPar = 80; //dummy
+  mRecPar = (fmsRec_st*)dbRec->GetTable();
+  mRecConfig.readMap(*mRecPar); //read recPar into internal memory
+  LOG_DEBUG << "StFmsDbMaker::InitRun - Got Calibration/fms/fmsRec "<< endm;
   //!Debug
   if(mDebug>0){
     dumpFmsChannelGeometry();
@@ -219,9 +233,12 @@ Int_t StFmsDbMaker::InitRun(Int_t runNumber) {
     dumpFmsQTMap();
     dumpFmsGain();
     dumpFmsGainCorrection();
+    dumpFmsRec();
   }
   return kStOK;
 }
+
+StFmsDbConfig& StFmsDbMaker::getRecConfig(){ return mRecConfig; }
 
 void StFmsDbMaker::deleteArrays(){
   if(mChannelGeometry) delete [] mChannelGeometry;  
@@ -274,6 +291,7 @@ fmsPatchPanelMap_st*   StFmsDbMaker::PatchPanelMap()   {if(mPatchPanelMap)   ret
 fmsQTMap_st*           StFmsDbMaker::QTMap()           {if(mQTMap)           return mQTMap;           return 0;}
 fmsGain_st*            StFmsDbMaker::Gain()            {if(mGain)            return mGain;            return 0;}
 fmsGainCorrection_st*  StFmsDbMaker::GainCorrection()  {if(mGainCorrection)  return mGainCorrection;  return 0;}
+fmsRec_st*	       StFmsDbMaker::RecPar()	       {if(mRecPar)	     return mRecPar;	      return 0;}
 
 //!ChannelGeometry
 Int_t StFmsDbMaker::maxDetectorId()             {return mMaxDetectorId;}
@@ -527,3 +545,9 @@ void StFmsDbMaker::dumpFmsGainCorrection(const Char_t* filename) {
   }      
 }
 
+void StFmsDbMaker::dumpFmsRec(const Char_t* filename) {
+	
+  LOG_INFO << "writing "<<filename<<endm;
+  mRecConfig.writeMap(filename);
+
+}

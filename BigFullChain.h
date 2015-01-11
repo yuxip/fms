@@ -1190,6 +1190,7 @@ Bfc_st BFC[] = { // standard chains
   {"SsdUtil"     ,""  ,"","StarMagField,StEvent",""               ,"Geom,StSsdUtil","Load SSD Util",kFALSE},
   {"EmcUtil"     ,""  ,"","emc_T,geomT,StDbT",""                      ,"StEmcUtil","Load StEmcUtil",kFALSE},
   {"EEmcUtil"    ,""  ,"","",""                                     ,"StEEmcUtil","Load StEEmcUtil",kFALSE},
+  {"FmsUtil"    ,""  ,"","",""                                     ,"StFmsUtil","Load StFmsUtil",   kFALSE},
   {"FgtUtil"     ,""  ,"","",""                                       ,"StFgtUtil","Load StFgtUtil",kFALSE},
   {"GmtUtil"     ,""  ,"","",""                                       ,"StGmtUtil","Load StGmtUtil",kFALSE},
   {"l3Util"      ,"","","",                              "","","WARNING *** Option is OBSOLETE ***",kFALSE},
@@ -1246,7 +1247,7 @@ Bfc_st BFC[] = { // standard chains
   {"svtCalDb"    ,""     ,"","svtDb"         ,"","","Declare Calibrations/svt as while list member",kFALSE},
   {"ssdCalDb"    ,""     ,"","ssdDb"         ,"","","Declare Calibrations/ssd as while list member",kFALSE},
   {"eemcDb"      ,"eeDb" ,"","db,EEmcUtil",      "StEEmcDbMaker","StEEmcDbMaker","Load EEmcDbMaker",kFALSE},
-  {"fmsDb"       ,"fmsDb","","db",                  "StFmsDbMaker","StFmsDbMaker","Load FmsDbMaker",kFALSE},
+  {"fmsDb"       ,"fmsDb","","db,FmsUtil",          "StFmsDbMaker","StFmsDbMaker","Load FmsDbMaker",kFALSE},
   {"fgtDb"       ,"fgtDb","","db,fgtutil",          "StFgtDbMaker","StFgtDbMaker","Load FgtDbMaker",kFALSE},
   {"pxlDb"       ,"pxlDb","","tpcDb PxlUtil",       "StPxlDbMaker","StPxlDbMaker","Load PxlDbMaker",kFALSE},
   {"istDb"       ,"istDb","","tpcDb",               "StIstDbMaker","StIstDbMaker","Load IstDbMaker",kFALSE},
@@ -1463,11 +1464,10 @@ Bfc_st BFC[] = { // standard chains
   // FMS
   {"fmsSim",""    ,"","StEvent,fmsDb",
    "StFmsFastSimulatorMaker","StFmsFastSimulatorMaker","FMS Fast Simulator",                        kFALSE},
-  {"fmsDat"     ,"","", "StEvent,fmsdb",
+  {"fmsDat"     ,"","", "StEvent,fmsDb",
    "StFmsHitMaker","StFmsHitMaker","Fill FMS struct and zero TRG",                                  kFALSE},
-  {"fmsUtil"    ,""  ,"","",""                                     ,"StFmsUtil","Load StFmsUtil",   kFALSE},
-  {"fmsPoint"     ,"","", "event,fmsdb, fmsUtil","StFmsPointMaker","StFmsPointMaker",
-   "Fill FMS clusters",    									    kFALSE},
+  {"fmsPoint"     ,"","", "event,fmsDb","StFmsPointMaker","StFmsPointMaker",
+   "Fill FMS clusters",                                                                             kFALSE},
 #if 0
   {"fpd"         ,"fpd","","",                  "StFpdMaker","StFpdMaker","FPD/BBC Data base chain",kFALSE},
 #else

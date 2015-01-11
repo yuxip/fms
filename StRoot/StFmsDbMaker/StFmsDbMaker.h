@@ -26,7 +26,7 @@
 #include "StMaker.h"
 #endif
 #include "StThreeVectorF.hh"
-
+#include "StRoot/StFmsUtil/StFmsDbConfig.h"
 struct fmsDetectorPosition_st;
 struct fmsChannelGeometry_st;
 struct fmsMap_st;
@@ -34,6 +34,7 @@ struct fmsPatchPanelMap_st;
 struct fmsQTMap_st;
 struct fmsGain_st;
 struct fmsGainCorrection_st;
+struct fmsRec_st;
 
 class StFmsDbMaker : public StMaker {
  public: 
@@ -55,6 +56,7 @@ class StFmsDbMaker : public StMaker {
   fmsQTMap_st*            QTMap();
   fmsGain_st*             Gain();
   fmsGainCorrection_st*   GainCorrection();
+  fmsRec_st*		  RecPar(); //reconstruction related parameters
 
   //! Utility functions related to FMS ChannelGeometry
   Int_t maxDetectorId(); //! maximum value of detector Id
@@ -94,6 +96,9 @@ class StFmsDbMaker : public StMaker {
   Float_t getGain(Int_t detectorId, Int_t ch); //! get the gain for the channel
   Float_t getGainCorrection(Int_t detectorId, Int_t ch); //! get the gain correction for the channel
 
+  //reference to StFmsDbConfig
+  StFmsDbConfig& getRecConfig();  
+
   //! text dump for debugging
   void dumpFmsChannelGeometry(const Char_t* filename="dumpFmsChannelGeometry.txt");
   void dumpFmsDetectorPosition(const Char_t* filename="dumpFmsDetectorPosition.txt");
@@ -102,9 +107,10 @@ class StFmsDbMaker : public StMaker {
   void dumpFmsQTMap          (const Char_t* filename="dumpFmsQTMap.txt");
   void dumpFmsGain           (const Char_t* filename="dumpFmsGain.txt");
   void dumpFmsGainCorrection (const Char_t* filename="dumpFmsGainCorrection.txt");
+  void dumpFmsRec	      (const Char_t* filename="dumpFmsRec.txt");
 
  private:
-  void                  deleteArrays();
+  void                   deleteArrays();
   Int_t                  mDebug; //! >0 dump tables to text files
 
   fmsChannelGeometry_st *mChannelGeometry;  //! channel configuration for each detector
@@ -133,6 +139,9 @@ class StFmsDbMaker : public StMaker {
   fmsGainCorrection_st  **mmGainCorrection;
   Int_t                   mMaxGainCorrection;
 
+  fmsRec_st		*mRecPar; //! rec. parameters table
+  Int_t			mMaxRecPar;
+  StFmsDbConfig&	mRecConfig; //reference to StFmsDbConfig singleton, for accessing rec. parameter values by name  
 
   virtual const Char_t *GetCVS() const {static const Char_t cvs[]="Tag $Name:"__DATE__" "__TIME__ ; return cvs;}
   ClassDef(StFmsDbMaker,1)   //StAF chain virtual base class for Makers

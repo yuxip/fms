@@ -282,7 +282,7 @@ Int_t StFmsQAHistoMaker::Make() {
 
 	if(mFmsQA){
 	  fmsEventQa();
-    fmsMuDstQa();
+          fmsMuDstQa();
 	}//mFmsQA
 //	LOG_INFO << "begin reading EMC" << endm;
 	if(mEmcQA){
@@ -574,6 +574,7 @@ void StFmsQAHistoMaker::fmsEventQa() {
       hfmshitEvsevt->Fill(ievt,hitE);
     }
   }
+  LOG_INFO << "# photons in event: " << fmspoints.size() << endm;
   for(StSPtrVecFmsPointConstIterator ipts = fmspoints.begin(); ipts != fmspoints.end(); ipts++){
     Float_t photonE = (*ipts)->energy();
     hfmsphoEvsevt->Fill(ievt,photonE);
@@ -625,6 +626,7 @@ void StFmsQAHistoMaker::fmsMuDstQa() {
       }  // if
     }  // if
   }  // for
+  LOG_INFO << "# photons in mudst: " << mufmsCollection->numberOfPoints() << endm;
   for (int i(0); i < mufmsCollection->numberOfPoints(); ++i) {
     StMuFmsPoint* point = mufmsCollection->getPoint(i);
     TVector3 xyz = TVector3(point->x(), point->y(),
