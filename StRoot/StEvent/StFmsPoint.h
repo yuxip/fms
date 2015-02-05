@@ -1,73 +1,51 @@
-// $Id$
-//
-// $Log$
-/**
- \file      StFmsPoint.h
- \brief     Declaration of StFmsPoint, the StEvent FMS photon structure
- \author    Yuxi Pan <yuxipan@physics.ucla.edu>
- \author    Thomas Burton <tpb@bnl.gov>
- \date      2014
- \copyright Brookhaven National Lab
- */
+/*************************************************************************
+ *
+ * $Id$
+ *
+ * Author: Thomas Burton, Yuxi Pan, 2014
+ *************************************************************************
+ *
+ * Description: Declaration of StFmsPoint, the StEvent FMS photon structure
+ *
+ **************************************************************************
+ *
+ * $Log$
+ *
+ **************************************************************************/
 #ifndef STROOT_STEVENT_STFMSPOINT_H_
 #define STROOT_STEVENT_STFMSPOINT_H_
 
-#include <TLorentzVector.h>
+#include "StLorentzVectorF.hh"
 
-#include "StRoot/St_base/StObject.h"
+#include "StObject.h"
 
 class StFmsCluster;
 
 /** Represents a "point" (photon etc) fitted to a cluster of FMS towers. */
 class StFmsPoint : public StObject {
  public:
-  /** Constructor. */
   StFmsPoint();
-  // Use default copy constructor and assignment operator
-  /** Destructor. */
   ~StFmsPoint();
-  /**
-   Sub-detector in which the point was reconstructed.
 
-   ID numbers are defined the STAR database.
-   */
-  UShort_t detectorId() const { return mDetectorId; }
-  /** Energy of the point in GeV. */
-  Float_t energy() const { return mEnergy; }
-  /** x position in cm at which point intersects the sub-detector. */
-  Float_t x() const { return mX; }
-  /** y position in cm at which point intersects the sub-detector. */
-  Float_t y() const { return mY; }
-  /** ID of the point in the current event. */
-  Int_t id() const { return mId; }
-  /** Parent cluster of the photon. */
-  StFmsCluster* cluster() { return mCluster; }
-  /** Parent cluster of the photon. */
-  const StFmsCluster* cluster() const { return mCluster; }
-  /** ID of the parent cluster containing this point. */
-  Int_t parentClusterId() const { return mParentClusterId; }
-  /** Number of points in the parent cluster. */
-  Int_t nParentClusterPhotons() const { return mNParentClusterPhotons; }
-  /** 4-momentum of the point (px, py, pz, E). */
-  TLorentzVector fourMomentum() const { return mFourMomentum; }
-  /** Set the sub-detector in which the point was reconstructed. */
-  void setDetectorId(UShort_t detector) { mDetectorId = detector; }
-  /** Set the energy of the point in GeV. */
-  void setEnergy(Float_t energy) { mEnergy = energy; }
-  /** Set the x position in cm at which point intersects the sub-detector. */
-  void setX(Float_t xpos) { mX = xpos; }
-  /** Set the y position in cm at which point intersects the sub-detector. */
-  void setY(Float_t ypos) { mY = ypos; }
-  /** Set the ID of the point in the current event. */
-  void setId(Int_t phid) { mId = phid; }
-  /** Set the parent cluster of the photon. */
-  void setCluster(StFmsCluster* cluster) { mCluster = cluster; }
-  /** Set the ID of the parent cluster containing this point. */
-  void setParentClusterId(Int_t cluid) { mParentClusterId = cluid; }
-  /** Set the number of points in the parent cluster. */
-  void setNParentClusterPhotons(Int_t nclph) { mNParentClusterPhotons = nclph; }
-  /** Set the 4-momentum of the point (px, py, pz, E). */
-  void setFourMomentum(const TLorentzVector& p4) { mFourMomentum = p4; }
+  unsigned short detectorId() const;
+  float energy() const;
+  float x() const; // x position in cm at which point intersects the sub-detector.
+  float y() const; // y position in cm at which point intersects the sub-detector.
+  int id() const; // ID of the point in the current event.
+  StFmsCluster* cluster(); //  Parent cluster of the photon.
+  const StFmsCluster* cluster() const;
+  int parentClusterId() const; // ID of the parent cluster containing this point.
+  int nParentClusterPhotons() const; // Number of points in the parent cluster.
+  StLorentzVectorF fourMomentum() const;
+  void setDetectorId(unsigned short detector);
+  void setEnergy(float energy);
+  void setX(float xpos);
+  void setY(float ypos);
+  void setId(int phid);
+  void setCluster(StFmsCluster* cluster);
+  void setParentClusterId(int cluid);
+  void setNParentClusterPhotons(int nclph);
+  void setFourMomentum(const StLorentzVectorF& p4);
 
  private:
   UShort_t mDetectorId;  ///< Detector starts from 1
@@ -78,8 +56,28 @@ class StFmsPoint : public StObject {
   Int_t mParentClusterId;  ///< ID of the parent cluster within event
   Int_t mNParentClusterPhotons;  ///< Number of photons in the parent cluster
   StFmsCluster* mCluster;  //!< Parent cluster of this photon
-  TLorentzVector mFourMomentum;  ///< Photon 4-momentum
+  StLorentzVectorF mFourMomentum;  ///< Photon 4-momentum
   ClassDef(StFmsPoint, 1)
 };
+
+  inline unsigned short StFmsPoint::detectorId() const { return mDetectorId; }
+  inline float StFmsPoint::energy() const { return mEnergy; }
+  inline float StFmsPoint::x() const { return mX; } // x position in cm at which point intersects the sub-detector.
+  inline float StFmsPoint::y() const { return mY; } // y position in cm at which point intersects the sub-detector.
+  inline int StFmsPoint::id() const { return mId; } // ID of the point in the current event.
+  inline StFmsCluster* StFmsPoint::cluster() { return mCluster; } //  Parent cluster of the photon.
+  inline const StFmsCluster* StFmsPoint::cluster() const { return mCluster; }
+  inline int StFmsPoint::parentClusterId() const { return mParentClusterId; } // ID of the parent cluster containing this point.
+  inline int StFmsPoint::nParentClusterPhotons() const { return mNParentClusterPhotons; } // Number of points in the parent cluster.
+  inline StLorentzVectorF StFmsPoint::fourMomentum() const { return mFourMomentum; }
+  inline void StFmsPoint::setDetectorId(unsigned short detector) { mDetectorId = detector; }
+  inline void StFmsPoint::setEnergy(float energy) { mEnergy = energy; }
+  inline void StFmsPoint::setX(float xpos) { mX = xpos; }
+  inline void StFmsPoint::setY(float ypos) { mY = ypos; }
+  inline void StFmsPoint::setId(int phid) { mId = phid; }
+  inline void StFmsPoint::setCluster(StFmsCluster* cluster) { mCluster = cluster; }
+  inline void StFmsPoint::setParentClusterId(int cluid) { mParentClusterId = cluid; }
+  inline void StFmsPoint::setNParentClusterPhotons(int nclph) { mNParentClusterPhotons = nclph; }
+  inline void StFmsPoint::setFourMomentum(const StLorentzVectorF& p4) { mFourMomentum = p4; }
 
 #endif  // STROOT_STEVENT_STFMSPOINT_H_

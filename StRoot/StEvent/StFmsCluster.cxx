@@ -1,17 +1,20 @@
-// $Id$
-//
-// $Log$
-/**
- \file      StFmsCluster.cxx
- \brief     Implementation of StFmsCluster, a group of adjacent FMS towers
- \author    Yuxi Pan <yuxipan@physics.ucla.edu>
- \author    Thomas Burton <tpb@bnl.gov>
- \date      2014
- \copyright Brookhaven National Lab
- */
-#include "StEvent/StFmsCluster.h"
+/*****************************************************************************
+ *
+ * $Id$
+ *
+ * Author: Thomas Burton, Yuxi Pan, 2014
+ * ***************************************************************************
+ *
+ * Description: Implementation of StFmsCluster, a group of adjacent FMS towers
+ *
+ * ***************************************************************************
+ *
+ * $Log$
+ *
+ *****************************************************************************/
+#include "StFmsCluster.h"
 
-#include "St_base/StMessMgr.h"
+#include "StMessMgr.h"
 
 StFmsCluster::StFmsCluster()
     : StObject(), mCategory(0), mNTowers(0), mEnergy(0.), mX(0.),
