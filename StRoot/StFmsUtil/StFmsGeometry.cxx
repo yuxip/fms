@@ -8,10 +8,8 @@
  \author    Yuxi Pan <yuxipan@physics.ucla.edu>
  \author    Thomas Burton <tpb@bnl.gov>
  \date      2014
- \copyright Brookhaven National Lab
  */
 #include "StFmsUtil/StFmsGeometry.h"
-
 #include "St_base/StMessMgr.h"
 #include "StChain/StMaker.h"
 #include "StFmsDbMaker/StFmsDbMaker.h"
@@ -95,9 +93,9 @@ const fmsDetectorPosition_st* StFmsGeometry::find(Int_t detectorId) const {
   return positions;
 }
 
-TVector3 StFmsGeometry::localToGlobalCoordinates(Double_t x, Double_t y,
+StThreeVectorF StFmsGeometry::localToGlobalCoordinates(Double_t x, Double_t y,
                                                  Int_t detectorId) const {
-  TVector3 global(0., 0., 0.);
+  StThreeVectorF global(0., 0., 0.);
   const fmsDetectorPosition_st* detector = find(detectorId);
   if (!detector) {
     return global;  // Uninitialized StFmsGeometry object or invalid detector ID
@@ -106,21 +104,21 @@ TVector3 StFmsGeometry::localToGlobalCoordinates(Double_t x, Double_t y,
     // Local coordinates are always positive numbers, but north
     // detectors have negative global STAR coordinates hence "minus column".
     // The offset is already stored in the database as a negative value.
-    global.SetX(detector->xoffset - x);
+    global.setX(detector->xoffset - x);
   } else {
-    global.SetX(detector->xoffset + x);
+    global.setX(detector->xoffset + x);
   }  // if
   // y offset gives the *top* of the detector in the global system
   // y offset is half the vertical height, as the detectors are centered about
   // y = 0 i.e. y offset = nrows / 2 * row height
   // Note the y coordinate has 0 at the *bottom*, which corresponds to
   // maximally negative in the global system.
-  global.SetY(y - detector->yoffset);
-  global.SetZ(detector->zoffset);  // Detector face
+  global.setY(y - detector->yoffset);
+  global.setZ(detector->zoffset);  // Detector face
   return global;
 }
 
-TVector3 StFmsGeometry::columnRowToGlobalCoordinates(Double_t column,
+StThreeVectorF StFmsGeometry::columnRowToGlobalCoordinates(Double_t column,
                                                      Double_t row,
                                                      Int_t detectorId) const {
   const fmsDetectorPosition_st* detector = find(detectorId);
@@ -130,7 +128,7 @@ TVector3 StFmsGeometry::columnRowToGlobalCoordinates(Double_t column,
     return localToGlobalCoordinates(column * detector->xwidth,
                                     row * detector->ywidth, detectorId);
   }  // if
-  return TVector3(0., 0., 0.);  // In case of no detector information
+  return StThreeVectorF(0., 0., 0.);  // In case of no detector information
 }
 
 Bool_t StFmsGeometry::isNorth(Int_t detectorId) {

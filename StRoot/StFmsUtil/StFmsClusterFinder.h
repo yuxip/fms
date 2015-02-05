@@ -56,7 +56,7 @@ class StFmsClusterFinder {
    Categorise a cluster based on its energy and tower distribution.
    
    Set the cluster's category field and return that category.
-   See EFmsClusterCategory in StEvent/StFmsCluster.h for valid categories.
+   See StFmsClusterCategory in StEvent/StFmsCluster.h for valid categories.
    */
   int categorise(StFmsTowerCluster* cluster);
   /** Return energy cutoff on towers used when calculating cluster moments */

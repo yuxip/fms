@@ -7,14 +7,13 @@
  \author    Yuxi Pan <yuxipan@physics.ucla.edu>
  \author    Thomas Burton <tpb@bnl.gov>
  \date      2014
- \copyright Brookhaven National Lab
  */
 #include "StFmsPointMaker.h"
 
-#include <TLorentzVector.h>
+#include "StLorentzVectorF.hh"
 #include <TProcessID.h>
 
-#include "StRoot/St_base/StMessMgr.h"
+#include "StMessMgr.h"
 #include "StRoot/StEvent/StEvent.h"
 #include "StRoot/StEvent/StFmsCluster.h"
 #include "StRoot/StEvent/StFmsCollection.h"
@@ -31,9 +30,9 @@
 namespace {
 // Calculate a 4 momentum from a direction/momentum vector and energy
 // assuming zero mass i.e. E = p
-TLorentzVector compute4Momentum(const TVector3& xyz, Double_t energy) {
-  TVector3 mom3 = xyz.Unit() * energy;  // Momentum vector with m = 0
-  return TLorentzVector(mom3, energy);
+StLorentzVectorF compute4Momentum(const StThreeVectorF& xyz, Float_t energy) {
+  StThreeVectorF mom3 = xyz.unit() * energy;  // Momentum vector with m = 0
+  return StLorentzVectorF(mom3, energy);
 }
 }  // unnamed namespace
 
@@ -157,7 +156,7 @@ bool StFmsPointMaker::processTowerCluster(
   // Cluster id is id of the 1st photon, not necessarily the highest-E photon
   cluster->setId(CLUSTER_BASE + CLUSTER_ID_FACTOR_DET * detectorId + mFmsCollection->numberOfPoints());
   // Cluster locations are in column-row coordinates so convert to cm
-  TVector3 xyz = mGeometry.columnRowToGlobalCoordinates(
+  StThreeVectorF xyz = mGeometry.columnRowToGlobalCoordinates(
     cluster->x(), cluster->y(), detectorId);
   cluster->setFourMomentum(compute4Momentum(xyz, cluster->energy()));
   // Save photons reconstructed from this cluster
@@ -193,7 +192,7 @@ StFmsPoint* StFmsPointMaker::makeFmsPoint(
   // Calculate photon 4 momentum
   // StFmsFittedPhoton position is in detector-local (x, y) cm coordinates
   // Convert to global STAR coordinates for StFmsPoint
-  TVector3 xyz = mGeometry.localToGlobalCoordinates(
+  StThreeVectorF xyz = mGeometry.localToGlobalCoordinates(
     photon.x, photon.y, detectorId);
   point->setX(xyz.x());
   point->setY(xyz.y());

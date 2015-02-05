@@ -7,7 +7,6 @@
  \author    Yuxi Pan <yuxipan@physics.ucla.edu>
  \author    Thomas Burton <tpb@bnl.gov>
  \date      2014
- \copyright Brookhaven National Lab
  */
 #ifndef STROOT_STFMSPOINTMAKER_STFMSPOINTMAKER_H_
 #define STROOT_STFMSPOINTMAKER_STFMSPOINTMAKER_H_
@@ -15,7 +14,7 @@
 #include <map>
 #include <vector>
 
-#include "StRoot/StChain/StMaker.h"
+#include "StMaker.h"
 #include "StRoot/StFmsUtil/StFmsGeometry.h"
 
 class StFmsCollection;
@@ -124,6 +123,8 @@ class StFmsPointMaker : public StMaker {
   StFmsCollection* mFmsCollection; //!< StFmsCollection as retrieved from StEvent
   TowerMap mTowers;  //!< One for each sub-detector, keyed by detector ID
   int mObjectCount;  //!< Object count in event for use with TRef
+
+  virtual const Char_t *GetCVS() const {static const Char_t cvs[]="Tag $Name:"__DATE__" "__TIME__ ; return cvs;}
   ClassDef(StFmsPointMaker, 0)
 };
 #endif  // STROOT_STFMSPOINTMAKER_STFMSPOINTMAKER_H_

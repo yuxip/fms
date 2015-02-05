@@ -17,7 +17,7 @@
 #include <vector>
 
 #include "TObject.h"
-#include "TVector3.h"
+#include "StThreeVectorF.hh"
 
 class fmsDetectorPosition_st;
 class StFmsDbMaker;
@@ -130,7 +130,7 @@ class StFmsGeometry : public TObject {
    Returns (0, 0, 0) for an invalid detector ID, or if StFmsGeometry is
    uninitialized.
    */
-  TVector3 localToGlobalCoordinates(Double_t x, Double_t y,
+  StThreeVectorF localToGlobalCoordinates(Double_t x, Double_t y,
                                     Int_t detectorId) const;
   /**
    Convert (column, row) coordinate position to global (x, y, z) in cm.
@@ -141,7 +141,7 @@ class StFmsGeometry : public TObject {
 
    See also localToGlobalCoordinates().
    */
-  TVector3 columnRowToGlobalCoordinates(Double_t column, Double_t row,
+  StThreeVectorF columnRowToGlobalCoordinates(Double_t column, Double_t row,
                                         Int_t detectorId) const;
   /**
    Returns true if the sub-system is a north detector.
