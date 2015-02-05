@@ -1,20 +1,23 @@
-// $Id$
-//
-// $Log$
-/**
- \file      StMuFmsPoint.h
- \brief     Declaration of StMuFmsPoint, the MuDST FMS "point" class
- \author    Thomas Burton <tpb@bnl.gov>
- \date      2014
- \copyright Brookhaven National Lab
- */
+/*****************************************************************************
+ * 
+ * $Id$
+ *
+ * Author: Thomas Burton, 2014
+ *****************************************************************************
+ *
+ * Description: Declaration of StMuFmsPoint, the MuDST FMS "point" class
+ *
+ *****************************************************************************
+ *  
+ * $Log$
+ *
+ *****************************************************************************/
 #ifndef STROOT_STMUDSTMAKER_COMMON_STMUFMSPOINT_H_
 #define STROOT_STMUDSTMAKER_COMMON_STMUFMSPOINT_H_
 
-#include <TLorentzVector.h>
+#include "StLorentzVectorF.hh"
 #include <TObject.h>
 #include <TRef.h>
-#include <TVector3.h>
 
 class StFmsPoint;  // The equivalent point structure in StEvent
 class StMuFmsCluster;
@@ -31,50 +34,27 @@ class StMuFmsCluster;
  */
 class StMuFmsPoint : public TObject {
  public:
-  /** Constructor. */
   StMuFmsPoint(int detectorId = 0, float energy = 0.f,
                float x = 0.f, float y = 0.f, float z = 0.f);
-  /** Construct from the equivalent StEvent point structure. */
   explicit StMuFmsPoint(const StFmsPoint&);
-  /** Destructor. */
   virtual ~StMuFmsPoint();
-  /** ID of the sub-detector with which the point is associated. */
-  UShort_t detectorId() const { return mDetectorId; }
-  /** Total point energy. */
-  float energy() const { return mEnergy; }
-  /** x "center of gravity" of the point (cm). */
-  float x() const { return mX; }
-  /** y "center of gravity" of the point (cm). */
-  float y() const { return mY; }
-  /** z position of front face of sub-detector (cm). */
-  float z() const { return mZ; }
-  /** (x, y, z) position of point at sub-detector face. */
-  TVector3 xyz() const { return TVector3(mX, mY, mZ); }
-  /**
-   (px, py, pz) of point.
 
-   Assumes some mass, which must be <= energy.
-   */
-  TVector3 momentum(float m = 0.f) const;
-  /** (px, py, pz, E) of point. See also comments for momentum(). */
-  TLorentzVector fourMomentum(float m = 0.f) const;
-  /** Parent cluster of this photon (NULL if not known). */
+  StThreeVectorF momentum(float m = 0.f) const;
+  StLorentzVectorF fourMomentum(float m = 0.f) const;
   StMuFmsCluster* cluster();
-  /** Parent cluster of this photon (NULL if not known). */
   const StMuFmsCluster* cluster() const;
-  /** Set ID of the sub-detector with which the point is associated. */
-  void setDetectorId(UShort_t detector) { mDetectorId = detector; }
-  /** Set total point energy (sum over towers). */
-  void setEnergy(float energy) { mEnergy = energy; }
-  /** Set x "center of gravity" of the point. */
-  void setX(float x) { mX = x; }
-  /** Set y "center of gravity" of the point. */
-  void setY(float y) { mY = y; }
-  /** Set z position of front face of sub-detector (cm). */
-  void setZ(float z) { mZ = z; }
-  /** Set properties from an StFmsPoint. */
+  unsigned short detectorId() const;
+  float energy() const;
+  float x() const; // x "center of gravity" of the point (cm).
+  float y() const; // y "center of gravity" of the point (cm).
+  float z() const;
+  StThreeVectorF xyz() const;
+  void setDetectorId(unsigned short detector);
+  void setEnergy(float energy);
+  void setX(float x);
+  void setY(float y);
+  void setZ(float z);
   void set(const StFmsPoint&);
-  /** Set parent cluster of this photon. */
   void setCluster(StMuFmsCluster* cluster);
 
  protected:
@@ -100,4 +80,17 @@ class StMuFmsPoint : public TObject {
   StMuFmsPoint& operator=(const StMuFmsPoint&);
   ClassDef(StMuFmsPoint, 1)
 };
+
+  inline unsigned short StMuFmsPoint::detectorId() const { return mDetectorId; }
+  inline float StMuFmsPoint::energy() const { return mEnergy; }
+  inline float StMuFmsPoint::x() const { return mX; } // x "center of gravity" of the point (cm).
+  inline float StMuFmsPoint::y() const { return mY; } // y "center of gravity" of the point (cm).
+  inline float StMuFmsPoint::z() const { return mZ; }
+  inline StThreeVectorF StMuFmsPoint::xyz() const { return StThreeVectorF(mX, mY, mZ); }
+  inline void StMuFmsPoint::setDetectorId(unsigned short detector) { mDetectorId = detector; } 
+  inline void StMuFmsPoint::setEnergy(float energy) { mEnergy = energy; }
+  inline void StMuFmsPoint::setX(float x) { mX = x; }
+  inline void StMuFmsPoint::setY(float y) { mY = y; }
+  inline void StMuFmsPoint::setZ(float z) { mZ = z; }
+
 #endif  // STROOT_STMUDSTMAKER_COMMON_STMUFMSPOINT_H_

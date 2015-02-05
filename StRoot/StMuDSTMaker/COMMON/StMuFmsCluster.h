@@ -1,13 +1,17 @@
-// $Id$
-//
-// $Log$
-/**
- \file      StMuFmsCluster.h
- \brief     Declaration of StMuFmsCluster, the MuDST FMS cluster class
- \author    Thomas Burton <tpb@bnl.gov>
- \date      2014
- \copyright Brookhaven National Lab
- */
+/*************************************************************************
+ *
+ * $Id$
+ *
+ * Author: Thomas Burton, 2014
+ *************************************************************************
+ *
+ * Description: Declaration of StMuFmsCluster, the MuDST FMS cluster class
+ *
+ *************************************************************************
+ *
+ * $Log$
+ *
+ *************************************************************************/  
 #ifndef STROOT_STMUDSTMAKER_COMMON_STMUFMSCLUSTER_H_
 #define STROOT_STMUDSTMAKER_COMMON_STMUFMSCLUSTER_H_
 
@@ -27,43 +31,26 @@ class StFmsCluster;  // Equivalent class in StEvent
  */
 class StMuFmsCluster : public TObject {
  public:
-  /** Constructor. */
   StMuFmsCluster(int detectorId = 0, int category = -1, float energy = 0.f,
                  float x = 0.f, float y = 0.f);
-  /** Initialise from an equivalent StEvent cluster. */
   explicit StMuFmsCluster(const StFmsCluster&);
-  /** Destructor. */
   virtual ~StMuFmsCluster();
-  /** Clear hit and photon arrays. */
   virtual void Clear(Option_t* option = "");
-  /** ID of the sub-detector with which the cluster is associated. */
-  UShort_t detectorId() const { return mDetectorId; }
-  /** Category of the cluster (see EFmsClusterCategory). */
-  UShort_t category() const { return mCategory; }
-  /** Total cluster energy (sum over towers). */
-  float energy() const { return mEnergy; }
-  /** x "center of gravity" of the cluster. */
-  float x() const { return mX; }
-  /** y "center of gravity" of the cluster. */
-  float y() const { return mY; }
-  /** The collection of hits in the cluster. */
-  TRefArray* hits() { return &mHits; }
-  /** \overload */
-  const TRefArray* hits() const { return &mHits; }
-  /** Photons in this cluster. */
-  TRefArray* photons() { return &mPhotons; }
-  /** \overload */
-  const TRefArray* photons() const { return &mPhotons; }
-  /** Set ID of the sub-detector with which the cluster is associated. */
-  void setDetectorId(UShort_t detector) { mDetectorId = detector; }
-  /** Set category of the cluster (see EFmsClusterCategory). */
-  void setCategory(UShort_t category) { mCategory = category; }
-  /** Set total cluster energy (sum over towers). */
-  void setEnergy(float energy) { mEnergy = energy; }
-  /** Set x "center of gravity" of the cluster. */
-  void setX(float x) { mX = x; }
-  /** Set y "center of gravity" of the cluster. */
-  void setY(float y) { mY = y; }
+  
+  unsigned short detectorId() const;
+  unsigned short category() const;
+  float energy() const;
+  float x() const; // x "center of gravity" of the cluster.
+  float y() const; // y "center of gravity" of the cluster.
+  TRefArray* hits();
+  const TRefArray* hits() const;
+  TRefArray* photons();
+  const TRefArray* photons() const;
+  void setDetectorId(unsigned short detector);
+  void setCategory(unsigned short category);
+  void setEnergy(float energy);
+  void setX(float x);
+  void setY(float y);
 
  protected:
   UShort_t mDetectorId;  ///< Detector ID as defined in database
@@ -89,4 +76,20 @@ class StMuFmsCluster : public TObject {
   StMuFmsCluster& operator=(const StMuFmsCluster&);
   ClassDef(StMuFmsCluster, 1)
 };
+
+  inline unsigned short StMuFmsCluster::detectorId() const { return mDetectorId; }
+  inline unsigned short StMuFmsCluster::category() const { return mCategory; }
+  inline float StMuFmsCluster::energy() const { return mEnergy; }
+  inline float StMuFmsCluster::x() const { return mX; } // x "center of gravity" of the cluster.
+  inline float StMuFmsCluster::y() const { return mY; } // y "center of gravity" of the cluster.
+  inline TRefArray* StMuFmsCluster::hits() { return &mHits; }
+  inline const TRefArray* StMuFmsCluster::hits() const { return &mHits; }
+  inline TRefArray* StMuFmsCluster::photons() { return &mPhotons; }
+  inline const TRefArray* StMuFmsCluster::photons() const { return &mPhotons; }
+  inline void StMuFmsCluster::setDetectorId(unsigned short detector) { mDetectorId = detector; }
+  inline void StMuFmsCluster::setCategory(unsigned short category) { mCategory = category; }
+  inline void StMuFmsCluster::setEnergy(float energy) { mEnergy = energy; }
+  inline void StMuFmsCluster::setX(float x) { mX = x; }
+  inline void StMuFmsCluster::setY(float y) { mY = y; }
+
 #endif  // STROOT_STMUDSTMAKER_COMMON_STMUFMSCLUSTER_H_

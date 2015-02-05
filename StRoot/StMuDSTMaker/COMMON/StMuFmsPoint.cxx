@@ -1,20 +1,24 @@
-// $Id$
-//
-// $Log$
-/**
- \file      StMuFmsPoint.cxx
- \brief     Implementation of StMuFmsPoint, the MuDST FMS "point" class
- \author    Thomas Burton <tpb@bnl.gov>
- \date      2014
- \copyright Brookhaven National Lab
- */
-#include "StMuDSTMaker/COMMON/StMuFmsPoint.h"
+/*****************************************************************************
+ * 
+ * $Id$
+ *
+ * Author: Thomas Burton, 2014
+ *****************************************************************************
+ *
+ * Description: Implementation of StMuFmsPoint, the MuDST FMS "point" class
+ *
+ *****************************************************************************
+ *
+ * $Log$
+ *
+ *****************************************************************************/
+#include "StMuFmsPoint.h"
 
 #include <algorithm>  // For std::min
 #include <cmath>
 
-#include "StRoot/StEvent/StFmsPoint.h"
-#include "StRoot/StMuDSTMaker/COMMON/StMuFmsCluster.h"
+#include "StFmsPoint.h"
+#include "StMuFmsCluster.h"
 
 StMuFmsPoint::StMuFmsPoint(int detectorId, float energy,
                            float x, float y, float z)
@@ -26,19 +30,19 @@ StMuFmsPoint::StMuFmsPoint(const StFmsPoint& point) {
 
 StMuFmsPoint::~StMuFmsPoint() { }
 
-TVector3 StMuFmsPoint::momentum(float m) const {
+StThreeVectorF StMuFmsPoint::momentum(float m) const {
   m = std::min(m, mEnergy);  // Prevent m > E
-  TVector3 v(mX, mY, mZ);
+  StThreeVectorF v(mX, mY, mZ);
   if (std::fabs(m) > 0.f) {
-    v.SetMag(std::sqrt(std::pow(mEnergy, 2.f) - std::pow(m, 2.f)));
+    v.setMag(std::sqrt(std::pow(mEnergy, 2.f) - std::pow(m, 2.f)));
   } else {
-    v.SetMag(mEnergy);
+    v.setMag(mEnergy);
   }  // if
   return v;
 }
 
-TLorentzVector StMuFmsPoint::fourMomentum(float m) const {
-  return TLorentzVector(momentum(m), mEnergy);
+StLorentzVectorF StMuFmsPoint::fourMomentum(float m) const {
+  return StLorentzVectorF(momentum(m), mEnergy);
 }
 
 StMuFmsCluster* StMuFmsPoint::cluster() {
@@ -56,8 +60,8 @@ void StMuFmsPoint::set(const StFmsPoint& point) {
   mY = point.y();
   // Calculate z coordinate from StFmsPoint 4-momentum as it doesn't store
   // z directly. z / x = pz / px, so...
-  const TLorentzVector vec4 = point.fourMomentum();
-  mZ = point.x() * vec4.Pz() / vec4.Px();
+  const StLorentzVectorF vec4 = point.fourMomentum();
+  mZ = point.x() * vec4.pz() / vec4.px();
 }
 
 void StMuFmsPoint::setCluster(StMuFmsCluster* cluster) {

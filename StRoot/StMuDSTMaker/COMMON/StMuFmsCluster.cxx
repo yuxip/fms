@@ -1,14 +1,17 @@
-// $Id$
-//
-// $Log$
-/**
- \file      StMuFmsCluster.cxx
- \brief     Implementation of StMuFmsCluster, the MuDST FMS cluster class
- \author    Thomas Burton <tpb@bnl.gov>
- \date      2014
- \copyright Brookhaven National Lab
- */
-
+/*****************************************************************************
+ *
+ * $Id$
+ *
+ * Author: Thomas Burton , 2014
+ *****************************************************************************
+ *
+ * Description: Implementation of StMuFmsCluster, the MuDST FMS cluster class
+ *
+ *****************************************************************************
+ *
+ * $Log$
+ *
+ *****************************************************************************/ 
 #include "StMuDSTMaker/COMMON/StMuFmsCluster.h"
 
 #include "StEvent/StFmsCluster.h"
